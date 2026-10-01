@@ -1,0 +1,157 @@
+############ pipen run misc Shell --help
+Usage: pipen [-h | -h+] [options]
+
+Run a shell command
+Use `@configfile` to load default values for the options.
+
+Pipeline Options:
+  --name NAME           The name for the pipeline, will affect the default
+                        workdir and outdir. [default: Shell]
+  --profile PROFILE     The default profile from the configuration to run the
+                        pipeline. This profile will be used unless a profile
+                        is specified in the process or in the .run method of
+                        pipen. You can check the available profiles by running
+Namespace <envs>:
+  --envs ENVS           Environment variables for the process [default:
+                        {'cmd': '', 'outdir': False}]
+  --envs.cmd CMD        The shell command to run Use `$infile` and `$outfile`
+                        to refer to input and output files [default: ]
+  --envs.outdir OUTDIR  Whether the `out.outfile` should be a directory.
+                        If so a directory will be created before running the
+                        command.
+                        [default: False]
+
+Namespace <in>:
+  --in.infile INFILE [INFILE ...]
+                        The input file
+
+Namespace <out>:
+  --out.outfile OUTFILE
+                        The output file [default: {{in.infile | basename}}]
+
+Options:
+RC=0
+
+############ pipen run misc File2Proc --help
+Usage: pipen [-h | -h+] [options]
+
+Accept a file and pass it down with a symbolic link
+Use `@configfile` to load default values for the options.
+
+Pipeline Options:
+  --name NAME           The name for the pipeline, will affect the default
+                        workdir and outdir. [default: File2Proc]
+  --profile PROFILE     The default profile from the configuration to run the
+                        pipeline. This profile will be used unless a profile
+                        is specified in the process or in the .run method of
+                        pipen. You can check the available profiles by running
+Namespace <envs>:
+  --envs ENVS           Environment variables for the process [default:
+                        {'copy': False}]
+  --envs.copy           Whether to copy the input file to the output file
+                        instead of creating a symbolic link. [default: False]
+
+Namespace <in>:
+  --in.infile INFILE [INFILE ...]
+                        The input file
+
+Namespace <out>:
+  --out.outfile OUTFILE
+                        The output symbolic link to the input file [default:
+                        {{in.infile | basename}}]
+
+Options:
+RC=0
+
+############ pipen run misc Str2File --help
+Usage: pipen [-h | -h+] [options]
+
+Write the given string to a file
+Use `@configfile` to load default values for the options.
+
+Pipeline Options:
+  --name NAME           The name for the pipeline, will affect the default
+                        workdir and outdir. [default: Str2File]
+  --profile PROFILE     The default profile from the configuration to run the
+                        pipeline. This profile will be used unless a profile
+                        is specified in the process or in the .run method of
+                        pipen. You can check the available profiles by running
+Namespace <envs>:
+  --envs ENVS           Environment variables for the process [default:
+                        {'name': None}]
+  --envs.name NAME      The name of the output file
+
+Namespace <in>:
+  --in.str STR [STR ...]
+                        The string to write to file
+  --in.name NAME [NAME ...]
+                        The name of the file If not given, use `envs.name`
+
+Namespace <out>:
+  --out.outfile OUTFILE
+                        The output file [default: {{in.name | default]
+
+Options:
+RC=0
+
+############ pipen run misc Glob2Dir --help
+Usage: pipen [-h | -h+] [options]
+
+Create symbolic links in output directory for the files given by the glob
+pattern
+Use `@configfile` to load default values for the options.
+
+Pipeline Options:
+  --name NAME           The name for the pipeline, will affect the default
+                        workdir and outdir. [default: Glob2Dir]
+  --profile PROFILE     The default profile from the configuration to run the
+                        pipeline. This profile will be used unless a profile
+                        is specified in the process or in the .run method of
+Namespace <envs>:
+  --envs ENVS           Environment variables for the process [default:
+                        {'copy': False}]
+  --envs.copy COPY      [default: False]
+
+Namespace <in>:
+  --in.pattern PATTERN [PATTERN ...]
+
+Namespace <out>:
+  --out.outdir OUTDIR   [default: from_glob]
+
+Options:
+RC=0
+
+############ pipen run misc Config2File --help
+Usage: pipen [-h | -h+] [options]
+
+Write a configurationn in string to a configuration file
+Requires python package `rtoml`
+Use `@configfile` to load default values for the options.
+
+Pipeline Options:
+  --name NAME           The name for the pipeline, will affect the default
+                        workdir and outdir. [default: Config2File]
+  --profile PROFILE     The default profile from the configuration to run the
+                        pipeline. This profile will be used unless a profile
+                        is specified in the process or in the .run method of
+Namespace <envs>:
+  --envs ENVS           Environment variables for the process [default:
+                        {'infmt': 'toml', 'outfmt': 'toml'}]
+  --envs.infmt INFMT    The input format. `json` or `toml`. [default: toml]
+  --envs.outfmt OUTFMT  The output format. `json` or `toml`. [default: toml]
+
+Namespace <in>:
+  --in.config CONFIG [CONFIG ...]
+                        A string representation of configuration
+  --in.name NAME [NAME ...]
+                        The name for output file.
+                        Will be `config` if not given
+
+Namespace <out>:
+  --out.outfile OUTFILE
+                        The output file with the configuration [default:
+                        {{(in.name or 'config') | slugify}}.{{envs.outfmt}}]
+
+Options:
+RC=0
+

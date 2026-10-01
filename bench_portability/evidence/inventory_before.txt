@@ -1,0 +1,161 @@
+./analyse_all.py:1:#!/usr/bin/env python3
+./analyse_all.py:8:HOME = Path.home()
+./analyse_all.py:10:DEST = Path("/mnt/f/E/hermes-workspace/pipen/bench")
+./analyse_all.py:95:     "source": "~/bench/out/diag_sleep05.log + marker_diag_sleep05.log", "reps": 1},
+./analyse_all.py:97:     "source": "~/bench/out/diag_forks1.log + marker_diag_forks1.log", "reps": 1},
+./analyse_all.py:127:    out = subprocess.run([str(HOME / "bench/.venv/bin/python"),
+./analyse_marker.py:1:#!/usr/bin/env python3
+./bench_common.py:25:                with open(f"/proc/{entry}/stat", "rb") as fh:
+./bench_common.py:62:    return open("/proc/loadavg").read().split()[:3]
+./calibrate.sh:1:#!/usr/bin/env bash
+./calibrate.sh:4:VP="$HOME/bench/.venv/bin"
+./calibrate.sh:5:OUT="$HOME/bench/out"
+./calibrate.sh:6:BENCH=/mnt/f/E/hermes-workspace/pipen/bench
+./calibrate.sh:11:  rm -rf "$HOME/bench/wd_cal_$tag"
+./calibrate.sh:16:    BENCH_WORKDIR="$HOME/bench/wd_cal_$tag" BENCH_MARKER="$OUT/marker_cal_$tag.log" \
+./debug_agg.sh:1:#!/usr/bin/env bash
+./debug_agg.sh:3:O="$HOME/bench/out"
+./debug_agg.sh:8:find "$HOME/bench/wd_s5_scope/CachePipeline/Agg" -maxdepth 2 2>/dev/null | head -20
+./debug_agg.sh:10:cat "$HOME/bench/wd_s5_scope/CachePipeline/Agg/0/job.script" 2>/dev/null
+./debug_agg.sh:13:cat "$HOME/bench/wd_s5_scope/CachePipeline/Agg/0/job.stdout" 2>/dev/null | head -20
+./debug_agg.sh:14:cat "$HOME/bench/wd_s5_scope/CachePipeline/Agg/0/job.stderr" 2>/dev/null | head -30
+./debug_agg.sh:16:cat "$HOME/bench/wd_s5_scope/CachePipeline/Agg/0/job.rc" 2>/dev/null
+./debug_agg.sh:21:find "$HOME/bench/wd_s5_scope" -name "agg.txt" 2>/dev/null
+./debug_agg.sh:22:ls "$HOME/bench/bench-out" 2>/dev/null
+./debug_cache.sh:1:#!/usr/bin/env bash
+./debug_cache.sh:3:OUT="$HOME/bench/out"
+./debug_cache.sh:4:cd "$HOME/bench"
+./debug_cache.sh:7:BN_N=8 BN_INDIR="$HOME/bench/cache_inputs_small" BN_WORKDIR="$HOME/bench/wd_s5_scope" \
+./debug_cache.sh:9:  "$HOME/bench/.venv/bin/python" /mnt/f/E/hermes-workspace/pipen/bench/bench_cache_dag.py \
+./debug_cache.sh:22:cat "$HOME/bench/wd_s5_scope/CachePipeline/Read/0/job.signature.toml" 2>/dev/null
+./debug_cache.sh:24:ls -la --time-style=full-iso "$HOME/bench/cache_inputs_small/in0.txt" \
+./debug_cache.sh:25:   "$HOME/bench/wd_s5_scope/CachePipeline/Read/0/job.signature.toml" \
+./debug_cache.sh:26:   "$HOME/bench/wd_s5_scope/CachePipeline/Read/0/job.script" \
+./debug_cache.sh:27:   "$HOME/bench/wd_s5_scope/CachePipeline/Read/0/output/" 2>/dev/null
+./diag.sh:1:#!/usr/bin/env bash
+./diag.sh:4:VP="$HOME/bench/.venv/bin"
+./diag.sh:5:OUT="$HOME/bench/out"
+./diag.sh:6:BENCH=/mnt/f/E/hermes-workspace/pipen/bench
+./diag.sh:15:  rm -rf "$HOME/bench/wd_diag_$tag"
+./diag.sh:20:    BENCH_WORKDIR="$HOME/bench/wd_diag_$tag" BENCH_MARKER="$OUT/marker_diag_$tag.log" \
+./driver_pipen.py:1:#!/usr/bin/env python3
+./driver_pipen.py:4:Runs inside WSL. Writes JSON + raw logs under ~/bench/out/. No number is invented:
+./driver_pipen.py:18:HOME = Path.home()
+./driver_pipen.py:22:VPY = BENCH / ".venv" / "bin" / "python"
+./driver_pipen.py:23:SCRIPT = Path("/mnt/f/E/hermes-workspace/pipen/bench")
+./driver_pipen.py:24:NPROC = os.cpu_count()
+./driver_pipen.py:52:                with open(f"/proc/{entry}/stat", "rb") as fh:
+./driver_pipen.py:89:    return open("/proc/loadavg").read().split()[:3]
+./driver_smk.py:1:#!/usr/bin/env python3
+./driver_smk.py:13:sys.path.insert(0, "/mnt/f/E/hermes-workspace/pipen/bench")
+./driver_smk.py:16:HOME = Path.home()
+./driver_smk.py:21:SMKDIR = Path("/mnt/f/E/hermes-workspace/pipen/bench")
+./driver_smk.py:22:NPROC = os.cpu_count()
+./env_json.py:1:#!/usr/bin/env python3
+./env_json.py:32:    for line in open("/proc/meminfo"):
+./env_json.py:41:df = sh("df -hT / /mnt/f " + home)
+./env_json.py:44:venv_py = f"{home}/bench/.venv/bin/python"
+./evidence.py:1:#!/usr/bin/env python3
+./evidence.py:10:HOME = Path.home()
+./evidence.py:12:DEST = Path("/mnt/f/E/hermes-workspace/pipen/bench")
+./gap_analysis.sh:1:#!/usr/bin/env bash
+./gap_analysis.sh:6:grep -n "subm_batch\|maxsize\|Queue(" "$HOME/bench/.venv/lib/python3.12/site-packages/xqute/xqute.py" | head -20
+./gap_analysis.sh:8:"$HOME/bench/.venv/bin/python" - <<'PY'
+./gap_analysis.sh:13:    for line in (Path.home()/"bench"/"out"/f"{name}.log").read_text().splitlines():
+./gap_analysis.sh:29:"$HOME/bench/.venv/bin/python" - <<'PY'
+./gap_analysis.sh:33:for line in (Path.home()/"bench"/"out"/"marker_smk_s3_n500_r1.log").read_text().splitlines():
+./hello_pipen.py:10:DATA = Path(os.environ.get("HELLO_DATA", "/tmp/pipen_hello_data.txt"))
+./inspect_freshness.sh:1:#!/usr/bin/env bash
+./inspect_freshness.sh:4:ls -la "$HOME/bench/CachePipeline-output/Agg/agg.txt"
+./inspect_freshness.sh:5:wc -l "$HOME/bench/CachePipeline-output/Agg/agg.txt"
+./inspect_freshness.sh:7:find "$HOME/bench/wd_s5_scope" -name "agg.txt" -exec ls -la {} \;
+./inspect_freshness.sh:9:find "$HOME/bench/wd_s5_scope" -name "agg.txt" -exec head -12 {} \;
+./inspect_freshness.sh:11:find "$HOME/bench/wd_s5_scope" -name "agg.txt" -exec grep -c "line3-v2" {} \;
+./inspect_freshness.sh:13:find "$HOME/bench/wd_s5_scope" -name "agg.txt" -exec grep -n "line3\|line4" {} \;
+./inspect_freshness.sh:15:for f in "$HOME/bench/cache_inputs_small"/in3.txt "$HOME/bench/cache_inputs_small"/in4.txt; do echo "$f: $(cat $f)"; done
+./inspect_freshness.sh:17:for d in "$HOME/bench/wd_s5_scope/CachePipeline/Mid"/*/; do i=$(basename $d); echo "$i: $(cat $d/output/m-*.txt 2>/dev/null | tr '\n' ' ')"; done
+./inspect_freshness.sh:19:ls -la --time-style=full-iso "$HOME/bench/wd_s5_scope/CachePipeline/Agg/0/"
+./inspect_inputdata.sh:1:#!/usr/bin/env bash
+./inspect_inputdata.sh:4:grep -n "input_data\|callable" "$HOME/github/pipen/pipen/proc.py" | head -40
+./inspect_inputdata.sh:7:grep -n "input_data(.*)" -B 8 -A 8 "$HOME/github/pipen/pipen/proc.py" | head -60
+./inspect_inputdata.sh:9:tail -25 "$HOME/bench/out/logs/s5_r1_cold.log"
+./inspect_inputdata.sh:11:tail -15 "$HOME/bench/out/logs/s5_r4_mid_script_changed.log"
+./inspect_xqute.sh:1:#!/usr/bin/env bash
+./inspect_xqute.sh:3:V="$HOME/bench/.venv/lib/python3.12/site-packages"
+./inspect_xqute2.sh:1:#!/usr/bin/env bash
+./inspect_xqute2.sh:3:V="$HOME/bench/.venv/lib/python3.12/site-packages"
+./inspect_xqute3.sh:1:#!/usr/bin/env bash
+./inspect_xqute3.sh:3:V="$HOME/bench/.venv/lib/python3.12/site-packages"
+./inspect_xqute4.sh:1:#!/usr/bin/env bash
+./inspect_xqute4.sh:3:V="$HOME/bench/.venv/lib/python3.12/site-packages"
+./install_smk.sh:1:#!/usr/bin/env bash
+./install_smk.sh:3:OUT="$HOME/bench/out"
+./install_smk.sh:5:if [ ! -x "$HOME/bench/smk/bin/pip" ]; then
+./install_smk.sh:6:  python3 -m venv "$HOME/bench/smk"
+./install_smk.sh:8:"$HOME/bench/smk/bin/pip" install --upgrade pip > "$OUT/smk_pip_upgrade.log" 2>&1
+./install_smk.sh:10:"$HOME/bench/smk/bin/pip" install snakemake > "$OUT/snakemake_install.log" 2>&1
+./install_smk.sh:17:  "$HOME/bench/smk/bin/pip" install --index-url https://pypi.org/simple snakemake > "$OUT/snakemake_install_retry.log" 2>&1
+./install_smk.sh:23:"$HOME/bench/smk/bin/python" -c "import snakemake; print('snakemake', snakemake.__version__)" 2>&1 | tail -2
+./install_smk.sh:24:"$HOME/bench/smk/bin/snakemake" --version 2>&1 | tail -2
+./make_report.py:1:#!/usr/bin/env python3
+./make_report.py:6:HOME = Path.home()
+./make_report.py:8:DEST = Path("/mnt/f/E/hermes-workspace/pipen/bench")
+./package.sh:1:#!/usr/bin/env bash
+./package.sh:3:OUT="$HOME/bench/out"
+./package.sh:4:DEST=/mnt/f/E/hermes-workspace/pipen/bench
+./package.sh:39:"$HOME/bench/.venv/bin/python" - <<'PY'
+./package.sh:41:s = json.load(open("/home/pwwang/bench/out/summary.json"))
+./package2.sh:1:#!/usr/bin/env bash
+./package2.sh:3:OUT="$HOME/bench/out"
+./package2.sh:4:RAW=/mnt/f/E/hermes-workspace/pipen/bench/raw
+./package2.sh:9:cp -f "$HOME/bench/out/hello_stdout.log" "$RAW/hello_world_pipen.log" 2>/dev/null || true
+./package2.sh:21:"$HOME/bench/.venv/bin/python" - <<'PY'
+./package2.sh:23:r = json.load(open("/mnt/f/E/hermes-workspace/pipen/bench/raw/derived_numbers.json"))
+./package2.sh:30:t = json.load(open("/mnt/f/E/hermes-workspace/pipen/bench/raw/touch_test.json"))
+./run_analysis.sh:1:#!/usr/bin/env bash
+./run_analysis.sh:3:cd "$HOME/bench"
+./run_analysis.sh:4:"$HOME/bench/.venv/bin/python" /mnt/f/E/hermes-workspace/pipen/bench/analyse_all.py > out/analysis.log 2>&1
+./run_derived.sh:1:#!/usr/bin/env bash
+./run_derived.sh:3:cd "$HOME/bench"
+./run_derived.sh:4:"$HOME/bench/.venv/bin/python" /mnt/f/E/hermes-workspace/pipen/bench/make_report.py > out/derived.log 2>&1
+./run_diag_analysis.sh:1:#!/usr/bin/env bash
+./run_diag_analysis.sh:3:cd "$HOME/bench/out"
+./run_diag_analysis.sh:6:  "$HOME/bench/.venv/bin/python" /mnt/f/E/hermes-workspace/pipen/bench/analyse_marker.py "$HOME/bench/out/marker_diag_$tag.log"
+./run_evidence.sh:1:#!/usr/bin/env bash
+./run_evidence.sh:3:cd "$HOME/bench"
+./run_evidence.sh:4:"$HOME/bench/.venv/bin/python" /mnt/f/E/hermes-workspace/pipen/bench/evidence.py > out/evidence.log 2>&1
+./run_probe_agg.sh:1:#!/usr/bin/env bash
+./run_probe_agg.sh:3:VP="$HOME/bench/.venv/bin"
+./run_probe_agg.sh:4:OUT="$HOME/bench/out"
+./run_probe_agg.sh:5:BENCH=/mnt/f/E/hermes-workspace/pipen/bench
+./run_probe_agg.sh:6:rm -rf "$HOME/bench/wd_probe3"
+./run_probe_agg.sh:8:PROBE_WORKDIR="$HOME/bench/wd_probe3" PROBE_N=4 PROBE_LOG="$OUT/probe3.log" \
+./run_probe_agg.sh:13:cat "$HOME/bench/wd_probe3/ProbeAggPipeline/AggFiles/0/job.script" 2>/dev/null
+./run_probe_agg.sh:16:cat "$HOME/bench/wd_probe3/ProbeAggPipeline/AggFiles/0/job.signature.toml" 2>/dev/null
+./setup.sh:1:#!/usr/bin/env bash
+./setup.sh:4:BENCH_HOME="$HOME/bench"
+./setup.sh:14:  echo "=== meminfo ==="; grep -E 'MemTotal|SwapTotal' /proc/meminfo
+./setup.sh:16:  echo "=== df ==="; df -hT / /mnt/f $HOME 2>/dev/null
+./setup.sh:17:  echo "=== python ==="; python3 --version; which python3
+./setup.sh:18:  echo "=== pip ==="; python3 -m pip --version 2>&1 | head -2
+./setup.sh:25:rm -rf "$BENCH_HOME/.venv"
+./setup.sh:26:python3 -m venv "$BENCH_HOME/.venv"
+./setup.sh:27:VP="$BENCH_HOME/.venv/bin"
+./setup.sh:31:"$VP/pip" install -e "$HOME/github/pipen" > "$OUT/pipen_install.log" 2>&1
+./touch_test2.py:1:#!/usr/bin/env python3
+./touch_test2.py:19:HOME = Path.home()
+./touch_test2.py:22:VPY = BENCH / ".venv" / "bin" / "python"
+./touch_test2.py:23:SCRIPT = Path("/mnt/f/E/hermes-workspace/pipen/bench/bench_cache_dag.py")
+./touch_test2.py:84:Path("/mnt/f/E/hermes-workspace/pipen/bench/raw/touch_test.json").write_text(
+./verify.sh:1:#!/usr/bin/env bash
+./verify.sh:4:VP="$HOME/bench/.venv/bin"
+./verify.sh:5:OUT="$HOME/bench/out"
+./verify.sh:7:BENCH=/mnt/f/E/hermes-workspace/pipen/bench
+./verify.sh:10:rm -rf "$HOME/bench/wd_hello" "$HOME/bench/out_hello"
+./verify.sh:11:HELLO_WORKDIR="$HOME/bench/wd_hello" HELLO_OUTDIR="$HOME/bench/out_hello" \
+./verify.sh:15:echo "result.txt:"; cat "$HOME/bench/out_hello/NumberLines/result.txt" 2>/dev/null
+./verify.sh:16:echo "intermediate.txt:"; cat "$HOME/bench/out_hello/SortFile/intermediate.txt" 2>/dev/null
+./verify.sh:18:find "$HOME/bench/out_hello" -type f -o -type l 2>/dev/null | head -20
+./verify.sh:21:rm -rf "$HOME/bench/wd_probe"
+./verify.sh:22:: > "$HOME/bench/out/probe_rerun.log"
+./verify.sh:23:PROBE_WORKDIR="$HOME/bench/wd_probe" PROBE_N=4 PROBE_LOG="$HOME/bench/out/probe_rerun.log" \

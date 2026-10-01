@@ -1,0 +1,62 @@
+[
+  {
+    "tag": "s3_n20_r1",
+    "got": 42,
+    "expected": 42,
+    "ok": true
+  },
+  {
+    "tag": "s4_n20_f1_r1",
+    "got": 42,
+    "expected": 42,
+    "ok": true
+  },
+  {
+    "tag": "s4_n20_f2_r1",
+    "got": 42,
+    "expected": 42,
+    "ok": true
+  },
+  {
+    "tag": "s5_r1_cold",
+    "got": 25,
+    "expected": 25,
+    "ok": true
+  },
+  {
+    "tag": "s5_time_n20_cold_r1",
+    "got": 61,
+    "expected": 61,
+    "ok": true
+  },
+  {
+    "tag": "smk_s3_n20_r1",
+    "got": 42,
+    "expected": 42,
+    "ok": true
+  },
+  {
+    "tag": "smk_s4_n20_c1",
+    "got": 42,
+    "expected": 42,
+    "ok": true
+  },
+  {
+    "tag": "smk_s4_n20_c2",
+    "got": 42,
+    "expected": 42,
+    "ok": true
+  },
+  {
+    "tag": "smk_s5_r1_cold",
+    "got": 25,
+    "expected": 25,
+    "ok": true
+  },
+  {
+    "tag": "scope_job_dirs",
+    "got": 25,
+    "expected": 25,
+    "ok": true
+  }
+]

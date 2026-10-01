@@ -1,0 +1,10 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Error executing tool run_process"
+    }
+  ],
+  "is_error": true,
+  "result_type": "complete"
+}

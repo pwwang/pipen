@@ -1,0 +1,21 @@
+Assuming unrestricted shared filesystem usage.
+
+SNAKEMAKE
+=========
+  Date: 2026-09-30 16:45:08
+  Workflow ID: 465fafd2-acb6-4daf-9ee3-4e3cc22cf123
+  Platform: Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.39
+  Host: R5440549
+  User: pwwang
+  Snakemake version: 9.27.0
+  Python version: 3.12.2 | packaged by conda-forge | (main, Feb 16 2024, 20:50:58) [GCC 12.3.0]
+  Command: /home/pwwang/bench/smk/bin/snakemake --cores 32 -s /mnt/f/E/hermes-workspace/pipen/bench/smk_cache/Snakefile
+  Snakefile: /mnt/f/E/hermes-workspace/pipen/bench/smk_cache/Snakefile
+  Base directory: /mnt/f/E/hermes-workspace/pipen/bench/smk_cache
+  Run directory: /home/pwwang/bench/smkw_s5_scope
+  Working directory: /home/pwwang/bench/smkw_s5_scope
+  Config file(s): []
+  Config MD5: 99914b932bd37a50b983c5e7c90ae93b
+
+Building DAG of jobs...
+Nothing to be done (all requested files are present and up to date).

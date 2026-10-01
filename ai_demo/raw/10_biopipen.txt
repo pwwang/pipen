@@ -1,0 +1,267 @@
+### creating venv /home/pwwang/aidemo_bio/.venv
+### installing pipen==1.2.3 pipen-cli-run pipen-annotate pipen-mcp + biopipen (PyPI)
+Using cached markdown_it_py-4.2.0-py3-none-any.whl (91 kB)
+Using cached mdurl-0.1.2-py3-none-any.whl (10.0 kB)
+Using cached rpds_py-2026.6.3-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (366 kB)
+Using cached six-1.17.0-py2.py3-none-any.whl (11 kB)
+Using cached sse_starlette-3.5.0-py3-none-any.whl (17 kB)
+Using cached starlette-1.7.0-py3-none-any.whl (78 kB)
+Using cached text_unidecode-1.3-py2.py3-none-any.whl (78 kB)
+Using cached truststore-0.10.4-py3-none-any.whl (18 kB)
+Using cached typer-0.27.2-py3-none-any.whl (123 kB)
+Using cached annotated_doc-0.0.5-py3-none-any.whl (5.3 kB)
+Using cached shellingham-1.5.4-py2.py3-none-any.whl (9.8 kB)
+Using cached typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+Using cached typing_inspection-0.4.4-py3-none-any.whl (14 kB)
+Using cached uvicorn-0.54.0-py3-none-any.whl (87 kB)
+Using cached uvloop-0.23.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (4.5 MB)
+Using cached varname-1.0.0-py3-none-any.whl (25 kB)
+Using cached wcwidth-0.9.1-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (768 kB)
+Using cached websocket_client-1.9.2-py3-none-any.whl (95 kB)
+Downloading werkzeug-3.1.9-py3-none-any.whl (228 kB)
+Using cached wsproto-1.3.2-py3-none-any.whl (24 kB)
+Using cached priority-2.0.0-py3-none-any.whl (8.9 kB)
+Using cached pycparser-3.0-py3-none-any.whl (48 kB)
+Installing collected packages: text-unidecode, prefixed, jinxed, funcy, websocket-client, wcwidth, uvloop, typing-extensions, truststore, six, shellingham, rtoml, rpds-py, pyyaml, python-slugify, python-multipart, python-dotenv, pyjwt, pygments, pycparser, psutil, priority, platformdirs, pathspec, packaging, numpy, mdurl, MarkupSafe, markdown, itsdangerous, inflection, imagesize, idna, hyperframe, hpack, h11, executing, colorama, click, blinker, attrs, annotated-types, annotated-doc, aiofiles, wsproto, werkzeug, varname, uvicorn, typing-inspection, referencing, python-dateutil, pydantic-core, prompt_toolkit, plumbum, pipda, panpath, opentelemetry-api, markdown-it-py, jinja2, httpcore2, h2, dunamai, diot, cffi, blessed, anyio, starlette, simplug, rich, questionary, python-simpleconf, pydantic, pandas, liquidpy, jsonschema-specifications, jinja2-ansible-filters, hypercorn, httpx2, flask, enlighten, cryptography, typer, sse-starlette, quart, pdtypes, mcp-types, jsonschema, copier, argx, xqute, mcp, datar, pipen, datar-numpy, pipen-verbose, pipen-report, pipen-poplog, pipen-log2file, pipen-filters, pipen-deprecated, pipen-annotate, datar-pandas, pipen-args, pipen-cli-run, pipen-board, pipen-mcp, biopipen
+
+Successfully installed MarkupSafe-3.0.3 aiofiles-25.1.0 annotated-doc-0.0.5 annotated-types-0.8.0 anyio-4.15.1 argx-0.4.4 attrs-26.1.0 biopipen-1.5.1 blessed-1.50.0 blinker-1.9.0 cffi-2.1.1 click-8.5.0 colorama-0.4.6 copier-9.18.2 cryptography-50.0.2 datar-0.16.0 datar-numpy-0.3.8 datar-pandas-0.7.1 diot-0.3.4 dunamai-1.26.2 enlighten-1.14.1 executing-2.2.1 flask-3.1.3 funcy-2.1 h11-0.16.0 h2-4.4.1 hpack-4.2.0 httpcore2-2.13.1 httpx2-2.13.1 hypercorn-0.18.0 hyperframe-6.1.0 idna-3.20 imagesize-2.0.1 inflection-0.5.1 itsdangerous-2.2.0 jinja2-3.1.6 jinja2-ansible-filters-1.3.2 jinxed-2.1.0 jsonschema-4.26.0 jsonschema-specifications-2025.9.1 liquidpy-0.10.0 markdown-3.11 markdown-it-py-4.2.0 mcp-2.2.0 mcp-types-2.2.0 mdurl-0.1.2 numpy-2.5.3 opentelemetry-api-1.45.0 packaging-26.3 pandas-3.0.6 panpath-0.4.12 pathspec-1.1.1 pdtypes-0.3.1 pipda-0.14.1 pipen-1.2.3 pipen-annotate-1.0.6 pipen-args-1.3.0 pipen-board-1.2.0 pipen-cli-run-1.0.6 pipen-deprecated-1.0.3 pipen-filters-1.1.3 pipen-log2file-1.1.4 pipen-mcp-0.1.0 pipen-poplog-1.1.7 pipen-report-1.2.6 pipen-verbose-1.1.5 platformdirs-4.12.2 plumbum-2.0.2 prefixed-0.9.0 priority-2.0.0 prompt_toolkit-3.0.53 psutil-7.2.2 pycparser-3.0 pydantic-2.13.5 pydantic-core-2.46.5 pygments-2.21.0 pyjwt-2.15.1 python-dateutil-2.9.0.post0 python-dotenv-1.2.3 python-multipart-0.0.32 python-simpleconf-0.9.6 python-slugify-9.1.2 pyyaml-6.0.3 quart-0.22.0 questionary-2.1.1 referencing-0.37.0 rich-15.0.0 rpds-py-2026.6.3 rtoml-0.13.0 shellingham-1.5.4 simplug-0.5.7 six-1.17.0 sse-starlette-3.5.0 starlette-1.7.0 text-unidecode-1.3 truststore-0.10.4 typer-0.27.2 typing-extensions-4.16.0 typing-inspection-0.4.4 uvicorn-0.54.0 uvloop-0.23.0 varname-1.0.0 wcwidth-0.9.1 websocket-client-1.9.2 werkzeug-3.1.9 wsproto-1.3.2 xqute-2.2.0
+INSTALL_RC=0
+
+### versions in the biopipen venv
+biopipen==1.5.1
+datar-numpy==0.3.8
+datar-pandas==0.7.1
+datar==0.16.0
+mcp-types==2.2.0
+mcp==2.2.0
+pipen-annotate==1.0.6
+pipen-args==1.3.0
+pipen-board==1.2.0
+pipen-cli-run==1.0.6
+pipen-deprecated==1.0.3
+pipen-filters==1.1.3
+pipen-log2file==1.1.4
+pipen-mcp==0.1.0
+pipen-poplog==1.1.7
+pipen-report==1.2.6
+pipen-verbose==1.1.5
+pipen==1.2.3
+
+### namespace entry points visible to pipen-cli-run
+total namespaces: 24
+  bam  <- biopipen
+  bed  <- biopipen
+  cellranger  <- biopipen
+  cellranger_pipeline  <- biopipen
+  cnv  <- biopipen
+  cnvkit  <- biopipen
+  cnvkit_pipeline  <- biopipen
+  delim  <- biopipen
+  gene  <- biopipen
+  gsea  <- biopipen
+  misc  <- biopipen
+  pipseeker  <- biopipen
+  plot  <- biopipen
+  protein  <- biopipen
+  regulatory  <- biopipen
+  rnaseq  <- biopipen
+  scrna  <- biopipen
+  scrna_metabolic_landscape  <- biopipen
+  snp  <- biopipen
+  stats  <- biopipen
+  tcgamaf  <- biopipen
+  tcr  <- biopipen
+  vcf  <- biopipen
+  web  <- biopipen
+
+############ pipen run --help  (does discovery reflect installed dists?)
+Usage: pipen run [-h]
+                 {bam,bed,cellranger,cellranger_pipeline,cnv,cnvkit,cnvkit_pipeline,delim,gene,gsea,misc,pipseeker,plot,protein,regulatory,rnaseq,scrna,scrna_metabolic_landscape,snp,stats,tcgamaf,tcr,vcf,web}
+                 ...
+
+Run a process or a pipeline
+
+Options:
+  -h, --help            show this help message and exit
+
+Process Namespaces:
+    bam                 Tools to process sam/bam/cram files
+    bed                 Tools to handle BED files
+    cellranger          Cellranger pipeline module for BioPipen
+    cellranger_pipeline
+                        The cellranger pipelines
+    cnv                 CNV/CNA-related processes, mostly tertiary analysis
+    cnvkit              CNVkit commnads
+    cnvkit_pipeline     The CNVkit pipeline.
+    delim               Tools to deal with csv/tsv files
+    gene                Gene related processes
+    gsea                Gene set enrichment analysis
+    misc                Misc processes
+    pipseeker           Pipseeker processes
+    plot                Plotting data
+    protein             Protein-related processes.
+    regulatory          Provides processes for the regulatory related
+    rnaseq              RNA-seq data analysis
+    scrna               Tools to analyze single-cell RNA
+    scrna_metabolic_landscape
+                        Metabolic landscape analysis for scRNA-seq data
+    snp                 Plink processes
+    stats               Provides processes for statistics.
+    tcgamaf             Processes for TCGA MAF files.
+    tcr                 Tools to analyze single-cell TCR sequencing data
+    vcf                 Tools to handle VCF files
+    web                 Get data from the web
+RC=0
+
+############ pipen run delim --help  (a REAL third-party namespace)
+Usage: pipen run delim [-h] {RowsBinder,SampleInfo} ...
+
+Options:
+  -h, --help            show this help message and exit
+
+Processes / Pipelines:
+    RowsBinder          Bind rows of input files
+    SampleInfo          List sample information and perform statistics
+RC=0
+
+############ pipen run misc --help
+Usage: pipen run misc [-h]
+                      {Config2File,File2Proc,Glob2Dir,Plot,Shell,Str2File} ...
+
+Options:
+  -h, --help            show this help message and exit
+
+Processes / Pipelines:
+    Config2File         Write a configurationn in string to a configuration
+                        file
+    File2Proc           Accept a file and pass it down with a symbolic link
+    Glob2Dir            Create symbolic links in output directory for the
+                        files givenby the glob pattern
+    Plot                Plot given data using plotthis package in R
+    Shell               Run a shell command
+    Str2File            Write the given string to a file
+RC=0
+
+############ pipen run delim RowsBinder --help  (third-party process schema)
+Usage: pipen [-h | -h+] [options]
+
+Bind rows of input files
+Use `@configfile` to load default values for the options.
+
+Pipeline Options:
+  --name NAME           The name for the pipeline, will affect the default
+                        workdir and outdir. [default: RowsBinder]
+  --profile PROFILE     The default profile from the configuration to run the
+                        pipeline. This profile will be used unless a profile
+                        is specified in the process or in the .run method of
+                        pipen. You can check the available profiles by running
+                        `pipen profile`
+  --outdir OUTDIR       The output directory of the pipeline [default:
+                        ./<name>-output]
+  --forks FORKS         How many jobs to run simultaneously by the scheduler
+  --scheduler SCHEDULER
+                        The scheduler to run the jobs
+  --output_flatten, --output-flatten
+                        Whether to flatten the output from jobs of the process
+                        (without creating subdirectories with job indexes).
+
+Namespace <envs>:
+  --envs ENVS           Environment variables for the process [default:
+                        {'sep': '\t', 'header': True, 'filenames': None,
+                        'filenames_col': 'Filename'}]
+  --envs.sep SEP        The separator of the input files [default:      ]
+  --envs.header         Whether the input files have header [default: True]
+  --envs.filenames FILENAMES
+                        Whether to add filename as the last column.
+                        Either a string of an R function that starts with
+                        `function` or a list of names (or string separated by
+                        comma) to add for each input file.
+                        The R function takes the path of the input file as the
+                        only argument and should return a string. The string
+                        will be added as the last column of the output file.
+  --envs.filenames_col FILENAMES_COL, --envs.filenames-col FILENAMES_COL
+                        The column name for the `filenames` columns [default:
+                        Filename]
+
+Namespace <in>:
+  --in.infiles INFILES [INFILES ...]
+                        The input files to bind.
+                        The input files should have the same number of
+                        columns, and same delimiter.
+
+Namespace <out>:
+  --out.outfile OUTFILE
+                        The output file with rows bound [default: {{in.infiles
+                        | first | stem}}_rbound{{in.infiles | first | ext}}]
+
+Options:
+  -h, --help, -h+, --help+
+                        show this help message and exit (with + for more
+                        options)
+RC=0
+
+############ MCP server in the biopipen venv: get_namespaces / get_processes(delim)
+namespaces reported by the MCP server: 25
+Available namespaces:
+
+  bam: Tools to process sam/bam/cram files
+  bed: Tools to handle BED files
+  cellranger: Cellranger pipeline module for BioPipen
+  cellranger_pipeline: The cellranger pipelines
+  cnv: CNV/CNA-related processes, mostly tertiary analysis
+  cnvkit: CNVkit commnads
+  cnvkit_pipeline: The CNVkit pipeline.
+  delim: Tools to deal with csv/tsv files
+  gene: Gene related processes
+  gsea: Gene set enrichment analysis
+  misc: Misc processes
+  pipseeker: Pipseeker processes
+  plot: Plotting data
+  protein: Protein-related processes.
+  regulatory: Provides processes for the regulatory related
+  rnaseq: RNA-seq data analysis
+  scrna: Tools to analyze single-cell RNA
+  scrna_metabolic_landscape: Metabolic landscape analysis for scRNA-seq data
+  snp: Plink processes
+  stats: Provides processes for statistics.
+  tcgamaf: Processes for TCGA MAF files.
+  tcr: Tools to analyze single-cell TCR sequencing data
+  vcf: Tools to handle VCF files
+  web: Get data from the web
+
+Use get_processes('<namespace>') to see available processes.
+
+--- get_processes('delim') (third-party namespace) ---
+Namespace: delim
+Description: Tools to deal with csv/tsv files
+
+Available processes:
+  RowsBinder (proc): Bind rows of input files
+  SampleInfo (proc): List sample information and perform statistics
+
+Use get_process('delim', '<process_name>') to see detailed arguments.
+
+--- get_process('delim','RowsBinder') ---
+Process: RowsBinder  (namespace: delim)
+Description: Bind rows of input files
+
+Arguments:
+  Required:
+    --in.infiles <str>  The input files to bind.
+The input files should have the same number of columns, and same delimiter.
+  Optional:
+    --envs.sep <str> (default: '\t')  The separator of the input files
+    --envs.header <bool> (default: True)  Whether the input files have header
+    --envs.filenames <str>  Whether to add filename as the last column.
+Either a string of an R function that starts with `function` or a list of names (or string separated by comma) to add for each input file.
+The R function takes the path of the input file as the only argument and should return a string. The string will be added as the last column of the output file.
+    --envs.filenames_col <str> (default: 'Filename')  The column name for the `filenames` columns
+    --outdir <str>  Output directory of the pipeline
+    --forks <int>  Number of jobs to run simultaneously
+    --scheduler <str>  Scheduler to run the jobs
+    --profile <str>  Configuration profile to use
+    --cache <str>  Cache strategy: true/false/force
+
+Example:
+  run_process("delim", "RowsBinder", ["--in.infiles", "<value>"])
+MCP_BIO_RC=0

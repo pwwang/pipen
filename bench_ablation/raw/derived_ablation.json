@@ -1,0 +1,1768 @@
+{
+  "summary": {
+    "A|N=100": {
+      "arm": "A",
+      "n": 100,
+      "reps": 3,
+      "wall": {
+        "n": 3,
+        "median": 15.15,
+        "min": 15.142,
+        "max": 15.306
+      },
+      "run": {
+        "n": 3,
+        "median": 14.519,
+        "min": 14.496,
+        "max": 14.697
+      },
+      "ovh_job": {
+        "n": 3,
+        "median": 0.1499,
+        "min": 0.1499,
+        "max": 0.1515
+      },
+      "ovh_run_job": {
+        "n": 3,
+        "median": 0.1436,
+        "min": 0.1434,
+        "max": 0.1454
+      },
+      "rate": {
+        "n": 3,
+        "median": 7.95,
+        "min": 7.86,
+        "max": 10.38
+      },
+      "e2e_rate": {
+        "n": 3,
+        "median": 6.64,
+        "min": 6.54,
+        "max": 8.23
+      },
+      "peak": {
+        "n": 3,
+        "median": 8,
+        "min": 6,
+        "max": 11
+      },
+      "meanconc": {
+        "n": 3,
+        "median": 0.351,
+        "min": 0.345,
+        "max": 0.469
+      },
+      "jobdur": {
+        "n": 3,
+        "median": 0.0519,
+        "min": 0.0519,
+        "max": 0.052
+      },
+      "shards": [
+        100,
+        100,
+        100
+      ],
+      "agg": [
+        1,
+        1,
+        1
+      ],
+      "rc": [
+        0,
+        0,
+        0
+      ],
+      "correct": [
+        true,
+        true,
+        true
+      ],
+      "finished": [
+        true,
+        true,
+        true
+      ],
+      "falsefail": [
+        0,
+        0,
+        0
+      ],
+      "loadavg_before": [
+        [
+          "4.21",
+          "4.26",
+          "4.24"
+        ],
+        [
+          "4.16",
+          "4.24",
+          "4.23"
+        ],
+        [
+          "4.12",
+          "4.23",
+          "4.23"
+        ]
+      ],
+      "loadavg_after": [
+        [
+          "4.16",
+          "4.24",
+          "4.23"
+        ],
+        [
+          "4.12",
+          "4.23",
+          "4.23"
+        ],
+        [
+          "4.10",
+          "4.22",
+          "4.22"
+        ]
+      ],
+      "tags": [
+        "A_n100_r1",
+        "A_n100_r2",
+        "A_n100_r3"
+      ],
+      "logs": [
+        "/home/pwwang/bench_abl/out/logs/A_n100_r1.log",
+        "/home/pwwang/bench_abl/out/logs/A_n100_r2.log",
+        "/home/pwwang/bench_abl/out/logs/A_n100_r3.log"
+      ],
+      "markers": [
+        "/home/pwwang/bench_abl/out/markers/marker_A_n100_r1.log",
+        "/home/pwwang/bench_abl/out/markers/marker_A_n100_r2.log",
+        "/home/pwwang/bench_abl/out/markers/marker_A_n100_r3.log"
+      ]
+    },
+    "A|N=500": {
+      "arm": "A",
+      "n": 500,
+      "reps": 3,
+      "wall": {
+        "n": 3,
+        "median": 55.896,
+        "min": 55.035,
+        "max": 56.314
+      },
+      "run": {
+        "n": 3,
+        "median": 55.193,
+        "min": 53.912,
+        "max": 55.593
+      },
+      "ovh_job": {
+        "n": 3,
+        "median": 0.1102,
+        "min": 0.1085,
+        "max": 0.1111
+      },
+      "ovh_run_job": {
+        "n": 3,
+        "median": 0.1088,
+        "min": 0.1063,
+        "max": 0.1096
+      },
+      "rate": {
+        "n": 3,
+        "median": 8.92,
+        "min": 8.84,
+        "max": 9.65
+      },
+      "e2e_rate": {
+        "n": 3,
+        "median": 8.57,
+        "min": 8.51,
+        "max": 9.24
+      },
+      "peak": {
+        "n": 3,
+        "median": 19,
+        "min": 9,
+        "max": 21
+      },
+      "meanconc": {
+        "n": 3,
+        "median": 0.492,
+        "min": 0.471,
+        "max": 0.727
+      },
+      "jobdur": {
+        "n": 3,
+        "median": 0.052,
+        "min": 0.052,
+        "max": 0.052
+      },
+      "shards": [
+        500,
+        500,
+        500
+      ],
+      "agg": [
+        1,
+        1,
+        1
+      ],
+      "rc": [
+        0,
+        0,
+        0
+      ],
+      "correct": [
+        true,
+        true,
+        true
+      ],
+      "finished": [
+        true,
+        true,
+        true
+      ],
+      "falsefail": [
+        0,
+        0,
+        0
+      ],
+      "loadavg_before": [
+        [
+          "4.10",
+          "4.22",
+          "4.22"
+        ],
+        [
+          "4.91",
+          "4.49",
+          "4.32"
+        ],
+        [
+          "4.85",
+          "4.53",
+          "4.34"
+        ]
+      ],
+      "loadavg_after": [
+        [
+          "4.91",
+          "4.49",
+          "4.32"
+        ],
+        [
+          "4.85",
+          "4.53",
+          "4.34"
+        ],
+        [
+          "5.07",
+          "4.67",
+          "4.40"
+        ]
+      ],
+      "tags": [
+        "A_n500_r1",
+        "A_n500_r2",
+        "A_n500_r3"
+      ],
+      "logs": [
+        "/home/pwwang/bench_abl/out/logs/A_n500_r1.log",
+        "/home/pwwang/bench_abl/out/logs/A_n500_r2.log",
+        "/home/pwwang/bench_abl/out/logs/A_n500_r3.log"
+      ],
+      "markers": [
+        "/home/pwwang/bench_abl/out/markers/marker_A_n500_r1.log",
+        "/home/pwwang/bench_abl/out/markers/marker_A_n500_r2.log",
+        "/home/pwwang/bench_abl/out/markers/marker_A_n500_r3.log"
+      ]
+    },
+    "B|N=100": {
+      "arm": "B",
+      "n": 100,
+      "reps": 3,
+      "wall": {
+        "n": 3,
+        "median": 16.44,
+        "min": 15.692,
+        "max": 17.455
+      },
+      "run": {
+        "n": 3,
+        "median": 15.799,
+        "min": 14.923,
+        "max": 16.727
+      },
+      "ovh_job": {
+        "n": 3,
+        "median": 0.1628,
+        "min": 0.1554,
+        "max": 0.173
+      },
+      "ovh_run_job": {
+        "n": 3,
+        "median": 0.1564,
+        "min": 0.1477,
+        "max": 0.1657
+      },
+      "rate": {
+        "n": 3,
+        "median": 8.71,
+        "min": 7.45,
+        "max": 8.88
+      },
+      "e2e_rate": {
+        "n": 3,
+        "median": 6.97,
+        "min": 6.46,
+        "max": 7.53
+      },
+      "peak": {
+        "n": 3,
+        "median": 7,
+        "min": 6,
+        "max": 31
+      },
+      "meanconc": {
+        "n": 3,
+        "median": 0.363,
+        "min": 0.361,
+        "max": 0.402
+      },
+      "jobdur": {
+        "n": 3,
+        "median": 0.052,
+        "min": 0.052,
+        "max": 0.0521
+      },
+      "shards": [
+        100,
+        100,
+        100
+      ],
+      "agg": [
+        1,
+        1,
+        1
+      ],
+      "rc": [
+        0,
+        0,
+        0
+      ],
+      "correct": [
+        true,
+        true,
+        true
+      ],
+      "finished": [
+        true,
+        true,
+        true
+      ],
+      "falsefail": [
+        0,
+        0,
+        0
+      ],
+      "loadavg_before": [
+        [
+          "5.07",
+          "4.67",
+          "4.40"
+        ],
+        [
+          "4.97",
+          "4.67",
+          "4.41"
+        ],
+        [
+          "4.90",
+          "4.67",
+          "4.41"
+        ]
+      ],
+      "loadavg_after": [
+        [
+          "4.97",
+          "4.67",
+          "4.41"
+        ],
+        [
+          "4.90",
+          "4.67",
+          "4.41"
+        ],
+        [
+          "5.24",
+          "4.76",
+          "4.45"
+        ]
+      ],
+      "tags": [
+        "B_n100_r1",
+        "B_n100_r2",
+        "B_n100_r3"
+      ],
+      "logs": [
+        "/home/pwwang/bench_abl/out/logs/B_n100_r1.log",
+        "/home/pwwang/bench_abl/out/logs/B_n100_r2.log",
+        "/home/pwwang/bench_abl/out/logs/B_n100_r3.log"
+      ],
+      "markers": [
+        "/home/pwwang/bench_abl/out/markers/marker_B_n100_r1.log",
+        "/home/pwwang/bench_abl/out/markers/marker_B_n100_r2.log",
+        "/home/pwwang/bench_abl/out/markers/marker_B_n100_r3.log"
+      ]
+    },
+    "B|N=500": {
+      "arm": "B",
+      "n": 500,
+      "reps": 3,
+      "wall": {
+        "n": 3,
+        "median": 56.118,
+        "min": 55.991,
+        "max": 56.826
+      },
+      "run": {
+        "n": 3,
+        "median": 55.387,
+        "min": 55.333,
+        "max": 56.144
+      },
+      "ovh_job": {
+        "n": 3,
+        "median": 0.1107,
+        "min": 0.1104,
+        "max": 0.1121
+      },
+      "ovh_run_job": {
+        "n": 3,
+        "median": 0.1092,
+        "min": 0.1091,
+        "max": 0.1107
+      },
+      "rate": {
+        "n": 3,
+        "median": 8.87,
+        "min": 8.75,
+        "max": 8.89
+      },
+      "e2e_rate": {
+        "n": 3,
+        "median": 8.55,
+        "min": 8.44,
+        "max": 8.56
+      },
+      "peak": {
+        "n": 3,
+        "median": 13,
+        "min": 9,
+        "max": 18
+      },
+      "meanconc": {
+        "n": 3,
+        "median": 0.452,
+        "min": 0.443,
+        "max": 0.494
+      },
+      "jobdur": {
+        "n": 3,
+        "median": 0.0519,
+        "min": 0.0519,
+        "max": 0.052
+      },
+      "shards": [
+        500,
+        500,
+        500
+      ],
+      "agg": [
+        1,
+        1,
+        1
+      ],
+      "rc": [
+        0,
+        0,
+        0
+      ],
+      "correct": [
+        true,
+        true,
+        true
+      ],
+      "finished": [
+        true,
+        true,
+        true
+      ],
+      "falsefail": [
+        0,
+        0,
+        0
+      ],
+      "loadavg_before": [
+        [
+          "5.24",
+          "4.76",
+          "4.45"
+        ],
+        [
+          "5.06",
+          "4.77",
+          "4.47"
+        ],
+        [
+          "4.66",
+          "4.70",
+          "4.46"
+        ]
+      ],
+      "loadavg_after": [
+        [
+          "5.06",
+          "4.77",
+          "4.47"
+        ],
+        [
+          "4.66",
+          "4.70",
+          "4.46"
+        ],
+        [
+          "4.51",
+          "4.66",
+          "4.46"
+        ]
+      ],
+      "tags": [
+        "B_n500_r1",
+        "B_n500_r2",
+        "B_n500_r3"
+      ],
+      "logs": [
+        "/home/pwwang/bench_abl/out/logs/B_n500_r1.log",
+        "/home/pwwang/bench_abl/out/logs/B_n500_r2.log",
+        "/home/pwwang/bench_abl/out/logs/B_n500_r3.log"
+      ],
+      "markers": [
+        "/home/pwwang/bench_abl/out/markers/marker_B_n500_r1.log",
+        "/home/pwwang/bench_abl/out/markers/marker_B_n500_r2.log",
+        "/home/pwwang/bench_abl/out/markers/marker_B_n500_r3.log"
+      ]
+    },
+    "C_pf|N=100": {
+      "arm": "C_pf",
+      "n": 100,
+      "reps": 3,
+      "wall": {
+        "n": 3,
+        "median": 13.179,
+        "min": 13.089,
+        "max": 14.242
+      },
+      "run": {
+        "n": 3,
+        "median": 12.553,
+        "min": 12.405,
+        "max": 13.468
+      },
+      "ovh_job": {
+        "n": 3,
+        "median": 0.1302,
+        "min": 0.1293,
+        "max": 0.1409
+      },
+      "ovh_run_job": {
+        "n": 3,
+        "median": 0.124,
+        "min": 0.1225,
+        "max": 0.1331
+      },
+      "rate": {
+        "n": 3,
+        "median": 12.39,
+        "min": 12.37,
+        "max": 12.67
+      },
+      "e2e_rate": {
+        "n": 3,
+        "median": 9.86,
+        "min": 9.0,
+        "max": 10.01
+      },
+      "peak": {
+        "n": 3,
+        "median": 5,
+        "min": 5,
+        "max": 7
+      },
+      "meanconc": {
+        "n": 3,
+        "median": 0.513,
+        "min": 0.476,
+        "max": 0.521
+      },
+      "jobdur": {
+        "n": 3,
+        "median": 0.052,
+        "min": 0.0519,
+        "max": 0.052
+      },
+      "shards": [
+        100,
+        100,
+        100
+      ],
+      "agg": [
+        1,
+        1,
+        1
+      ],
+      "rc": [
+        0,
+        0,
+        0
+      ],
+      "correct": [
+        true,
+        true,
+        true
+      ],
+      "finished": [
+        true,
+        true,
+        true
+      ],
+      "falsefail": [
+        0,
+        0,
+        0
+      ],
+      "loadavg_before": [
+        [
+          "4.33",
+          "4.60",
+          "4.44"
+        ],
+        [
+          "4.33",
+          "4.59",
+          "4.44"
+        ],
+        [
+          "4.35",
+          "4.58",
+          "4.44"
+        ]
+      ],
+      "loadavg_after": [
+        [
+          "4.33",
+          "4.59",
+          "4.44"
+        ],
+        [
+          "4.35",
+          "4.58",
+          "4.44"
+        ],
+        [
+          "4.34",
+          "4.57",
+          "4.44"
+        ]
+      ],
+      "tags": [
+        "C_pf_n100_r1",
+        "C_pf_n100_r2",
+        "C_pf_n100_r3"
+      ],
+      "logs": [
+        "/home/pwwang/bench_abl/out/logs/C_pf_n100_r1.log",
+        "/home/pwwang/bench_abl/out/logs/C_pf_n100_r2.log",
+        "/home/pwwang/bench_abl/out/logs/C_pf_n100_r3.log"
+      ],
+      "markers": [
+        "/home/pwwang/bench_abl/out/markers/marker_C_pf_n100_r1.log",
+        "/home/pwwang/bench_abl/out/markers/marker_C_pf_n100_r2.log",
+        "/home/pwwang/bench_abl/out/markers/marker_C_pf_n100_r3.log"
+      ]
+    },
+    "C_poll|N=100": {
+      "arm": "C_poll",
+      "n": 100,
+      "reps": 3,
+      "wall": {
+        "n": 3,
+        "median": 12.035,
+        "min": 11.998,
+        "max": 12.077
+      },
+      "run": {
+        "n": 3,
+        "median": 11.347,
+        "min": 11.334,
+        "max": 11.388
+      },
+      "ovh_job": {
+        "n": 3,
+        "median": 0.1188,
+        "min": 0.1184,
+        "max": 0.1192
+      },
+      "ovh_run_job": {
+        "n": 3,
+        "median": 0.1119,
+        "min": 0.1118,
+        "max": 0.1123
+      },
+      "rate": {
+        "n": 3,
+        "median": 14.35,
+        "min": 10.08,
+        "max": 14.44
+      },
+      "e2e_rate": {
+        "n": 3,
+        "median": 11.07,
+        "min": 8.33,
+        "max": 11.11
+      },
+      "peak": {
+        "n": 3,
+        "median": 6,
+        "min": 6,
+        "max": 8
+      },
+      "meanconc": {
+        "n": 3,
+        "median": 0.58,
+        "min": 0.434,
+        "max": 0.599
+      },
+      "jobdur": {
+        "n": 3,
+        "median": 0.052,
+        "min": 0.052,
+        "max": 0.052
+      },
+      "shards": [
+        100,
+        100,
+        100
+      ],
+      "agg": [
+        1,
+        1,
+        1
+      ],
+      "rc": [
+        0,
+        0,
+        0
+      ],
+      "correct": [
+        true,
+        true,
+        true
+      ],
+      "finished": [
+        true,
+        true,
+        true
+      ],
+      "falsefail": [
+        0,
+        0,
+        0
+      ],
+      "loadavg_before": [
+        [
+          "4.34",
+          "4.57",
+          "4.44"
+        ],
+        [
+          "4.41",
+          "4.57",
+          "4.45"
+        ],
+        [
+          "4.88",
+          "4.67",
+          "4.48"
+        ]
+      ],
+      "loadavg_after": [
+        [
+          "4.41",
+          "4.57",
+          "4.45"
+        ],
+        [
+          "4.88",
+          "4.67",
+          "4.48"
+        ],
+        [
+          "4.91",
+          "4.68",
+          "4.49"
+        ]
+      ],
+      "tags": [
+        "C_poll_n100_r1",
+        "C_poll_n100_r2",
+        "C_poll_n100_r3"
+      ],
+      "logs": [
+        "/home/pwwang/bench_abl/out/logs/C_poll_n100_r1.log",
+        "/home/pwwang/bench_abl/out/logs/C_poll_n100_r2.log",
+        "/home/pwwang/bench_abl/out/logs/C_poll_n100_r3.log"
+      ],
+      "markers": [
+        "/home/pwwang/bench_abl/out/markers/marker_C_poll_n100_r1.log",
+        "/home/pwwang/bench_abl/out/markers/marker_C_poll_n100_r2.log",
+        "/home/pwwang/bench_abl/out/markers/marker_C_poll_n100_r3.log"
+      ]
+    },
+    "C_kf|N=100": {
+      "arm": "C_kf",
+      "n": 100,
+      "reps": 3,
+      "wall": {
+        "n": 3,
+        "median": 16.073,
+        "min": 15.984,
+        "max": 16.345
+      },
+      "run": {
+        "n": 3,
+        "median": 15.463,
+        "min": 15.35,
+        "max": 15.638
+      },
+      "ovh_job": {
+        "n": 3,
+        "median": 0.1592,
+        "min": 0.1583,
+        "max": 0.1619
+      },
+      "ovh_run_job": {
+        "n": 3,
+        "median": 0.1531,
+        "min": 0.1519,
+        "max": 0.1548
+      },
+      "rate": {
+        "n": 3,
+        "median": 10.31,
+        "min": 10.29,
+        "max": 10.34
+      },
+      "e2e_rate": {
+        "n": 3,
+        "median": 6.67,
+        "min": 6.6,
+        "max": 8.21
+      },
+      "peak": {
+        "n": 3,
+        "median": 11,
+        "min": 6,
+        "max": 12
+      },
+      "meanconc": {
+        "n": 3,
+        "median": 0.386,
+        "min": 0.343,
+        "max": 0.428
+      },
+      "jobdur": {
+        "n": 3,
+        "median": 0.052,
+        "min": 0.052,
+        "max": 0.052
+      },
+      "shards": [
+        100,
+        100,
+        100
+      ],
+      "agg": [
+        1,
+        1,
+        1
+      ],
+      "rc": [
+        0,
+        0,
+        0
+      ],
+      "correct": [
+        true,
+        true,
+        true
+      ],
+      "finished": [
+        true,
+        true,
+        true
+      ],
+      "falsefail": [
+        0,
+        0,
+        0
+      ],
+      "loadavg_before": [
+        [
+          "4.91",
+          "4.68",
+          "4.49"
+        ],
+        [
+          "4.86",
+          "4.69",
+          "4.49"
+        ],
+        [
+          "5.04",
+          "4.74",
+          "4.51"
+        ]
+      ],
+      "loadavg_after": [
+        [
+          "4.86",
+          "4.69",
+          "4.49"
+        ],
+        [
+          "5.04",
+          "4.74",
+          "4.51"
+        ],
+        [
+          "4.95",
+          "4.73",
+          "4.51"
+        ]
+      ],
+      "tags": [
+        "C_kf_n100_r1",
+        "C_kf_n100_r2",
+        "C_kf_n100_r3"
+      ],
+      "logs": [
+        "/home/pwwang/bench_abl/out/logs/C_kf_n100_r1.log",
+        "/home/pwwang/bench_abl/out/logs/C_kf_n100_r2.log",
+        "/home/pwwang/bench_abl/out/logs/C_kf_n100_r3.log"
+      ],
+      "markers": [
+        "/home/pwwang/bench_abl/out/markers/marker_C_kf_n100_r1.log",
+        "/home/pwwang/bench_abl/out/markers/marker_C_kf_n100_r2.log",
+        "/home/pwwang/bench_abl/out/markers/marker_C_kf_n100_r3.log"
+      ]
+    },
+    "C_batch|N=100": {
+      "arm": "C_batch",
+      "n": 100,
+      "reps": 3,
+      "wall": {
+        "n": 3,
+        "median": 15.746,
+        "min": 15.296,
+        "max": 15.769
+      },
+      "run": {
+        "n": 3,
+        "median": 15.093,
+        "min": 14.666,
+        "max": 15.146
+      },
+      "ovh_job": {
+        "n": 3,
+        "median": 0.1559,
+        "min": 0.1514,
+        "max": 0.1561
+      },
+      "ovh_run_job": {
+        "n": 3,
+        "median": 0.1494,
+        "min": 0.1451,
+        "max": 0.1499
+      },
+      "rate": {
+        "n": 3,
+        "median": 9.91,
+        "min": 9.87,
+        "max": 10.02
+      },
+      "e2e_rate": {
+        "n": 3,
+        "median": 7.9,
+        "min": 6.44,
+        "max": 8.23
+      },
+      "peak": {
+        "n": 3,
+        "median": 6,
+        "min": 6,
+        "max": 26
+      },
+      "meanconc": {
+        "n": 3,
+        "median": 0.413,
+        "min": 0.336,
+        "max": 0.428
+      },
+      "jobdur": {
+        "n": 3,
+        "median": 0.052,
+        "min": 0.0519,
+        "max": 0.052
+      },
+      "shards": [
+        100,
+        100,
+        100
+      ],
+      "agg": [
+        1,
+        1,
+        1
+      ],
+      "rc": [
+        0,
+        0,
+        0
+      ],
+      "correct": [
+        true,
+        true,
+        true
+      ],
+      "finished": [
+        true,
+        true,
+        true
+      ],
+      "falsefail": [
+        0,
+        0,
+        0
+      ],
+      "loadavg_before": [
+        [
+          "4.95",
+          "4.73",
+          "4.51"
+        ],
+        [
+          "4.74",
+          "4.70",
+          "4.50"
+        ],
+        [
+          "4.66",
+          "4.68",
+          "4.50"
+        ]
+      ],
+      "loadavg_after": [
+        [
+          "4.74",
+          "4.70",
+          "4.50"
+        ],
+        [
+          "4.66",
+          "4.68",
+          "4.50"
+        ],
+        [
+          "4.53",
+          "4.65",
+          "4.50"
+        ]
+      ],
+      "tags": [
+        "C_batch_n100_r1",
+        "C_batch_n100_r2",
+        "C_batch_n100_r3"
+      ],
+      "logs": [
+        "/home/pwwang/bench_abl/out/logs/C_batch_n100_r1.log",
+        "/home/pwwang/bench_abl/out/logs/C_batch_n100_r2.log",
+        "/home/pwwang/bench_abl/out/logs/C_batch_n100_r3.log"
+      ],
+      "markers": [
+        "/home/pwwang/bench_abl/out/markers/marker_C_batch_n100_r1.log",
+        "/home/pwwang/bench_abl/out/markers/marker_C_batch_n100_r2.log",
+        "/home/pwwang/bench_abl/out/markers/marker_C_batch_n100_r3.log"
+      ]
+    },
+    "C_pf_poll|N=100": {
+      "arm": "C_pf_poll",
+      "n": 100,
+      "reps": 3,
+      "wall": {
+        "n": 3,
+        "median": 11.501,
+        "min": 11.39,
+        "max": 11.724
+      },
+      "run": {
+        "n": 3,
+        "median": 10.869,
+        "min": 10.738,
+        "max": 11.082
+      },
+      "ovh_job": {
+        "n": 3,
+        "median": 0.1135,
+        "min": 0.1123,
+        "max": 0.1157
+      },
+      "ovh_run_job": {
+        "n": 3,
+        "median": 0.1071,
+        "min": 0.1058,
+        "max": 0.1093
+      },
+      "rate": {
+        "n": 3,
+        "median": 15.39,
+        "min": 10.68,
+        "max": 15.6
+      },
+      "e2e_rate": {
+        "n": 3,
+        "median": 11.39,
+        "min": 8.8,
+        "max": 11.68
+      },
+      "peak": {
+        "n": 3,
+        "median": 6,
+        "min": 5,
+        "max": 7
+      },
+      "meanconc": {
+        "n": 3,
+        "median": 0.631,
+        "min": 0.474,
+        "max": 0.688
+      },
+      "jobdur": {
+        "n": 3,
+        "median": 0.0521,
+        "min": 0.052,
+        "max": 0.0521
+      },
+      "shards": [
+        100,
+        100,
+        100
+      ],
+      "agg": [
+        1,
+        1,
+        1
+      ],
+      "rc": [
+        0,
+        0,
+        0
+      ],
+      "correct": [
+        true,
+        true,
+        true
+      ],
+      "finished": [
+        true,
+        true,
+        true
+      ],
+      "falsefail": [
+        0,
+        0,
+        0
+      ],
+      "loadavg_before": [
+        [
+          "4.53",
+          "4.65",
+          "4.50"
+        ],
+        [
+          "4.75",
+          "4.69",
+          "4.51"
+        ],
+        [
+          "5.02",
+          "4.75",
+          "4.53"
+        ]
+      ],
+      "loadavg_after": [
+        [
+          "4.75",
+          "4.69",
+          "4.51"
+        ],
+        [
+          "5.02",
+          "4.75",
+          "4.53"
+        ],
+        [
+          "5.24",
+          "4.81",
+          "4.56"
+        ]
+      ],
+      "tags": [
+        "C_pf_poll_n100_r1",
+        "C_pf_poll_n100_r2",
+        "C_pf_poll_n100_r3"
+      ],
+      "logs": [
+        "/home/pwwang/bench_abl/out/logs/C_pf_poll_n100_r1.log",
+        "/home/pwwang/bench_abl/out/logs/C_pf_poll_n100_r2.log",
+        "/home/pwwang/bench_abl/out/logs/C_pf_poll_n100_r3.log"
+      ],
+      "markers": [
+        "/home/pwwang/bench_abl/out/markers/marker_C_pf_poll_n100_r1.log",
+        "/home/pwwang/bench_abl/out/markers/marker_C_pf_poll_n100_r2.log",
+        "/home/pwwang/bench_abl/out/markers/marker_C_pf_poll_n100_r3.log"
+      ]
+    },
+    "F|N=100": {
+      "arm": "F",
+      "n": 100,
+      "reps": 3,
+      "wall": {
+        "n": 3,
+        "median": 6.763,
+        "min": 6.018,
+        "max": 6.927
+      },
+      "run": {
+        "n": 3,
+        "median": 6.12,
+        "min": 5.394,
+        "max": 6.256
+      },
+      "ovh_job": {
+        "n": 3,
+        "median": 0.0661,
+        "min": 0.0586,
+        "max": 0.0677
+      },
+      "ovh_run_job": {
+        "n": 3,
+        "median": 0.0596,
+        "min": 0.0524,
+        "max": 0.061
+      },
+      "rate": {
+        "n": 3,
+        "median": 24.27,
+        "min": 24.23,
+        "max": 27.49
+      },
+      "e2e_rate": {
+        "n": 3,
+        "median": 24.21,
+        "min": 20.36,
+        "max": 27.36
+      },
+      "peak": {
+        "n": 3,
+        "median": 7,
+        "min": 7,
+        "max": 7
+      },
+      "meanconc": {
+        "n": 3,
+        "median": 1.262,
+        "min": 1.218,
+        "max": 1.425
+      },
+      "jobdur": {
+        "n": 3,
+        "median": 0.052,
+        "min": 0.052,
+        "max": 0.0521
+      },
+      "shards": [
+        100,
+        100,
+        100
+      ],
+      "agg": [
+        0,
+        0,
+        0
+      ],
+      "rc": [
+        0,
+        0,
+        0
+      ],
+      "correct": [
+        false,
+        false,
+        false
+      ],
+      "finished": [
+        false,
+        false,
+        false
+      ],
+      "falsefail": [
+        100,
+        99,
+        100
+      ],
+      "loadavg_before": [
+        [
+          "5.24",
+          "4.81",
+          "4.56"
+        ],
+        [
+          "7.48",
+          "5.32",
+          "4.72"
+        ],
+        [
+          "7.60",
+          "5.38",
+          "4.75"
+        ]
+      ],
+      "loadavg_after": [
+        [
+          "7.48",
+          "5.32",
+          "4.72"
+        ],
+        [
+          "7.60",
+          "5.38",
+          "4.75"
+        ],
+        [
+          "7.39",
+          "5.38",
+          "4.75"
+        ]
+      ],
+      "tags": [
+        "F_n100_r1",
+        "F_n100_r2",
+        "F_n100_r3"
+      ],
+      "logs": [
+        "/home/pwwang/bench_abl/out/logs/F_n100_r1.log",
+        "/home/pwwang/bench_abl/out/logs/F_n100_r2.log",
+        "/home/pwwang/bench_abl/out/logs/F_n100_r3.log"
+      ],
+      "markers": [
+        "/home/pwwang/bench_abl/out/markers/marker_F_n100_r1.log",
+        "/home/pwwang/bench_abl/out/markers/marker_F_n100_r2.log",
+        "/home/pwwang/bench_abl/out/markers/marker_F_n100_r3.log"
+      ]
+    },
+    "E_all|N=100": {
+      "arm": "E_all",
+      "n": 100,
+      "reps": 3,
+      "wall": {
+        "n": 3,
+        "median": 2.957,
+        "min": 2.945,
+        "max": 3.1
+      },
+      "run": {
+        "n": 3,
+        "median": 2.305,
+        "min": 2.303,
+        "max": 2.478
+      },
+      "ovh_job": {
+        "n": 3,
+        "median": 0.028,
+        "min": 0.0279,
+        "max": 0.0294
+      },
+      "ovh_run_job": {
+        "n": 3,
+        "median": 0.0215,
+        "min": 0.0215,
+        "max": 0.0232
+      },
+      "rate": {
+        "n": 3,
+        "median": 54.4,
+        "min": 52.99,
+        "max": 55.88
+      },
+      "e2e_rate": {
+        "n": 3,
+        "median": 53.42,
+        "min": 49.08,
+        "max": 54.83
+      },
+      "peak": {
+        "n": 3,
+        "median": 5,
+        "min": 5,
+        "max": 5
+      },
+      "meanconc": {
+        "n": 3,
+        "median": 2.792,
+        "min": 2.769,
+        "max": 2.857
+      },
+      "jobdur": {
+        "n": 3,
+        "median": 0.052,
+        "min": 0.052,
+        "max": 0.052
+      },
+      "shards": [
+        99,
+        100,
+        100
+      ],
+      "agg": [
+        0,
+        1,
+        0
+      ],
+      "rc": [
+        0,
+        0,
+        0
+      ],
+      "correct": [
+        false,
+        true,
+        false
+      ],
+      "finished": [
+        false,
+        true,
+        false
+      ],
+      "falsefail": [
+        0,
+        0,
+        1
+      ],
+      "loadavg_before": [
+        [
+          "7.39",
+          "5.38",
+          "4.75"
+        ],
+        [
+          "7.20",
+          "5.37",
+          "4.75"
+        ],
+        [
+          "7.42",
+          "5.45",
+          "4.78"
+        ]
+      ],
+      "loadavg_after": [
+        [
+          "7.20",
+          "5.37",
+          "4.75"
+        ],
+        [
+          "7.42",
+          "5.45",
+          "4.78"
+        ],
+        [
+          "7.42",
+          "5.45",
+          "4.78"
+        ]
+      ],
+      "tags": [
+        "E_all_n100_r1",
+        "E_all_n100_r2",
+        "E_all_n100_r3"
+      ],
+      "logs": [
+        "/home/pwwang/bench_abl/out/logs/E_all_n100_r1.log",
+        "/home/pwwang/bench_abl/out/logs/E_all_n100_r2.log",
+        "/home/pwwang/bench_abl/out/logs/E_all_n100_r3.log"
+      ],
+      "markers": [
+        "/home/pwwang/bench_abl/out/markers/marker_E_all_n100_r1.log",
+        "/home/pwwang/bench_abl/out/markers/marker_E_all_n100_r2.log",
+        "/home/pwwang/bench_abl/out/markers/marker_E_all_n100_r3.log"
+      ]
+    },
+    "C_pf_poll|N=500": {
+      "arm": "C_pf_poll",
+      "n": 500,
+      "reps": 3,
+      "wall": {
+        "n": 3,
+        "median": 38.31,
+        "min": 38.164,
+        "max": 39.121
+      },
+      "run": {
+        "n": 3,
+        "median": 37.619,
+        "min": 37.45,
+        "max": 38.436
+      },
+      "ovh_job": {
+        "n": 3,
+        "median": 0.0751,
+        "min": 0.0748,
+        "max": 0.0767
+      },
+      "ovh_run_job": {
+        "n": 3,
+        "median": 0.0737,
+        "min": 0.0733,
+        "max": 0.0753
+      },
+      "rate": {
+        "n": 3,
+        "median": 14.06,
+        "min": 14.06,
+        "max": 14.27
+      },
+      "e2e_rate": {
+        "n": 3,
+        "median": 13.29,
+        "min": 12.9,
+        "max": 13.3
+      },
+      "peak": {
+        "n": 3,
+        "median": 13,
+        "min": 8,
+        "max": 15
+      },
+      "meanconc": {
+        "n": 3,
+        "median": 0.782,
+        "min": 0.752,
+        "max": 0.98
+      },
+      "jobdur": {
+        "n": 3,
+        "median": 0.0521,
+        "min": 0.0521,
+        "max": 0.0521
+      },
+      "shards": [
+        500,
+        500,
+        500
+      ],
+      "agg": [
+        1,
+        1,
+        1
+      ],
+      "rc": [
+        0,
+        0,
+        0
+      ],
+      "correct": [
+        true,
+        true,
+        true
+      ],
+      "finished": [
+        true,
+        true,
+        true
+      ],
+      "falsefail": [
+        0,
+        0,
+        0
+      ],
+      "loadavg_before": [
+        [
+          "6.51",
+          "5.37",
+          "4.77"
+        ],
+        [
+          "6.11",
+          "5.40",
+          "4.81"
+        ],
+        [
+          "5.83",
+          "5.42",
+          "4.84"
+        ]
+      ],
+      "loadavg_after": [
+        [
+          "6.11",
+          "5.40",
+          "4.81"
+        ],
+        [
+          "5.83",
+          "5.42",
+          "4.84"
+        ],
+        [
+          "5.90",
+          "5.48",
+          "4.88"
+        ]
+      ],
+      "tags": [
+        "C_pf_poll_n500_r1",
+        "C_pf_poll_n500_r2",
+        "C_pf_poll_n500_r3"
+      ],
+      "logs": [
+        "/home/pwwang/bench_abl/out/logs/C_pf_poll_n500_r1.log",
+        "/home/pwwang/bench_abl/out/logs/C_pf_poll_n500_r2.log",
+        "/home/pwwang/bench_abl/out/logs/C_pf_poll_n500_r3.log"
+      ],
+      "markers": [
+        "/home/pwwang/bench_abl/out/markers/marker_C_pf_poll_n500_r1.log",
+        "/home/pwwang/bench_abl/out/markers/marker_C_pf_poll_n500_r2.log",
+        "/home/pwwang/bench_abl/out/markers/marker_C_pf_poll_n500_r3.log"
+      ]
+    }
+  },
+  "marginal_per_job_sec_from_N100_to_N500": {
+    "B": 0.09919,
+    "A": 0.10187,
+    "C_pf_poll": 0.06702
+  },
+  "gap_closed_fraction_overhead_per_job": {
+    "B|N=100": -0.1053,
+    "B|N=500": -0.0051,
+    "C_pf|N=100": 0.1608,
+    "C_poll|N=100": 0.2539,
+    "C_kf|N=100": -0.0759,
+    "C_batch|N=100": -0.049,
+    "C_pf_poll|N=100": 0.2971,
+    "F|N=100": 0.6841,
+    "E_all|N=100": 0.9951,
+    "C_pf_poll|N=500": 0.3611
+  },
+  "gap_closed_fraction_wall": {
+    "B|N=100": -0.1053,
+    "B|N=500": -0.0046,
+    "C_pf|N=100": 0.1609,
+    "C_poll|N=100": 0.2542,
+    "C_kf|N=100": -0.0753,
+    "C_batch|N=100": -0.0486,
+    "C_pf_poll|N=100": 0.2978,
+    "F|N=100": 0.6845,
+    "E_all|N=100": 0.9952,
+    "C_pf_poll|N=500": 0.3618
+  },
+  "snakemake_reference_from_bench_RESULTS_md": {
+    "100": {
+      "wall_median": 2.898,
+      "wall_min": 2.849,
+      "wall_max": 2.899,
+      "overhead_per_job_median": 0.0274,
+      "rate": 175.4
+    },
+    "500": {
+      "wall_median": 7.284,
+      "wall_min": 7.189,
+      "wall_max": 7.441,
+      "overhead_per_job_median": 0.013,
+      "rate": null
+    }
+  },
+  "baseline_reference_from_bench_RESULTS_md": {
+    "N=100": {
+      "wall_median": 15.081,
+      "overhead_per_job_median": 0.1492,
+      "wall_min": 15.018,
+      "wall_max": 15.117
+    },
+    "N=500": {
+      "wall_median": 55.036,
+      "overhead_per_job_median": 0.1085,
+      "wall_min": 54.666,
+      "wall_max": 55.438
+    }
+  },
+  "driver_source_integrity": {
+    "time_records_A-B.json": {
+      "source_unchanged": true,
+      "driver_total_sec": 431.5,
+      "n_records": 12,
+      "tree_sha256": {
+        "pipen": "ee7c6459f2a6438e8acf26beac7813fcb83b20e26f7510ca2792e0b694a9d1aa",
+        "xqute": "4e0010c6873f5f0e9dc1ec141f428c4f3f686f46e8ee545ba69c6ec006d20d85"
+      }
+    },
+    "time_records_C_pf-C_poll-C_kf-C_batch-C_pf_poll-F-E_all.json": {
+      "source_unchanged": true,
+      "driver_total_sec": 235.3,
+      "n_records": 21,
+      "tree_sha256": {
+        "pipen": "ee7c6459f2a6438e8acf26beac7813fcb83b20e26f7510ca2792e0b694a9d1aa",
+        "xqute": "4e0010c6873f5f0e9dc1ec141f428c4f3f686f46e8ee545ba69c6ec006d20d85"
+      }
+    },
+    "time_records_C_pf_poll.json": {
+      "source_unchanged": true,
+      "driver_total_sec": 115.6,
+      "n_records": 3,
+      "tree_sha256": {
+        "pipen": "ee7c6459f2a6438e8acf26beac7813fcb83b20e26f7510ca2792e0b694a9d1aa",
+        "xqute": "4e0010c6873f5f0e9dc1ec141f428c4f3f686f46e8ee545ba69c6ec006d20d85"
+      }
+    }
+  },
+  "cpu_probe": {
+    "A": {
+      "real": 16.249,
+      "user": 6.568,
+      "sys": 2.144,
+      "cpu_total": 8.712
+    },
+    "C_poll": {
+      "real": 14.882,
+      "user": 11.851,
+      "sys": 5.588,
+      "cpu_total": 17.439
+    },
+    "C_pf_poll": {
+      "real": 11.616,
+      "user": 11.279,
+      "sys": 5.496,
+      "cpu_total": 16.775
+    }
+  }
+}

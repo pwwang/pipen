@@ -1,0 +1,11 @@
+Requirement already satisfied: pip in /home/pwwang/bench/.venv/lib/python3.12/site-packages (24.0)
+Collecting pip
+  Using cached pip-26.2.1-py3-none-any.whl.metadata (4.6 kB)
+Using cached pip-26.2.1-py3-none-any.whl (1.8 MB)
+Installing collected packages: pip
+  Attempting uninstall: pip
+    Found existing installation: pip 24.0
+    Uninstalling pip-24.0:
+      Successfully uninstalled pip-24.0
+Successfully installed pip-26.2.1
+PIP_UPGRADE_RC=0

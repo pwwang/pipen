@@ -1,0 +1,64 @@
+############ size of the integration surface (the demo package)
+  71 /mnt/f/E/hermes-workspace/pipen/ai_demo/demo_ns/demo_ns/__init__.py
+  20 /mnt/f/E/hermes-workspace/pipen/ai_demo/demo_ns/pyproject.toml
+  37 /mnt/f/E/hermes-workspace/pipen/ai_demo/demo_extra_ns/demo_extra_ns/__init__.py
+  16 /mnt/f/E/hermes-workspace/pipen/ai_demo/demo_extra_ns/pyproject.toml
+ 144 total
+
+############ the single entry-point table that makes a package a namespace
+12:[project.entry-points.pipen_cli_run]
+13-demo_ns = "demo_ns"
+14-
+
+############ raw capture inventory
+total 168
+-rwxrwxrwx 1 pwwang pwwang 17688 Sep 30 21:32 01_install.txt
+-rwxrwxrwx 1 pwwang pwwang 19902 Sep 30 21:35 02_cli.txt
+-rwxrwxrwx 1 pwwang pwwang  6335 Sep 30 21:35 03_mcp_api_probe.txt
+-rwxrwxrwx 1 pwwang pwwang  3794 Sep 30 21:35 04_mcp_signatures.txt
+-rwxrwxrwx 1 pwwang pwwang 31870 Sep 30 21:37 05_mcp_run.txt
+-rwxrwxrwx 1 pwwang pwwang   335 Sep 30 21:36 05a_initialize.json
+-rwxrwxrwx 1 pwwang pwwang  3599 Sep 30 21:36 05b_list_tools.json
+-rwxrwxrwx 1 pwwang pwwang   695 Sep 30 21:36 05c_call_get_namespaces.json
+-rwxrwxrwx 1 pwwang pwwang   853 Sep 30 21:36 05d_call_get_processes.json
+-rwxrwxrwx 1 pwwang pwwang  1785 Sep 30 21:36 05e_call_get_process.json
+-rwxrwxrwx 1 pwwang pwwang   715 Sep 30 21:36 05f_call_get_processes_extra_ns.json
+-rwxrwxrwx 1 pwwang pwwang   315 Sep 30 21:36 05g_call_get_processes_unknown.json
+-rwxrwxrwx 1 pwwang pwwang  5825 Sep 30 21:36 05h_call_run_process.json
+-rwxrwxrwx 1 pwwang pwwang    93 Sep 30 21:36 05i_list_resources.json
+-rwxrwxrwx 1 pwwang pwwang    91 Sep 30 21:36 05j_list_prompts.json
+-rwxrwxrwx 1 pwwang pwwang 26541 Sep 30 21:37 06_mcp_wire_trace.jsonl
+-rwxrwxrwx 1 pwwang pwwang  7131 Sep 30 21:38 07_extra.txt
+-rwxrwxrwx 1 pwwang pwwang  8113 Sep 30 21:38 08_jobscript_biopipen.txt
+-rwxrwxrwx 1 pwwang pwwang   901 Sep 30 21:44 09_workdir_meta.txt
+-rwxrwxrwx 1 pwwang pwwang   133 Sep 30 21:45 10_biopipen.txt
+-rwxrwxrwx 1 pwwang pwwang  5209 Sep 30 21:45 11_jobscript.txt
+-rwxrwxrwx 1 pwwang pwwang   554 Sep 30 21:45 12_inventory.txt
+
+############ workspace inventory
+total 68
+-rwxrwxrwx 1 pwwang pwwang  385 Sep 30 21:32 copy_src.sh
+-rwxrwxrwx 1 pwwang pwwang  557 Sep 30 21:32 copy_src2.sh
+drwxrwxrwx 1 pwwang pwwang 4096 Sep 30 21:34 demo_extra_ns
+drwxrwxrwx 1 pwwang pwwang 4096 Sep 30 21:34 demo_ns
+-rwxrwxrwx 1 pwwang pwwang  644 Sep 30 21:45 inventory.sh
+-rwxrwxrwx 1 pwwang pwwang 5618 Sep 30 21:36 mcp_client_raw.py
+-rwxrwxrwx 1 pwwang pwwang 4036 Sep 30 21:36 mcp_client_sdk.py
+-rwxrwxrwx 1 pwwang pwwang  592 Sep 30 21:29 probe2.sh
+-rwxrwxrwx 1 pwwang pwwang  424 Sep 30 21:33 probe_envs.sh
+-rwxrwxrwx 1 pwwang pwwang 1538 Sep 30 21:35 probe_mcp_api.sh
+-rwxrwxrwx 1 pwwang pwwang 1006 Sep 30 21:35 probe_mcp_sigs.sh
+-rwxrwxrwx 1 pwwang pwwang  633 Sep 30 21:27 probe_plugins.sh
+drwxrwxrwx 1 pwwang pwwang 4096 Sep 30 21:45 raw
+-rwxrwxrwx 1 pwwang pwwang 8702 Sep 30 21:29 raw_probe2.txt
+-rwxrwxrwx 1 pwwang pwwang  302 Sep 30 21:34 run_capture.sh
+drwxrwxrwx 1 pwwang pwwang 4096 Sep 30 21:33 src_ref
+-rwxrwxrwx 1 pwwang pwwang 1560 Sep 30 21:29 step1_install.sh
+-rwxrwxrwx 1 pwwang pwwang 3527 Sep 30 21:34 step234_cli.sh
+-rwxrwxrwx 1 pwwang pwwang 1981 Sep 30 21:38 step46_extra.sh
+-rwxrwxrwx 1 pwwang pwwang 1233 Sep 30 21:44 step4e_jobscript.sh
+-rwxrwxrwx 1 pwwang pwwang 1898 Sep 30 21:36 step5_mcp.sh
+-rwxrwxrwx 1 pwwang pwwang 3274 Sep 30 21:44 step6_biopipen.sh
+-rwxrwxrwx 1 pwwang pwwang 1746 Sep 30 21:38 step6_probe.sh
+-rwxrwxrwx 1 pwwang pwwang 1421 Sep 30 21:39 step6b_probe.sh
+-rwxrwxrwx 1 pwwang pwwang 1591 Sep 30 21:44 step6c_probe.sh

@@ -1,0 +1,274 @@
+### python3 version
+Python 3.12.2
+
+### creating fresh venv at $HOME/aidemo/.venv
+Python 3.12.2
+pip 24.0 from /home/pwwang/aidemo/.venv/lib/python3.12/site-packages/pip (python 3.12)
+
+### pip install (PyPI released versions)
+Collecting pipen==1.2.3
+  Using cached pipen-1.2.3-py3-none-any.whl.metadata (12 kB)
+Collecting pipen-cli-run
+  Using cached pipen_cli_run-1.0.6-py3-none-any.whl.metadata (920 bytes)
+Collecting pipen-annotate
+  Using cached pipen_annotate-1.0.6-py3-none-any.whl.metadata (2.0 kB)
+Collecting pipen-mcp
+  Downloading pipen_mcp-0.1.0-py3-none-any.whl.metadata (4.7 kB)
+Collecting mcp[cli]
+  Downloading mcp-2.2.0-py3-none-any.whl.metadata (7.8 kB)
+Collecting argx<0.5,>=0.4 (from pipen==1.2.3)
+  Using cached argx-0.4.4-py3-none-any.whl.metadata (15 kB)
+Collecting enlighten<2,>=1 (from pipen==1.2.3)
+  Using cached enlighten-1.14.1-py2.py3-none-any.whl.metadata (18 kB)
+Collecting liquidpy<1,>=0.8 (from pipen==1.2.3)
+  Using cached liquidpy-0.10.0-py3-none-any.whl.metadata (4.1 kB)
+Collecting pandas<4,>=2.0 (from pipen==1.2.3)
+  Using cached pandas-3.0.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (79 kB)
+Collecting pipda<1,>=0.13 (from pipen==1.2.3)
+  Using cached pipda-0.14.1-py3-none-any.whl.metadata (5.7 kB)
+Collecting python-simpleconf<1,>=0.9 (from python-simpleconf[toml]<1,>=0.9->pipen==1.2.3)
+  Using cached python_simpleconf-0.9.6-py3-none-any.whl.metadata (12 kB)
+Collecting varname>=1.0 (from pipen==1.2.3)
+  Using cached varname-1.0.0-py3-none-any.whl.metadata (12 kB)
+Collecting xqute<3,>=2.0 (from pipen==1.2.3)
+  Using cached xqute-2.2.0-py3-none-any.whl.metadata (7.3 kB)
+Collecting blessed>=1.17.7 (from enlighten<2,>=1->pipen==1.2.3)
+  Using cached blessed-1.50.0-py3-none-any.whl.metadata (13 kB)
+Collecting prefixed>=0.3.2 (from enlighten<2,>=1->pipen==1.2.3)
+  Using cached prefixed-0.9.0-py2.py3-none-any.whl.metadata (11 kB)
+Collecting jinja2<4,>=3 (from liquidpy<1,>=0.8->pipen==1.2.3)
+  Using cached jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+Collecting MarkupSafe>=2.0 (from jinja2<4,>=3->liquidpy<1,>=0.8->pipen==1.2.3)
+  Using cached markupsafe-3.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.7 kB)
+Collecting numpy>=1.26.0 (from pandas<4,>=2.0->pipen==1.2.3)
+  Using cached numpy-2.5.3-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (6.6 kB)
+Collecting python-dateutil>=2.8.2 (from pandas<4,>=2.0->pipen==1.2.3)
+  Using cached python_dateutil-2.9.0.post0-py2.py3-none-any.whl.metadata (8.4 kB)
+Collecting executing>=2.0 (from pipda<1,>=0.13->pipen==1.2.3)
+  Using cached executing-2.2.1-py2.py3-none-any.whl.metadata (8.9 kB)
+Collecting diot<0.4,>=0.3.3 (from python-simpleconf<1,>=0.9->python-simpleconf[toml]<1,>=0.9->pipen==1.2.3)
+  Using cached diot-0.3.4-py3-none-any.whl.metadata (6.1 kB)
+Collecting panpath<0.5,>=0.4.8 (from python-simpleconf<1,>=0.9->python-simpleconf[toml]<1,>=0.9->pipen==1.2.3)
+  Using cached panpath-0.4.12-py3-none-any.whl.metadata (8.0 kB)
+Collecting inflection>=0.5 (from diot<0.4,>=0.3.3->python-simpleconf<1,>=0.9->python-simpleconf[toml]<1,>=0.9->pipen==1.2.3)
+  Using cached inflection-0.5.1-py2.py3-none-any.whl.metadata (1.7 kB)
+Collecting typing-extensions>=4.0.0 (from panpath<0.5,>=0.4.8->python-simpleconf<1,>=0.9->python-simpleconf[toml]<1,>=0.9->pipen==1.2.3)
+  Using cached typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting rtoml<1,>=0.12 (from python-simpleconf[toml]<1,>=0.9->pipen==1.2.3)
+  Using cached rtoml-0.13.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.1 kB)
+Collecting aiofiles>=23.0.0 (from xqute<3,>=2.0->pipen==1.2.3)
+  Using cached aiofiles-25.1.0-py3-none-any.whl.metadata (6.3 kB)
+Collecting rich>=14 (from xqute<3,>=2.0->pipen==1.2.3)
+  Using cached rich-15.0.0-py3-none-any.whl.metadata (18 kB)
+Collecting simplug>=0.5 (from xqute<3,>=2.0->pipen==1.2.3)
+  Using cached simplug-0.5.7-py3-none-any.whl.metadata (2.4 kB)
+Collecting uvloop>=0 (from xqute<3,>=2.0->pipen==1.2.3)
+  Downloading uvloop-0.23.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (5.1 kB)
+Collecting pipen-args>=1.2 (from pipen-cli-run)
+  Using cached pipen_args-1.3.0-py3-none-any.whl.metadata (3.5 kB)
+Collecting anyio>=4.9 (from mcp[cli])
+  Using cached anyio-4.15.1-py3-none-any.whl.metadata (4.7 kB)
+Collecting httpx2>=2.5.0 (from mcp[cli])
+  Downloading httpx2-2.13.1-py3-none-any.whl.metadata (9.8 kB)
+Collecting jsonschema>=4.20.0 (from mcp[cli])
+  Using cached jsonschema-4.26.0-py3-none-any.whl.metadata (7.6 kB)
+Collecting mcp-types==2.2.0 (from mcp[cli])
+  Downloading mcp_types-2.2.0-py3-none-any.whl.metadata (1.9 kB)
+Collecting opentelemetry-api>=1.28.0 (from mcp[cli])
+  Downloading opentelemetry_api-1.45.0-py3-none-any.whl.metadata (1.4 kB)
+Collecting pydantic>=2.12.0 (from mcp[cli])
+  Using cached pydantic-2.13.5-py3-none-any.whl.metadata (110 kB)
+Collecting pyjwt>=2.10.1 (from pyjwt[crypto]>=2.10.1->mcp[cli])
+  Downloading pyjwt-2.15.1-py3-none-any.whl.metadata (3.5 kB)
+Collecting python-multipart>=0.0.9 (from mcp[cli])
+  Downloading python_multipart-0.0.32-py3-none-any.whl.metadata (2.1 kB)
+Collecting sse-starlette>=3.0.0 (from mcp[cli])
+  Downloading sse_starlette-3.5.0-py3-none-any.whl.metadata (15 kB)
+Collecting starlette>=0.27 (from mcp[cli])
+  Downloading starlette-1.7.0-py3-none-any.whl.metadata (6.6 kB)
+Collecting typing-inspection>=0.4.1 (from mcp[cli])
+  Using cached typing_inspection-0.4.4-py3-none-any.whl.metadata (2.6 kB)
+Collecting uvicorn>=0.31.1 (from mcp[cli])
+  Downloading uvicorn-0.54.0-py3-none-any.whl.metadata (6.6 kB)
+Collecting python-dotenv>=1.0.0 (from mcp[cli])
+  Using cached python_dotenv-1.2.3-py3-none-any.whl.metadata (29 kB)
+Collecting typer>=0.16.0 (from mcp[cli])
+  Using cached typer-0.27.2-py3-none-any.whl.metadata (16 kB)
+Collecting idna>=2.8 (from anyio>=4.9->mcp[cli])
+  Using cached idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+Collecting wcwidth>=0.8.3 (from blessed>=1.17.7->enlighten<2,>=1->pipen==1.2.3)
+  Using cached wcwidth-0.9.1-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (23 kB)
+Collecting jinxed<3,>=2.1 (from blessed>=1.17.7->enlighten<2,>=1->pipen==1.2.3)
+  Using cached jinxed-2.1.0-py2.py3-none-any.whl.metadata (7.2 kB)
+Collecting httpcore2==2.13.1 (from httpx2>=2.5.0->mcp[cli])
+  Downloading httpcore2-2.13.1-py3-none-any.whl.metadata (26 kB)
+Collecting truststore>=0.10 (from httpx2>=2.5.0->mcp[cli])
+  Using cached truststore-0.10.4-py3-none-any.whl.metadata (4.4 kB)
+Collecting h11>=0.16 (from httpcore2==2.13.1->httpx2>=2.5.0->mcp[cli])
+  Using cached h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+Collecting attrs>=22.2.0 (from jsonschema>=4.20.0->mcp[cli])
+  Using cached attrs-26.1.0-py3-none-any.whl.metadata (8.8 kB)
+Collecting jsonschema-specifications>=2023.03.6 (from jsonschema>=4.20.0->mcp[cli])
+  Using cached jsonschema_specifications-2025.9.1-py3-none-any.whl.metadata (2.9 kB)
+Collecting referencing>=0.28.4 (from jsonschema>=4.20.0->mcp[cli])
+  Using cached referencing-0.37.0-py3-none-any.whl.metadata (2.8 kB)
+Collecting rpds-py>=0.25.0 (from jsonschema>=4.20.0->mcp[cli])
+  Using cached rpds_py-2026.6.3-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.1 kB)
+Collecting annotated-types>=0.6.0 (from pydantic>=2.12.0->mcp[cli])
+  Using cached annotated_types-0.8.0-py3-none-any.whl.metadata (15 kB)
+Collecting pydantic-core==2.46.5 (from pydantic>=2.12.0->mcp[cli])
+  Using cached pydantic_core-2.46.5-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.6 kB)
+Collecting cryptography>=3.4.0 (from pyjwt[crypto]>=2.10.1->mcp[cli])
+  Downloading cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl.metadata (4.4 kB)
+Collecting cffi>=2.0.0 (from cryptography>=3.4.0->pyjwt[crypto]>=2.10.1->mcp[cli])
+  Downloading cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (2.5 kB)
+Collecting pycparser (from cffi>=2.0.0->cryptography>=3.4.0->pyjwt[crypto]>=2.10.1->mcp[cli])
+  Downloading pycparser-3.0-py3-none-any.whl.metadata (8.2 kB)
+Collecting six>=1.5 (from python-dateutil>=2.8.2->pandas<4,>=2.0->pipen==1.2.3)
+  Using cached six-1.17.0-py2.py3-none-any.whl.metadata (1.7 kB)
+Collecting markdown-it-py>=2.2.0 (from rich>=14->xqute<3,>=2.0->pipen==1.2.3)
+  Using cached markdown_it_py-4.2.0-py3-none-any.whl.metadata (7.4 kB)
+Collecting pygments<3.0.0,>=2.13.0 (from rich>=14->xqute<3,>=2.0->pipen==1.2.3)
+  Using cached pygments-2.21.0-py3-none-any.whl.metadata (2.5 kB)
+Collecting mdurl~=0.1 (from markdown-it-py>=2.2.0->rich>=14->xqute<3,>=2.0->pipen==1.2.3)
+  Using cached mdurl-0.1.2-py3-none-any.whl.metadata (1.6 kB)
+Collecting shellingham>=1.3.0 (from typer>=0.16.0->mcp[cli])
+  Using cached shellingham-1.5.4-py2.py3-none-any.whl.metadata (3.5 kB)
+Collecting annotated-doc>=0.0.2 (from typer>=0.16.0->mcp[cli])
+  Using cached annotated_doc-0.0.5-py3-none-any.whl.metadata (6.5 kB)
+Collecting click>=7.0 (from uvicorn>=0.31.1->mcp[cli])
+  Using cached click-8.5.0-py3-none-any.whl.metadata (2.6 kB)
+Using cached pipen-1.2.3-py3-none-any.whl (59 kB)
+Using cached argx-0.4.4-py3-none-any.whl (17 kB)
+Using cached enlighten-1.14.1-py2.py3-none-any.whl (42 kB)
+Using cached liquidpy-0.10.0-py3-none-any.whl (33 kB)
+Using cached jinja2-3.1.6-py3-none-any.whl (134 kB)
+Using cached pandas-3.0.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (10.8 MB)
+Using cached pipda-0.14.1-py3-none-any.whl (21 kB)
+Using cached python_simpleconf-0.9.6-py3-none-any.whl (20 kB)
+Using cached diot-0.3.4-py3-none-any.whl (12 kB)
+Using cached panpath-0.4.12-py3-none-any.whl (64 kB)
+Using cached rtoml-0.13.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (346 kB)
+Using cached xqute-2.2.0-py3-none-any.whl (47 kB)
+Using cached pipen_cli_run-1.0.6-py3-none-any.whl (3.8 kB)
+Using cached pipen_annotate-1.0.6-py3-none-any.whl (10 kB)
+Downloading pipen_mcp-0.1.0-py3-none-any.whl (9.0 kB)
+Downloading mcp-2.2.0-py3-none-any.whl (365 kB)
+Downloading mcp_types-2.2.0-py3-none-any.whl (69 kB)
+Using cached aiofiles-25.1.0-py3-none-any.whl (14 kB)
+Using cached anyio-4.15.1-py3-none-any.whl (132 kB)
+Using cached blessed-1.50.0-py3-none-any.whl (140 kB)
+Using cached jinxed-2.1.0-py2.py3-none-any.whl (104 kB)
+Using cached executing-2.2.1-py2.py3-none-any.whl (28 kB)
+Downloading httpx2-2.13.1-py3-none-any.whl (95 kB)
+Downloading httpcore2-2.13.1-py3-none-any.whl (83 kB)
+Using cached h11-0.16.0-py3-none-any.whl (37 kB)
+Using cached idna-3.20-py3-none-any.whl (69 kB)
+Using cached inflection-0.5.1-py2.py3-none-any.whl (9.5 kB)
+Using cached jsonschema-4.26.0-py3-none-any.whl (90 kB)
+Using cached attrs-26.1.0-py3-none-any.whl (67 kB)
+Using cached jsonschema_specifications-2025.9.1-py3-none-any.whl (18 kB)
+Using cached markupsafe-3.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (22 kB)
+Using cached numpy-2.5.3-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (16.7 MB)
+Downloading opentelemetry_api-1.45.0-py3-none-any.whl (60 kB)
+Using cached pipen_args-1.3.0-py3-none-any.whl (17 kB)
+Using cached prefixed-0.9.0-py2.py3-none-any.whl (13 kB)
+Using cached pydantic-2.13.5-py3-none-any.whl (472 kB)
+Using cached pydantic_core-2.46.5-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.1 MB)
+Using cached annotated_types-0.8.0-py3-none-any.whl (13 kB)
+Downloading pyjwt-2.15.1-py3-none-any.whl (33 kB)
+Downloading cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl (4.8 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.8/4.8 MB 1.9 MB/s  0:00:02
+Downloading cffi-2.1.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (221 kB)
+Using cached python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+Using cached python_dotenv-1.2.3-py3-none-any.whl (22 kB)
+Downloading python_multipart-0.0.32-py3-none-any.whl (30 kB)
+Using cached referencing-0.37.0-py3-none-any.whl (26 kB)
+Using cached rich-15.0.0-py3-none-any.whl (310 kB)
+Using cached pygments-2.21.0-py3-none-any.whl (1.3 MB)
+Using cached markdown_it_py-4.2.0-py3-none-any.whl (91 kB)
+Using cached mdurl-0.1.2-py3-none-any.whl (10.0 kB)
+Using cached rpds_py-2026.6.3-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (366 kB)
+Using cached simplug-0.5.7-py3-none-any.whl (12 kB)
+Using cached six-1.17.0-py2.py3-none-any.whl (11 kB)
+Downloading sse_starlette-3.5.0-py3-none-any.whl (17 kB)
+Downloading starlette-1.7.0-py3-none-any.whl (78 kB)
+Using cached truststore-0.10.4-py3-none-any.whl (18 kB)
+Using cached typer-0.27.2-py3-none-any.whl (123 kB)
+Using cached annotated_doc-0.0.5-py3-none-any.whl (5.3 kB)
+Using cached shellingham-1.5.4-py2.py3-none-any.whl (9.8 kB)
+Using cached typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+Using cached typing_inspection-0.4.4-py3-none-any.whl (14 kB)
+Downloading uvicorn-0.54.0-py3-none-any.whl (87 kB)
+Using cached click-8.5.0-py3-none-any.whl (125 kB)
+Downloading uvloop-0.23.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (4.5 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.5/4.5 MB 2.5 MB/s  0:00:01
+Using cached varname-1.0.0-py3-none-any.whl (25 kB)
+Using cached wcwidth-0.9.1-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (768 kB)
+Downloading pycparser-3.0-py3-none-any.whl (48 kB)
+Installing collected packages: prefixed, jinxed, wcwidth, uvloop, typing-extensions, truststore, six, shellingham, rtoml, rpds-py, python-multipart, python-dotenv, pyjwt, pygments, pycparser, numpy, mdurl, MarkupSafe, inflection, idna, h11, executing, click, attrs, annotated-types, annotated-doc, aiofiles, varname, uvicorn, typing-inspection, referencing, python-dateutil, pydantic-core, pipda, panpath, opentelemetry-api, markdown-it-py, jinja2, httpcore2, diot, cffi, blessed, anyio, starlette, simplug, rich, python-simpleconf, pydantic, pandas, liquidpy, jsonschema-specifications, httpx2, enlighten, cryptography, typer, sse-starlette, mcp-types, jsonschema, argx, xqute, mcp, pipen, pipen-annotate, pipen-args, pipen-cli-run, pipen-mcp
+
+Successfully installed MarkupSafe-3.0.3 aiofiles-25.1.0 annotated-doc-0.0.5 annotated-types-0.8.0 anyio-4.15.1 argx-0.4.4 attrs-26.1.0 blessed-1.50.0 cffi-2.1.1 click-8.5.0 cryptography-50.0.2 diot-0.3.4 enlighten-1.14.1 executing-2.2.1 h11-0.16.0 httpcore2-2.13.1 httpx2-2.13.1 idna-3.20 inflection-0.5.1 jinja2-3.1.6 jinxed-2.1.0 jsonschema-4.26.0 jsonschema-specifications-2025.9.1 liquidpy-0.10.0 markdown-it-py-4.2.0 mcp-2.2.0 mcp-types-2.2.0 mdurl-0.1.2 numpy-2.5.3 opentelemetry-api-1.45.0 pandas-3.0.6 panpath-0.4.12 pipda-0.14.1 pipen-1.2.3 pipen-annotate-1.0.6 pipen-args-1.3.0 pipen-cli-run-1.0.6 pipen-mcp-0.1.0 prefixed-0.9.0 pycparser-3.0 pydantic-2.13.5 pydantic-core-2.46.5 pygments-2.21.0 pyjwt-2.15.1 python-dateutil-2.9.0.post0 python-dotenv-1.2.3 python-multipart-0.0.32 python-simpleconf-0.9.6 referencing-0.37.0 rich-15.0.0 rpds-py-2026.6.3 rtoml-0.13.0 shellingham-1.5.4 simplug-0.5.7 six-1.17.0 sse-starlette-3.5.0 starlette-1.7.0 truststore-0.10.4 typer-0.27.2 typing-extensions-4.16.0 typing-inspection-0.4.4 uvicorn-0.54.0 uvloop-0.23.0 varname-1.0.0 wcwidth-0.9.1 xqute-2.2.0
+PIP_INSTALL_RC=0
+
+### pip freeze | grep -i pipen
+annotated-doc==0.0.5
+annotated-types==0.8.0
+argx==0.4.4
+mcp-types==2.2.0
+mcp==2.2.0
+pipen-annotate==1.0.6
+pipen-args==1.3.0
+pipen-cli-run==1.0.6
+pipen-mcp==0.1.0
+pipen==1.2.3
+simplug==0.5.7
+xqute==2.2.0
+
+### pip show (versions)
+Name: pipen
+Version: 1.2.3
+Location: /home/pwwang/aidemo/.venv/lib/python3.12/site-packages
+Requires: argx, enlighten, liquidpy, pandas, pipda, python-simpleconf, varname, xqute
+Name: pipen-cli-run
+Version: 1.0.6
+Location: /home/pwwang/aidemo/.venv/lib/python3.12/site-packages
+Requires: pipen-args
+Name: pipen-annotate
+Version: 1.0.6
+Location: /home/pwwang/aidemo/.venv/lib/python3.12/site-packages
+Requires: pipen
+Name: pipen-mcp
+Version: 0.1.0
+Location: /home/pwwang/aidemo/.venv/lib/python3.12/site-packages
+Requires: mcp, pipen-annotate, pipen-cli-run
+Name: mcp
+Version: 2.2.0
+Location: /home/pwwang/aidemo/.venv/lib/python3.12/site-packages
+Requires: anyio, httpx2, jsonschema, mcp-types, opentelemetry-api, pydantic, pyjwt, python-multipart, sse-starlette, starlette, typing-extensions, typing-inspection, uvicorn
+Name: pipen-args
+Version: 1.3.0
+Location: /home/pwwang/aidemo/.venv/lib/python3.12/site-packages
+Requires: pipen-annotate
+Name: xqute
+Version: 2.2.0
+Location: /home/pwwang/aidemo/.venv/lib/python3.12/site-packages
+Requires: aiofiles, argx, panpath, rich, simplug, uvloop
+Name: simplug
+Version: 0.5.7
+Location: /home/pwwang/aidemo/.venv/lib/python3.12/site-packages
+Requires: diot
+Name: argx
+Version: 0.4.4
+Location: /home/pwwang/aidemo/.venv/lib/python3.12/site-packages
+Requires: python-simpleconf
+
+### does released pipen 1.2.3 ship the pipen.cli package?
+pipen.__version__ = 1.2.3
+pipen file        = /home/pwwang/aidemo/.venv/lib/python3.12/site-packages/pipen/__init__.py
+pipen.cli spec    = ModuleSpec(name='pipen.cli', loader=<_frozen_importlib_external.SourceFileLoader object at 0x7e3fa45a3590>, origin='/home/pwwang/aidemo/.venv/lib/python3.12/site-packages/pipen/cli/__init__.py', submodule_search_locations=['/home/pwwang/aidemo/.venv/lib/python3.12/site-packages/pipen/cli'])
+cli dir listing   = ['_hooks.py', '_main.py', '__pycache__', 'profile.py', 'help.py', 'plugins.py', 'version.py', '__init__.py']
+
+### installed pipen console script
+-rwxr-xr-x 1 pwwang pwwang  172 Sep 30 21:32 mcp
+-rwxr-xr-x 1 pwwang pwwang  176 Sep 30 21:32 pipen

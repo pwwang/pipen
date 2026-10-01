@@ -1,0 +1,13 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Unknown namespace 'no_such_ns'. Known namespaces: demo_extra_ns, demo_ns"
+    }
+  ],
+  "structured_content": {
+    "result": "Unknown namespace 'no_such_ns'. Known namespaces: demo_extra_ns, demo_ns"
+  },
+  "is_error": false,
+  "result_type": "complete"
+}

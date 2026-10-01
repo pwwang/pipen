@@ -1,0 +1,1086 @@
+Assuming unrestricted shared filesystem usage.
+
+SNAKEMAKE
+=========
+  Date: 2026-09-30 16:42:35
+  Workflow ID: ce8b3bf7-e87a-4a57-a565-f8a66cf85a0a
+  Platform: Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.39
+  Host: R5440549
+  User: pwwang
+  Snakemake version: 9.27.0
+  Python version: 3.12.2 | packaged by conda-forge | (main, Feb 16 2024, 20:50:58) [GCC 12.3.0]
+  Command: /home/pwwang/bench/smk/bin/snakemake --cores 32 -s /mnt/f/E/hermes-workspace/pipen/bench/smk_dag/Snakefile
+  Snakefile: /mnt/f/E/hermes-workspace/pipen/bench/smk_dag/Snakefile
+  Base directory: /mnt/f/E/hermes-workspace/pipen/bench/smk_dag
+  Run directory: /home/pwwang/bench/smkw_smk_s3_n100_r1
+  Working directory: /home/pwwang/bench/smkw_smk_s3_n100_r1
+  Config file(s): []
+  Config MD5: 99914b932bd37a50b983c5e7c90ae93b
+
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 32
+Rules claiming more threads will be scaled down.
+Job stats:
+job      count
+-----  -------
+shard      100
+agg          1
+all          1
+total      102
+
+Select jobs to execute...
+Execute 32 jobs...
+
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-48.txt
+    jobid: 50
+    reason: Missing output files: shards/shard-48.txt
+    wildcards: i=48
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-21.txt
+    jobid: 23
+    reason: Missing output files: shards/shard-21.txt
+    wildcards: i=21
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-62.txt
+    jobid: 64
+    reason: Missing output files: shards/shard-62.txt
+    wildcards: i=62
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-35.txt
+    jobid: 37
+    reason: Missing output files: shards/shard-35.txt
+    wildcards: i=35
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-91.txt
+    jobid: 93
+    reason: Missing output files: shards/shard-91.txt
+    wildcards: i=91
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-5.txt
+    jobid: 7
+    reason: Missing output files: shards/shard-5.txt
+    wildcards: i=5
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-63.txt
+    jobid: 65
+    reason: Missing output files: shards/shard-63.txt
+    wildcards: i=63
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-36.txt
+    jobid: 38
+    reason: Missing output files: shards/shard-36.txt
+    wildcards: i=36
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-92.txt
+    jobid: 94
+    reason: Missing output files: shards/shard-92.txt
+    wildcards: i=92
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-6.txt
+    jobid: 8
+    reason: Missing output files: shards/shard-6.txt
+    wildcards: i=6
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-64.txt
+    jobid: 66
+    reason: Missing output files: shards/shard-64.txt
+    wildcards: i=64
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-37.txt
+    jobid: 39
+    reason: Missing output files: shards/shard-37.txt
+    wildcards: i=37
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-93.txt
+    jobid: 95
+    reason: Missing output files: shards/shard-93.txt
+    wildcards: i=93
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-7.txt
+    jobid: 9
+    reason: Missing output files: shards/shard-7.txt
+    wildcards: i=7
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-65.txt
+    jobid: 67
+    reason: Missing output files: shards/shard-65.txt
+    wildcards: i=65
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-38.txt
+    jobid: 40
+    reason: Missing output files: shards/shard-38.txt
+    wildcards: i=38
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-94.txt
+    jobid: 96
+    reason: Missing output files: shards/shard-94.txt
+    wildcards: i=94
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-8.txt
+    jobid: 10
+    reason: Missing output files: shards/shard-8.txt
+    wildcards: i=8
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-66.txt
+    jobid: 68
+    reason: Missing output files: shards/shard-66.txt
+    wildcards: i=66
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-39.txt
+    jobid: 41
+    reason: Missing output files: shards/shard-39.txt
+    wildcards: i=39
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-95.txt
+    jobid: 97
+    reason: Missing output files: shards/shard-95.txt
+    wildcards: i=95
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-67.txt
+    jobid: 69
+    reason: Missing output files: shards/shard-67.txt
+    wildcards: i=67
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-11.txt
+    jobid: 13
+    reason: Missing output files: shards/shard-11.txt
+    wildcards: i=11
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-40.txt
+    jobid: 42
+    reason: Missing output files: shards/shard-40.txt
+    wildcards: i=40
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-96.txt
+    jobid: 98
+    reason: Missing output files: shards/shard-96.txt
+    wildcards: i=96
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-70.txt
+    jobid: 72
+    reason: Missing output files: shards/shard-70.txt
+    wildcards: i=70
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-16.txt
+    jobid: 18
+    reason: Missing output files: shards/shard-16.txt
+    wildcards: i=16
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-72.txt
+    jobid: 74
+    reason: Missing output files: shards/shard-72.txt
+    wildcards: i=72
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-45.txt
+    jobid: 47
+    reason: Missing output files: shards/shard-45.txt
+    wildcards: i=45
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-17.txt
+    jobid: 19
+    reason: Missing output files: shards/shard-17.txt
+    wildcards: i=17
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-73.txt
+    jobid: 75
+    reason: Missing output files: shards/shard-73.txt
+    wildcards: i=73
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-74.txt
+    jobid: 76
+    reason: Missing output files: shards/shard-74.txt
+    wildcards: i=74
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 23 (Rule: shard)
+1 of 102 steps (1%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 50 (Rule: shard)
+2 of 102 steps (2%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 64 (Rule: shard)
+3 of 102 steps (3%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 37 (Rule: shard)
+4 of 102 steps (4%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 93 (Rule: shard)
+5 of 102 steps (5%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 7 (Rule: shard)
+6 of 102 steps (6%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 65 (Rule: shard)
+7 of 102 steps (7%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 38 (Rule: shard)
+8 of 102 steps (8%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 94 (Rule: shard)
+9 of 102 steps (9%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 66 (Rule: shard)
+10 of 102 steps (10%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 8 (Rule: shard)
+11 of 102 steps (11%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 39 (Rule: shard)
+12 of 102 steps (12%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 95 (Rule: shard)
+13 of 102 steps (13%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 9 (Rule: shard)
+14 of 102 steps (14%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 67 (Rule: shard)
+15 of 102 steps (15%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 40 (Rule: shard)
+16 of 102 steps (16%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 96 (Rule: shard)
+17 of 102 steps (17%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 10 (Rule: shard)
+18 of 102 steps (18%) done
+Select jobs to execute...
+Execute 18 jobs...
+
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-89.txt
+    jobid: 91
+    reason: Missing output files: shards/shard-89.txt
+    wildcards: i=89
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-99.txt
+    jobid: 101
+    reason: Missing output files: shards/shard-99.txt
+    wildcards: i=99
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-29.txt
+    jobid: 31
+    reason: Missing output files: shards/shard-29.txt
+    wildcards: i=29
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-85.txt
+    jobid: 87
+    reason: Missing output files: shards/shard-85.txt
+    wildcards: i=85
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-22.txt
+    jobid: 24
+    reason: Missing output files: shards/shard-22.txt
+    wildcards: i=22
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-78.txt
+    jobid: 80
+    reason: Missing output files: shards/shard-78.txt
+    wildcards: i=78
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-15.txt
+    jobid: 17
+    reason: Missing output files: shards/shard-15.txt
+    wildcards: i=15
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-71.txt
+    jobid: 73
+    reason: Missing output files: shards/shard-71.txt
+    wildcards: i=71
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-1.txt
+    jobid: 3
+    reason: Missing output files: shards/shard-1.txt
+    wildcards: i=1
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-57.txt
+    jobid: 59
+    reason: Missing output files: shards/shard-57.txt
+    wildcards: i=57
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-50.txt
+    jobid: 52
+    reason: Missing output files: shards/shard-50.txt
+    wildcards: i=50
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-44.txt
+    jobid: 46
+    reason: Missing output files: shards/shard-44.txt
+    wildcards: i=44
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-30.txt
+    jobid: 32
+    reason: Missing output files: shards/shard-30.txt
+    wildcards: i=30
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-86.txt
+    jobid: 88
+    reason: Missing output files: shards/shard-86.txt
+    wildcards: i=86
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-23.txt
+    jobid: 25
+    reason: Missing output files: shards/shard-23.txt
+    wildcards: i=23
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-79.txt
+    jobid: 81
+    reason: Missing output files: shards/shard-79.txt
+    wildcards: i=79
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-2.txt
+    jobid: 4
+    reason: Missing output files: shards/shard-2.txt
+    wildcards: i=2
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-3.txt
+    jobid: 5
+    reason: Missing output files: shards/shard-3.txt
+    wildcards: i=3
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 68 (Rule: shard)
+19 of 102 steps (19%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 41 (Rule: shard)
+20 of 102 steps (20%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 97 (Rule: shard)
+21 of 102 steps (21%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 13 (Rule: shard)
+22 of 102 steps (22%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 69 (Rule: shard)
+23 of 102 steps (23%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 42 (Rule: shard)
+24 of 102 steps (24%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 98 (Rule: shard)
+25 of 102 steps (25%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 72 (Rule: shard)
+26 of 102 steps (25%) done
+Select jobs to execute...
+Execute 8 jobs...
+
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-84.txt
+    jobid: 86
+    reason: Missing output files: shards/shard-84.txt
+    wildcards: i=84
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-77.txt
+    jobid: 79
+    reason: Missing output files: shards/shard-77.txt
+    wildcards: i=77
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-14.txt
+    jobid: 16
+    reason: Missing output files: shards/shard-14.txt
+    wildcards: i=14
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-0.txt
+    jobid: 2
+    reason: Missing output files: shards/shard-0.txt
+    wildcards: i=0
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-56.txt
+    jobid: 58
+    reason: Missing output files: shards/shard-56.txt
+    wildcards: i=56
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-49.txt
+    jobid: 51
+    reason: Missing output files: shards/shard-49.txt
+    wildcards: i=49
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-43.txt
+    jobid: 45
+    reason: Missing output files: shards/shard-43.txt
+    wildcards: i=43
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-24.txt
+    jobid: 26
+    reason: Missing output files: shards/shard-24.txt
+    wildcards: i=24
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 18 (Rule: shard)
+27 of 102 steps (26%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 74 (Rule: shard)
+28 of 102 steps (27%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 47 (Rule: shard)
+29 of 102 steps (28%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 75 (Rule: shard)
+30 of 102 steps (29%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 19 (Rule: shard)
+31 of 102 steps (30%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 76 (Rule: shard)
+32 of 102 steps (31%) done
+Select jobs to execute...
+Execute 6 jobs...
+
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-46.txt
+    jobid: 48
+    reason: Missing output files: shards/shard-46.txt
+    wildcards: i=46
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-98.txt
+    jobid: 100
+    reason: Missing output files: shards/shard-98.txt
+    wildcards: i=98
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-28.txt
+    jobid: 30
+    reason: Missing output files: shards/shard-28.txt
+    wildcards: i=28
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-81.txt
+    jobid: 83
+    reason: Missing output files: shards/shard-81.txt
+    wildcards: i=81
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-58.txt
+    jobid: 60
+    reason: Missing output files: shards/shard-58.txt
+    wildcards: i=58
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-52.txt
+    jobid: 54
+    reason: Missing output files: shards/shard-52.txt
+    wildcards: i=52
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 91 (Rule: shard)
+33 of 102 steps (32%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 101 (Rule: shard)
+34 of 102 steps (33%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 87 (Rule: shard)
+35 of 102 steps (34%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 31 (Rule: shard)
+36 of 102 steps (35%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 80 (Rule: shard)
+37 of 102 steps (36%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 24 (Rule: shard)
+38 of 102 steps (37%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 17 (Rule: shard)
+39 of 102 steps (38%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 73 (Rule: shard)
+40 of 102 steps (39%) done
+Select jobs to execute...
+Execute 8 jobs...
+
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-33.txt
+    jobid: 35
+    reason: Missing output files: shards/shard-33.txt
+    wildcards: i=33
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-55.txt
+    jobid: 57
+    reason: Missing output files: shards/shard-55.txt
+    wildcards: i=55
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-42.txt
+    jobid: 44
+    reason: Missing output files: shards/shard-42.txt
+    wildcards: i=42
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-51.txt
+    jobid: 53
+    reason: Missing output files: shards/shard-51.txt
+    wildcards: i=51
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-31.txt
+    jobid: 33
+    reason: Missing output files: shards/shard-31.txt
+    wildcards: i=31
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-87.txt
+    jobid: 89
+    reason: Missing output files: shards/shard-87.txt
+    wildcards: i=87
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-80.txt
+    jobid: 82
+    reason: Missing output files: shards/shard-80.txt
+    wildcards: i=80
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-88.txt
+    jobid: 90
+    reason: Missing output files: shards/shard-88.txt
+    wildcards: i=88
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 3 (Rule: shard)
+41 of 102 steps (40%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 59 (Rule: shard)
+42 of 102 steps (41%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 52 (Rule: shard)
+43 of 102 steps (42%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 46 (Rule: shard)
+44 of 102 steps (43%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 32 (Rule: shard)
+45 of 102 steps (44%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 88 (Rule: shard)
+46 of 102 steps (45%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 25 (Rule: shard)
+47 of 102 steps (46%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 81 (Rule: shard)
+48 of 102 steps (47%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 4 (Rule: shard)
+49 of 102 steps (48%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 5 (Rule: shard)
+50 of 102 steps (49%) done
+Select jobs to execute...
+Execute 10 jobs...
+
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-26.txt
+    jobid: 28
+    reason: Missing output files: shards/shard-26.txt
+    wildcards: i=26
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-82.txt
+    jobid: 84
+    reason: Missing output files: shards/shard-82.txt
+    wildcards: i=82
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-19.txt
+    jobid: 21
+    reason: Missing output files: shards/shard-19.txt
+    wildcards: i=19
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-75.txt
+    jobid: 77
+    reason: Missing output files: shards/shard-75.txt
+    wildcards: i=75
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-12.txt
+    jobid: 14
+    reason: Missing output files: shards/shard-12.txt
+    wildcards: i=12
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-68.txt
+    jobid: 70
+    reason: Missing output files: shards/shard-68.txt
+    wildcards: i=68
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-4.txt
+    jobid: 6
+    reason: Missing output files: shards/shard-4.txt
+    wildcards: i=4
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-13.txt
+    jobid: 15
+    reason: Missing output files: shards/shard-13.txt
+    wildcards: i=13
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-25.txt
+    jobid: 27
+    reason: Missing output files: shards/shard-25.txt
+    wildcards: i=25
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-18.txt
+    jobid: 20
+    reason: Missing output files: shards/shard-18.txt
+    wildcards: i=18
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 86 (Rule: shard)
+51 of 102 steps (50%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 79 (Rule: shard)
+52 of 102 steps (51%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 16 (Rule: shard)
+53 of 102 steps (52%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 2 (Rule: shard)
+54 of 102 steps (53%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 58 (Rule: shard)
+55 of 102 steps (54%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 51 (Rule: shard)
+56 of 102 steps (55%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 45 (Rule: shard)
+57 of 102 steps (56%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 26 (Rule: shard)
+58 of 102 steps (57%) done
+Select jobs to execute...
+Execute 8 jobs...
+
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-9.txt
+    jobid: 11
+    reason: Missing output files: shards/shard-9.txt
+    wildcards: i=9
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-60.txt
+    jobid: 62
+    reason: Missing output files: shards/shard-60.txt
+    wildcards: i=60
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-10.txt
+    jobid: 12
+    reason: Missing output files: shards/shard-10.txt
+    wildcards: i=10
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-97.txt
+    jobid: 99
+    reason: Missing output files: shards/shard-97.txt
+    wildcards: i=97
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-69.txt
+    jobid: 71
+    reason: Missing output files: shards/shard-69.txt
+    wildcards: i=69
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-90.txt
+    jobid: 92
+    reason: Missing output files: shards/shard-90.txt
+    wildcards: i=90
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-59.txt
+    jobid: 61
+    reason: Missing output files: shards/shard-59.txt
+    wildcards: i=59
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-27.txt
+    jobid: 29
+    reason: Missing output files: shards/shard-27.txt
+    wildcards: i=27
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 48 (Rule: shard)
+59 of 102 steps (58%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 100 (Rule: shard)
+60 of 102 steps (59%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 30 (Rule: shard)
+61 of 102 steps (60%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 83 (Rule: shard)
+62 of 102 steps (61%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 60 (Rule: shard)
+63 of 102 steps (62%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 54 (Rule: shard)
+64 of 102 steps (63%) done
+Select jobs to execute...
+Execute 6 jobs...
+
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-20.txt
+    jobid: 22
+    reason: Missing output files: shards/shard-20.txt
+    wildcards: i=20
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-76.txt
+    jobid: 78
+    reason: Missing output files: shards/shard-76.txt
+    wildcards: i=76
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-53.txt
+    jobid: 55
+    reason: Missing output files: shards/shard-53.txt
+    wildcards: i=53
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-61.txt
+    jobid: 63
+    reason: Missing output files: shards/shard-61.txt
+    wildcards: i=61
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-54.txt
+    jobid: 56
+    reason: Missing output files: shards/shard-54.txt
+    wildcards: i=54
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-47.txt
+    jobid: 49
+    reason: Missing output files: shards/shard-47.txt
+    wildcards: i=47
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 35 (Rule: shard)
+65 of 102 steps (64%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 57 (Rule: shard)
+66 of 102 steps (65%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 44 (Rule: shard)
+67 of 102 steps (66%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 53 (Rule: shard)
+68 of 102 steps (67%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 89 (Rule: shard)
+69 of 102 steps (68%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 33 (Rule: shard)
+70 of 102 steps (69%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 82 (Rule: shard)
+71 of 102 steps (70%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 90 (Rule: shard)
+72 of 102 steps (71%) done
+Select jobs to execute...
+Execute 4 jobs...
+
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-32.txt
+    jobid: 34
+    reason: Missing output files: shards/shard-32.txt
+    wildcards: i=32
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-41.txt
+    jobid: 43
+    reason: Missing output files: shards/shard-41.txt
+    wildcards: i=41
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-34.txt
+    jobid: 36
+    reason: Missing output files: shards/shard-34.txt
+    wildcards: i=34
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+localrule shard:
+    output: shards/shard-83.txt
+    jobid: 85
+    reason: Missing output files: shards/shard-83.txt
+    wildcards: i=83
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 28 (Rule: shard)
+73 of 102 steps (72%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 84 (Rule: shard)
+74 of 102 steps (73%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 21 (Rule: shard)
+75 of 102 steps (74%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 77 (Rule: shard)
+76 of 102 steps (75%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 70 (Rule: shard)
+77 of 102 steps (75%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 14 (Rule: shard)
+78 of 102 steps (76%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 15 (Rule: shard)
+79 of 102 steps (77%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 6 (Rule: shard)
+80 of 102 steps (78%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 27 (Rule: shard)
+81 of 102 steps (79%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 20 (Rule: shard)
+82 of 102 steps (80%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 11 (Rule: shard)
+83 of 102 steps (81%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 62 (Rule: shard)
+84 of 102 steps (82%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 12 (Rule: shard)
+85 of 102 steps (83%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 99 (Rule: shard)
+86 of 102 steps (84%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 71 (Rule: shard)
+87 of 102 steps (85%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 92 (Rule: shard)
+88 of 102 steps (86%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 61 (Rule: shard)
+89 of 102 steps (87%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 29 (Rule: shard)
+90 of 102 steps (88%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 22 (Rule: shard)
+91 of 102 steps (89%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 78 (Rule: shard)
+92 of 102 steps (90%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 55 (Rule: shard)
+93 of 102 steps (91%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 63 (Rule: shard)
+94 of 102 steps (92%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 56 (Rule: shard)
+95 of 102 steps (93%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 49 (Rule: shard)
+96 of 102 steps (94%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 34 (Rule: shard)
+97 of 102 steps (95%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 43 (Rule: shard)
+98 of 102 steps (96%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 36 (Rule: shard)
+99 of 102 steps (97%) done
+[Wed Sep 30 16:42:35 2026]
+Finished jobid: 85 (Rule: shard)
+100 of 102 steps (98%) done
+Select jobs to execute...
+Job rate limit reached, waiting for free slots.
+Execute 1 jobs...
+
+[Wed Sep 30 16:42:36 2026]
+localrule agg:
+    input: shards/shard-0.txt, shards/shard-1.txt, shards/shard-2.txt, shards/shard-3.txt, shards/shard-4.txt, shards/shard-5.txt, shards/shard-6.txt, shards/shard-7.txt, shards/shard-8.txt, shards/shard-9.txt, shards/shard-10.txt, shards/shard-11.txt, shards/shard-12.txt, shards/shard-13.txt, shards/shard-14.txt, shards/shard-15.txt, shards/shard-16.txt, shards/shard-17.txt, shards/shard-18.txt, shards/shard-19.txt, shards/shard-20.txt, shards/shard-21.txt, shards/shard-22.txt, shards/shard-23.txt, shards/shard-24.txt, shards/shard-25.txt, shards/shard-26.txt, shards/shard-27.txt, shards/shard-28.txt, shards/shard-29.txt, shards/shard-30.txt, shards/shard-31.txt, shards/shard-32.txt, shards/shard-33.txt, shards/shard-34.txt, shards/shard-35.txt, shards/shard-36.txt, shards/shard-37.txt, shards/shard-38.txt, shards/shard-39.txt, shards/shard-40.txt, shards/shard-41.txt, shards/shard-42.txt, shards/shard-43.txt, shards/shard-44.txt, shards/shard-45.txt, shards/shard-46.txt, shards/shard-47.txt, shards/shard-48.txt, shards/shard-49.txt, shards/shard-50.txt, shards/shard-51.txt, shards/shard-52.txt, shards/shard-53.txt, shards/shard-54.txt, shards/shard-55.txt, shards/shard-56.txt, shards/shard-57.txt, shards/shard-58.txt, shards/shard-59.txt, shards/shard-60.txt, shards/shard-61.txt, shards/shard-62.txt, shards/shard-63.txt, shards/shard-64.txt, shards/shard-65.txt, shards/shard-66.txt, shards/shard-67.txt, shards/shard-68.txt, shards/shard-69.txt, shards/shard-70.txt, shards/shard-71.txt, shards/shard-72.txt, shards/shard-73.txt, shards/shard-74.txt, shards/shard-75.txt, shards/shard-76.txt, shards/shard-77.txt, shards/shard-78.txt, shards/shard-79.txt, shards/shard-80.txt, shards/shard-81.txt, shards/shard-82.txt, shards/shard-83.txt, shards/shard-84.txt, shards/shard-85.txt, shards/shard-86.txt, shards/shard-87.txt, shards/shard-88.txt, shards/shard-89.txt, shards/shard-90.txt, shards/shard-91.txt, shards/shard-92.txt, shards/shard-93.txt, shards/shard-94.txt, shards/shard-95.txt, shards/shard-96.txt, shards/shard-97.txt, shards/shard-98.txt, shards/shard-99.txt
+    output: agg.txt
+    jobid: 1
+    reason: Missing output files: agg.txt; Input files updated by another job: shards/shard-3.txt, shards/shard-54.txt, shards/shard-33.txt, shards/shard-27.txt, shards/shard-17.txt, shards/shard-59.txt, shards/shard-63.txt, shards/shard-83.txt, shards/shard-2.txt, shards/shard-92.txt, shards/shard-44.txt, shards/shard-21.txt, shards/shard-36.txt, shards/shard-61.txt, shards/shard-64.txt, shards/shard-12.txt, shards/shard-42.txt, shards/shard-97.txt, shards/shard-69.txt, shards/shard-89.txt, shards/shard-55.txt, shards/shard-19.txt, shards/shard-67.txt, shards/shard-18.txt, shards/shard-88.txt, shards/shard-46.txt, shards/shard-53.txt, shards/shard-10.txt, shards/shard-4.txt, shards/shard-30.txt, shards/shard-32.txt, shards/shard-1.txt, shards/shard-0.txt, shards/shard-73.txt, shards/shard-20.txt, shards/shard-45.txt, shards/shard-16.txt, shards/shard-24.txt, shards/shard-66.txt, shards/shard-77.txt, shards/shard-43.txt, shards/shard-5.txt, shards/shard-11.txt, shards/shard-60.txt, shards/shard-65.txt, shards/shard-7.txt, shards/shard-22.txt, shards/shard-6.txt, shards/shard-87.txt, shards/shard-75.txt, shards/shard-84.txt, shards/shard-62.txt, shards/shard-91.txt, shards/shard-86.txt, shards/shard-74.txt, shards/shard-34.txt, shards/shard-50.txt, shards/shard-78.txt, shards/shard-68.txt, shards/shard-49.txt, shards/shard-23.txt, shards/shard-80.txt, shards/shard-40.txt, shards/shard-25.txt, shards/shard-72.txt, shards/shard-99.txt, shards/shard-58.txt, shards/shard-52.txt, shards/shard-26.txt, shards/shard-13.txt, shards/shard-56.txt, shards/shard-31.txt, shards/shard-35.txt, shards/shard-94.txt, shards/shard-38.txt, shards/shard-90.txt, shards/shard-48.txt, shards/shard-14.txt, shards/shard-41.txt, shards/shard-47.txt, shards/shard-82.txt, shards/shard-70.txt, shards/shard-76.txt, shards/shard-95.txt, shards/shard-71.txt, shards/shard-51.txt, shards/shard-96.txt, shards/shard-15.txt, shards/shard-37.txt, shards/shard-98.txt, shards/shard-28.txt, shards/shard-81.txt, shards/shard-29.txt, shards/shard-85.txt, shards/shard-39.txt, shards/shard-57.txt, shards/shard-8.txt, shards/shard-79.txt, shards/shard-93.txt, shards/shard-9.txt
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:36 2026]
+Finished jobid: 1 (Rule: agg)
+101 of 102 steps (99%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Wed Sep 30 16:42:36 2026]
+localrule all:
+    input: agg.txt
+    jobid: 0
+    reason: Input files updated by another job: agg.txt
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:36 2026]
+Finished jobid: 0 (Rule: all)
+102 of 102 steps (100%) done
+Complete log(s): /home/pwwang/bench/smkw_smk_s3_n100_r1/.snakemake/log/2026-09-30T164235.467540.snakemake.log
+Elapsed time: 0:00:01.205839

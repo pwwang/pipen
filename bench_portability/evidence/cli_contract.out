@@ -1,0 +1,21 @@
+=== 1. run_all.sh without an argument (expect usage + rc 64) ===
+usage: bash run_all.sh <output-root>
+  e.g. bash run_all.sh /tmp/bench-out
+rc=64
+
+=== 2. per-key BENCH_* overrides are honoured (expect NPROC=3, SCALING_NS=5) ===
+PY                = /home/pwwang/ws_bench/.venv/bin/python
+SMK               = /home/pwwang/ws_bench/smk-venv/bin/snakemake
+NPROC             = 3
+SCALING_NS        = 5
+RUNINFO           = 0
+SOURCE            = /mnt/f/E/hermes-workspace/pipen/bench/bench.local.env
+
+=== 3. a config file can be overridden by pointing BENCH_ENV elsewhere ===
+SCALING_NS        = 42
+CACHE_TIMING_N    = 77
+SOURCE            = /tmp/alt_bench.env
+
+=== 4. RUNINFO=0 really disables the plugin (a 3-job DAG, then look for runinfo files) ===
+rc=0  runinfo files: 0  (expect 0)
+rc=0  runinfo files: 9  (expect 9 = 3 jobs x 3 files)

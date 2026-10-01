@@ -1,0 +1,31 @@
+import os
+
+N = int(os.environ.get("BN_N", "10"))
+SLEEP = os.environ.get("BN_SLEEP", "0.05")
+MARKER = os.environ["BN_MARKER"]
+
+
+rule all:
+    input:
+        "agg.txt",
+
+
+rule shard:
+    output:
+        "shards/shard-{i}.txt",
+    shell:
+        "echo shard_start {wildcards.i} $(date +%s.%N) >> " + MARKER + "\n"
+        "sleep " + SLEEP + "\n"
+        "echo {wildcards.i} > {output}\n"
+        "echo shard_end {wildcards.i} $(date +%s.%N) >> " + MARKER
+
+
+rule agg:
+    input:
+        expand("shards/shard-{i}.txt", i=range(N)),
+    output:
+        "agg.txt",
+    shell:
+        "echo agg_start 0 $(date +%s.%N) >> " + MARKER + "\n"
+        "cat {input} > {output}\n"
+        "echo agg_end 0 $(date +%s.%N) >> " + MARKER

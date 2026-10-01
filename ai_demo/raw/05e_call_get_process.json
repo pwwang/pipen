@@ -1,0 +1,13 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Process: FastqStats  (namespace: demo_ns)\nDescription: Read-length statistics of a paired-end FASTQ sample\n\nArguments:\n  Required:\n    --in.r1 <str>  gzipped R1 FASTQ file of the sample\n    --in.r2 <str>  gzipped R2 FASTQ file of the sample\n  Optional:\n    --envs.min_length <int> (default: 0)  Reads shorter than this many bases are not counted\n    --envs.sample_id <str> (default: 'sample')  Label written into the first column of the output table\n    --outdir <str>  Output directory of the pipeline\n    --forks <int>  Number of jobs to run simultaneously\n    --scheduler <str>  Scheduler to run the jobs\n    --profile <str>  Configuration profile to use\n    --cache <str>  Cache strategy: true/false/force\n\nExample:\n  run_process(\"demo_ns\", \"FastqStats\", [\"--in.r1\", \"<value>\"])"
+    }
+  ],
+  "structured_content": {
+    "result": "Process: FastqStats  (namespace: demo_ns)\nDescription: Read-length statistics of a paired-end FASTQ sample\n\nArguments:\n  Required:\n    --in.r1 <str>  gzipped R1 FASTQ file of the sample\n    --in.r2 <str>  gzipped R2 FASTQ file of the sample\n  Optional:\n    --envs.min_length <int> (default: 0)  Reads shorter than this many bases are not counted\n    --envs.sample_id <str> (default: 'sample')  Label written into the first column of the output table\n    --outdir <str>  Output directory of the pipeline\n    --forks <int>  Number of jobs to run simultaneously\n    --scheduler <str>  Scheduler to run the jobs\n    --profile <str>  Configuration profile to use\n    --cache <str>  Cache strategy: true/false/force\n\nExample:\n  run_process(\"demo_ns\", \"FastqStats\", [\"--in.r1\", \"<value>\"])"
+  },
+  "is_error": false,
+  "result_type": "complete"
+}

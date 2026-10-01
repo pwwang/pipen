@@ -1,0 +1,9 @@
+### arm=A n=100 forks=32 rep=1
+real=16.249 user=6.568 sys=2.144
+jobs=101  (marker lines / 2)
+### arm=C_poll n=100 forks=32 rep=1
+real=14.882 user=11.851 sys=5.588
+jobs=101  (marker lines / 2)
+### arm=C_pf_poll n=100 forks=32 rep=1
+real=11.616 user=11.279 sys=5.496
+jobs=101  (marker lines / 2)

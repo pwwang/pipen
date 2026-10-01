@@ -1,0 +1,59 @@
+09-30 16:16:12 I core                      _____________________________________   __
+09-30 16:16:12 I core                      ___  __ \___  _/__  __ \__  ____/__  | / /
+09-30 16:16:12 I core                      __  /_/ /__  / __  /_/ /_  __/  __   |/ /
+09-30 16:16:12 I core                      _  ____/__/ /  _  ____/_  /___  _  /|  /
+09-30 16:16:12 I core                      /_/     /___/  /_/     /_____/  /_/ |_/
+09-30 16:16:12 I core
+09-30 16:16:12 I core                                  version: 1.2.3
+09-30 16:16:12 I core
+09-30 16:16:12 I core    ╔═════════════════════════════════════════════════════════════════════════╗
+09-30 16:16:12 I core    ║                            PROBEAGGPIPELINE                             ║
+09-30 16:16:12 I core    ╚═════════════════════════════════════════════════════════════════════════╝
+09-30 16:16:12 I core    # procs         : 2
+09-30 16:16:12 I core    profile         : default
+09-30 16:16:12 I core    outdir          : ProbeAggPipeline-output
+09-30 16:16:12 I core    cache           : True
+09-30 16:16:12 I core    dirsig          : 1
+09-30 16:16:12 I core    error_strategy  : ignore
+09-30 16:16:12 I core    forks           : 8
+09-30 16:16:12 I core    lang            : bash
+09-30 16:16:12 I core    loglevel        : info
+09-30 16:16:12 I core    num_retries     : 3
+09-30 16:16:12 I core    scheduler       : local
+09-30 16:16:12 I core    submission_batch: None
+09-30 16:16:12 I core    template        : liquid
+09-30 16:16:12 I core    workdir         : /home/pwwang/bench/wd_probe3/ProbeAggPipeline
+09-30 16:16:12 I core    Initializing plugins ...
+09-30 16:16:12 I core
+09-30 16:16:12 I core    ╭───────────────────────────────── Shard ─────────────────────────────────╮
+09-30 16:16:12 I core    │ fan-out shard                                                           │
+09-30 16:16:12 I core    ╰─────────────────────────────────────────────────────────────────────────╯
+09-30 16:16:12 I core    Shard: workdir: '/home/pwwang/bench/wd_probe3/ProbeAggPipeline/Shard'
+09-30 16:16:12 I core    Shard: <<< [START]
+09-30 16:16:12 I core    Shard: >>> ['AggFiles']
+09-30 16:16:14 I core
+09-30 16:16:14 I core    ╭═══════════════════════════════ AggFiles ════════════════════════════════╮
+09-30 16:16:14 I core    ║ aggregate: one job, `files` input holding every shard output            ║
+09-30 16:16:14 I core    ╰═════════════════════════════════════════════════════════════════════════╯
+09-30 16:16:14 I core    AggFiles: workdir: '/home/pwwang/bench/wd_probe3/ProbeAggPipeline/AggFiles'
+09-30 16:16:14 I core    AggFiles: <<< ['Shard']
+09-30 16:16:14 I core    AggFiles: >>> [END]
+09-30 16:16:17 I core
+SHARD_JOBS: ['0', '1', '2', '3']
+AGG_JOBS: ['0']
+--- /home/pwwang/bench/wd_probe3/ProbeAggPipeline/AggFiles/0/job.script
+echo agg >> /home/pwwang/bench/out/probe3.log
+cat /home/pwwang/bench/wd_probe3/ProbeAggPipeline/Shard/0/output/shard-0.txt /home/pwwang/bench/wd_probe3/ProbeAggPipeline/Shard/1/output/shard-1.txt /home/pwwang/bench/wd_probe3/ProbeAggPipeline/Shard/2/output/shard-2.txt /home/pwwang/bench/wd_probe3/ProbeAggPipeline/Shard/3/output/shard-3.txt > ProbeAggPipeline-output/AggFiles/agg.txt
+SIGNATURE:
+ctime = 1790810174.665722
+[input.type]
+shardfiles = "files"
+
+[input.data]
+shardfiles = ["/home/pwwang/bench/wd_probe3/ProbeAggPipeline/Shard/0/output/shard-0.txt", "/home/pwwang/bench/wd_probe3/ProbeAggPipeline/Shard/1/output/shard-1.txt", "/home/pwwang/bench/wd_probe3/ProbeAggPipeline/Shard/2/output/shard-2.txt", "/home/pwwang/bench/wd_probe3/ProbeAggPipeline/Shard/3/output/shard-3.txt"]
+[output.type]
+outfile = "file"
+
+[output.data]
+outfile = "ProbeAggPipeline-output/AggFiles/agg.txt"
+

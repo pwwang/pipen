@@ -1,0 +1,122 @@
+{
+  "test": "step 5(c): touch vs content-change on ONE input file, marker path fixed",
+  "harness_note": "the rendered job scripts embed the marker-log path; all runs below use the identical marker path so the rendered scripts are byte-identical across runs (verified: c0 re-ran 0 jobs)",
+  "file": "/home/pwwang/bench/cache_inputs_small/in4.txt",
+  "content_before": "line3-v2\n",
+  "content_after": "line4-v3\n",
+  "mtime_ns": {
+    "before": 1790812306649162961,
+    "after_touch": 1790812430694792837,
+    "after_content_change": 1790812446848227870
+  },
+  "results": [
+    {
+      "label": "c0_control",
+      "note": "re-run with the same marker path: nothing should re-run",
+      "rc": 0,
+      "wall_sec": 12.295,
+      "jobs_executed": 25,
+      "jobs_by_proc": {
+        "Read": 8,
+        "Mid": 8,
+        "Side": 8,
+        "Agg": 1
+      },
+      "executed_detail": [
+        "Read in3.txt",
+        "Read in0.txt",
+        "Read in2.txt",
+        "Read in4.txt",
+        "Read in1.txt",
+        "Read in7.txt",
+        "Read in5.txt",
+        "Read in6.txt",
+        "Mid r-in1.txt",
+        "Mid r-in5.txt",
+        "Mid r-in0.txt",
+        "Mid r-in7.txt",
+        "Mid r-in6.txt",
+        "Mid r-in4.txt",
+        "Mid r-in3.txt",
+        "Mid r-in2.txt",
+        "Side r-in3.txt",
+        "Side r-in5.txt",
+        "Side r-in6.txt",
+        "Side r-in2.txt",
+        "Side r-in7.txt",
+        "Side r-in4.txt",
+        "Side r-in0.txt",
+        "Side r-in1.txt",
+        "Agg agg"
+      ],
+      "cached_jobs_log_lines": [],
+      "log": "/home/pwwang/bench/out/logs/touch_c0_control.log"
+    },
+    {
+      "label": "c1_after_touch",
+      "note": "mtime bumped, content byte-identical",
+      "rc": 0,
+      "wall_sec": 13.215,
+      "jobs_executed": 4,
+      "jobs_by_proc": {
+        "Read": 1,
+        "Mid": 1,
+        "Side": 1,
+        "Agg": 1
+      },
+      "executed_detail": [
+        "Read in4.txt",
+        "Mid r-in4.txt",
+        "Side r-in4.txt",
+        "Agg agg"
+      ],
+      "cached_jobs_log_lines": [
+        "Read: Cached jobs: 0-3, 5-7",
+        "Mid: Cached jobs: 0-3, 5-7",
+        "Side: Cached jobs: 0-3, 5-7"
+      ],
+      "log": "/home/pwwang/bench/out/logs/touch_c1_after_touch.log"
+    },
+    {
+      "label": "c2_after_content_change",
+      "note": "content changed (line3-v2 -> line4-v3)",
+      "rc": 0,
+      "wall_sec": 10.2,
+      "jobs_executed": 4,
+      "jobs_by_proc": {
+        "Read": 1,
+        "Mid": 1,
+        "Side": 1,
+        "Agg": 1
+      },
+      "executed_detail": [
+        "Read in4.txt",
+        "Mid r-in4.txt",
+        "Side r-in4.txt",
+        "Agg agg"
+      ],
+      "cached_jobs_log_lines": [
+        "Read: Cached jobs: 0-3, 5-7",
+        "Mid: Cached jobs: 0-3, 5-7",
+        "Side: Cached jobs: 0-3, 5-7"
+      ],
+      "log": "/home/pwwang/bench/out/logs/touch_c2_after_content_change.log"
+    },
+    {
+      "label": "c3_control_after",
+      "note": "re-run after the content change",
+      "rc": 0,
+      "wall_sec": 1.139,
+      "jobs_executed": 0,
+      "jobs_by_proc": {},
+      "executed_detail": [],
+      "cached_jobs_log_lines": [
+        "Read: Cached jobs: 0-7",
+        "Mid: Cached jobs: 0-7",
+        "Side: Cached jobs: 0-7",
+        "Agg: Cached jobs: 0"
+      ],
+      "log": "/home/pwwang/bench/out/logs/touch_c3_control_after.log"
+    }
+  ]
+}

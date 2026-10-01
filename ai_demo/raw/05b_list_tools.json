@@ -1,0 +1,143 @@
+{
+  "ttl_ms": 0,
+  "cache_scope": "private",
+  "tools": [
+    {
+      "name": "get_namespaces",
+      "description": "List all available namespaces registered with pipen. Start here to discover what is available.",
+      "input_schema": {
+        "properties": {},
+        "type": "object",
+        "title": "get_namespacesArguments"
+      },
+      "output_schema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "type": "object",
+        "title": "get_namespacesOutput"
+      }
+    },
+    {
+      "name": "get_processes",
+      "description": "List all processes/pipelines available in a namespace.",
+      "input_schema": {
+        "properties": {
+          "ns": {
+            "description": "The namespace name",
+            "title": "Ns",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ns"
+        ],
+        "type": "object",
+        "title": "get_processesArguments"
+      },
+      "output_schema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "type": "object",
+        "title": "get_processesOutput"
+      }
+    },
+    {
+      "name": "get_process",
+      "description": "Get the detailed argument schema for a specific process or pipeline, including required and optional CLI arguments.",
+      "input_schema": {
+        "properties": {
+          "ns": {
+            "description": "The namespace name",
+            "title": "Ns",
+            "type": "string"
+          },
+          "proc": {
+            "description": "The process or pipeline name",
+            "title": "Proc",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ns",
+          "proc"
+        ],
+        "type": "object",
+        "title": "get_processArguments"
+      },
+      "output_schema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "type": "object",
+        "title": "get_processOutput"
+      }
+    },
+    {
+      "name": "run_process",
+      "description": "Run a pipen process or pipeline. Build the arguments list from the schema returned by get_process.",
+      "input_schema": {
+        "properties": {
+          "ns": {
+            "description": "The namespace containing the process",
+            "title": "Ns",
+            "type": "string"
+          },
+          "proc": {
+            "description": "The process or pipeline name to run",
+            "title": "Proc",
+            "type": "string"
+          },
+          "arguments": {
+            "description": "CLI arguments as a flat list, e.g. [\"--in.infile\", \"/path/to/file\", \"--outdir\", \"./out\"]",
+            "items": {
+              "type": "string"
+            },
+            "title": "Arguments",
+            "type": "array"
+          }
+        },
+        "required": [
+          "ns",
+          "proc",
+          "arguments"
+        ],
+        "type": "object",
+        "title": "run_processArguments"
+      },
+      "output_schema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "type": "object",
+        "title": "run_processOutput"
+      }
+    }
+  ],
+  "result_type": "complete"
+}

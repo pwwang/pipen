@@ -1,0 +1,188 @@
+############ STEP 4e: the generated job script for the CLI-driven run
+(workdir is relative to CWD; the CLI run was executed from $HOME)
+--- content of  ---
+cat: '': No such file or directory
+
+############ STEP 4e2: the rendered command / wrapper (cmd.sh) if present
+
+############ ANSI-stripped copies of the CLI help (raw captures keep the codes)
+=========== pipen --help ===========
+Usage: pipen [-h] {mcp,run,profile,plugins,version,help} ...
+
+CLI Tool for pipen v1.2.3
+
+Options:
+  -h, --help            show this help message and exit
+
+Subcommands:
+    mcp                 Expose pipen processes/pipelines as MCP tools
+    run                 Run a process or a pipeline
+    profile             List available profiles.
+    plugins             List installed plugins
+    version             Print versions of pipen and its dependencies
+    help                Print help for commands
+RC=0
+=========== pipen run --help ===========
+Usage: pipen run [-h] {demo_extra_ns,demo_ns} ...
+
+Run a process or a pipeline
+
+Options:
+  -h, --help            show this help message and exit
+
+Process Namespaces:
+    demo_extra_ns       A second, independent pipen namespace package
+                        (generalisation check).
+    demo_ns             Toy scientific namespace used to demonstrate pipen's
+                        agent-facing surface.
+RC=0
+=========== pipen run demo_ns --help ===========
+Usage: pipen run demo_ns [-h] {CountReads,FastqStats} ...
+
+Options:
+  -h, --help            show this help message and exit
+
+Processes / Pipelines:
+    CountReads          Count the reads in a single FASTQ file
+    FastqStats          Read-length statistics of a paired-end FASTQ sample
+RC=0
+=========== pipen run demo_ns FastqStats --help ===========
+Usage: pipen [-h | -h+] [options]
+
+Read-length statistics of a paired-end FASTQ sample
+Use `@configfile` to load default values for the options.
+
+Pipeline Options:
+  --name NAME           The name for the pipeline, will affect the default
+                        workdir and outdir. [default: FastqStats]
+  --profile PROFILE     The default profile from the configuration to run the
+                        pipeline. This profile will be used unless a profile
+                        is specified in the process or in the .run method of
+                        pipen. You can check the available profiles by running
+                        `pipen profile`
+  --outdir OUTDIR       The output directory of the pipeline [default:
+                        ./<name>-output]
+  --forks FORKS         How many jobs to run simultaneously by the scheduler
+  --scheduler SCHEDULER
+                        The scheduler to run the jobs
+  --output_flatten, --output-flatten
+                        Whether to flatten the output from jobs of the process
+                        (without creating subdirectories with job indexes).
+
+Namespace <envs>:
+  --envs ENVS           Environment variables for the process [default:
+                        {'min_length': 0, 'sample_id': 'sample'}]
+  --envs.min_length MIN_LENGTH, --envs.min-length MIN_LENGTH
+                        Reads shorter than this many bases are not counted
+                        [default: 0]
+  --envs.sample_id SAMPLE_ID, --envs.sample-id SAMPLE_ID
+                        Label written into the first column of the output
+                        table [default: sample]
+
+Namespace <in>:
+  --in.r1 R1 [R1 ...]   gzipped R1 FASTQ file of the sample
+  --in.r2 R2 [R2 ...]   gzipped R2 FASTQ file of the sample
+
+Namespace <out>:
+  --out.stats STATS     TSV table of per-sample read-length statistics
+                        [default: read_stats.tsv]
+
+Options:
+  -h, --help, -h+, --help+
+                        show this help message and exit (with + for more
+                        options)
+RC=0
+=========== pipen run demo_ns CountReads --help ===========
+Usage: pipen [-h | -h+] [options]
+
+Count the reads in a single FASTQ file
+Use `@configfile` to load default values for the options.
+
+Pipeline Options:
+  --name NAME           The name for the pipeline, will affect the default
+                        workdir and outdir. [default: CountReads]
+  --profile PROFILE     The default profile from the configuration to run the
+                        pipeline. This profile will be used unless a profile
+                        is specified in the process or in the .run method of
+                        pipen. You can check the available profiles by running
+                        `pipen profile`
+  --outdir OUTDIR       The output directory of the pipeline [default:
+                        ./<name>-output]
+  --forks FORKS         How many jobs to run simultaneously by the scheduler
+  --scheduler SCHEDULER
+                        The scheduler to run the jobs
+  --output_flatten, --output-flatten
+                        Whether to flatten the output from jobs of the process
+                        (without creating subdirectories with job indexes).
+
+Namespace <envs>:
+  --envs ENVS           Environment variables for the process [default:
+                        {'sample_id': 'sample'}]
+  --envs.sample_id SAMPLE_ID, --envs.sample-id SAMPLE_ID
+                        Label written into the output table [default: sample]
+
+Namespace <in>:
+  --in.fastq FASTQ [FASTQ ...]
+                        gzipped FASTQ file to count
+
+Namespace <out>:
+  --out.counts COUNTS   TSV table holding the read count [default:
+                        read_counts.tsv]
+
+Options:
+  -h, --help, -h+, --help+
+                        show this help message and exit (with + for more
+                        options)
+RC=0
+=========== pipen mcp --help ===========
+Usage: pipen mcp [-h] [--transport {stdio,sse,streamable-http}] [--host HOST]
+                 [--port PORT]
+
+Expose pipen processes/pipelines as MCP tools
+
+Options:
+  -h, --help            show this help message and exit
+  --transport {stdio,sse,streamable-http}
+                        MCP transport to use [default: stdio]
+  --host HOST           Host to bind to for sse/streamable-http [default:
+                        127.0.0.1]
+  --port PORT           Port to listen on for sse/streamable-http [default:
+                        8520]
+RC=0
+
+############ pipen plugins / version
+Pipen version: 1.2.3
+
+Pipen plugins:
+- args: (version: 1.3.0)
+
+Scheduler plugins:
+
+Template plugins:
+
+CLI plugins:
+- mcp    : (version: 0.1.0)
+- cli-run: (version: 1.0.6)
+RC=0
+python           : 3.12.2 | packaged by conda-forge | (main, Feb 16 2024, 
+20:50:58) [GCC 12.3.0]
+pipen            : 1.2.3
+liquidpy         : 0.10.0
+pandas           : 3.0.6
+enlighten        : 1.14.1
+argx             : 0.4.4
+xqute            : 2.2.0
+python-simpleconf: 0.9.6
+pipda            : 0.14.1
+varname          : 1.0.0
+RC=0
+
+############ where does '[truncated]' in the tool result come from?
+
+############ STEP 6: third-party namespace - is biopipen available on PyPI?
+Collecting biopipen
+  Using cached biopipen-1.5.1-py3-none-any.whl.metadata (643 bytes)
+Using cached biopipen-1.5.1-py3-none-any.whl (1.0 MB)
+Saved /tmp/biopipen_dl/biopipen-1.5.1-py3-none-any.whl
+Successfully downloaded biopipen
+PIP_DOWNLOAD_RC=0

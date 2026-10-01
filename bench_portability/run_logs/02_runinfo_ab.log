@@ -1,0 +1,18 @@
+# A/B: pipen-runinfo ON (default of the portable harness) vs OFF (archived protocol)
+# interpreter: /home/pwwang/ws_bench/.venv/bin/python
+# pipen-runinfo installed: 1.1.5
+
+runinfo=off rep=1  rc=0 wall=12.798 marker_lines=42
+                    job.runinfo.session files in this workdir: 0
+runinfo=on rep=1  rc=0 wall=12.797 marker_lines=42
+                    job.runinfo.session files in this workdir: 21
+runinfo=off rep=2  rc=0 wall=11.749 marker_lines=42
+                    job.runinfo.session files in this workdir: 0
+runinfo=on rep=2  rc=0 wall=11.806 marker_lines=42
+                    job.runinfo.session files in this workdir: 21
+runinfo=off rep=3  rc=0 wall=11.782 marker_lines=42
+                    job.runinfo.session files in this workdir: 0
+runinfo=on rep=3  rc=0 wall=11.811 marker_lines=42
+                    job.runinfo.session files in this workdir: 21
+
+# raw workdirs kept for inspection: /home/pwwang/ws_bench/ab_work

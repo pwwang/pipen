@@ -1,0 +1,248 @@
+[
+  {
+    "tag": "smk_s5_r1_cold",
+    "cmd": "/home/pwwang/bench/smk/bin/snakemake --cores 32 -s /mnt/f/E/hermes-workspace/pipen/bench/smk_cache/Snakefile",
+    "rc": 0,
+    "wall_sec": 1.829,
+    "jobs_executed": 25,
+    "jobs_by_proc": {
+      "Read": 8,
+      "Side": 8,
+      "Mid": 8,
+      "Agg": 1
+    },
+    "jobs_from_log_all": 26,
+    "jobs_from_log_excl_target_rule": 25,
+    "executed_detail": [
+      "Read in{i}.txt",
+      "Read in{i}.txt",
+      "Read in{i}.txt",
+      "Read in{i}.txt",
+      "Read in{i}.txt",
+      "Read in{i}.txt",
+      "Read in{i}.txt",
+      "Read in{i}.txt",
+      "Side r-in{i}.txt",
+      "Mid r-in{i}.txt",
+      "Mid r-in{i}.txt",
+      "Side r-in{i}.txt",
+      "Side r-in{i}.txt",
+      "Mid r-in{i}.txt",
+      "Mid r-in{i}.txt",
+      "Mid r-in{i}.txt",
+      "Side r-in{i}.txt",
+      "Side r-in{i}.txt",
+      "Side r-in{i}.txt",
+      "Mid r-in{i}.txt",
+      "Side r-in{i}.txt",
+      "Mid r-in{i}.txt",
+      "Mid r-in{i}.txt",
+      "Side r-in{i}.txt",
+      "Agg agg"
+    ],
+    "peak_tree_rss_mb": 77.4,
+    "rss_samples": 36,
+    "loadavg_before": [
+      "4.42",
+      "4.52",
+      "4.40"
+    ],
+    "loadavg_after": [
+      "4.42",
+      "4.52",
+      "4.40"
+    ],
+    "marker_log": "/home/pwwang/bench/out/marker_smk_s5_scope.log",
+    "log": "/home/pwwang/bench/out/logs_smk/smk_s5_r1_cold.log",
+    "workdir": "/home/pwwang/bench/smkw_s5_scope",
+    "step": "5_caching_scope",
+    "n": 8,
+    "forks": 32,
+    "cache": true,
+    "rep": 1,
+    "note": "fresh workdir"
+  },
+  {
+    "tag": "smk_s5_r2_rerun",
+    "cmd": "/home/pwwang/bench/smk/bin/snakemake --cores 32 -s /mnt/f/E/hermes-workspace/pipen/bench/smk_cache/Snakefile",
+    "rc": 0,
+    "wall_sec": 0.712,
+    "jobs_executed": 0,
+    "jobs_by_proc": {},
+    "jobs_from_log_all": 0,
+    "jobs_from_log_excl_target_rule": 0,
+    "executed_detail": [],
+    "peak_tree_rss_mb": 77.2,
+    "rss_samples": 14,
+    "loadavg_before": [
+      "4.42",
+      "4.52",
+      "4.40"
+    ],
+    "loadavg_after": [
+      "4.42",
+      "4.52",
+      "4.40"
+    ],
+    "marker_log": "/home/pwwang/bench/out/marker_smk_s5_scope.log",
+    "log": "/home/pwwang/bench/out/logs_smk/smk_s5_r2_rerun.log",
+    "workdir": "/home/pwwang/bench/smkw_s5_scope",
+    "step": "5_caching_scope",
+    "n": 8,
+    "forks": 32,
+    "cache": true,
+    "rep": 2,
+    "note": "nothing changed"
+  },
+  {
+    "tag": "smk_s5_r3_input4_changed",
+    "cmd": "/home/pwwang/bench/smk/bin/snakemake --cores 32 -s /mnt/f/E/hermes-workspace/pipen/bench/smk_cache/Snakefile",
+    "rc": 0,
+    "wall_sec": 1.779,
+    "jobs_executed": 4,
+    "jobs_by_proc": {
+      "Read": 1,
+      "Side": 1,
+      "Mid": 1,
+      "Agg": 1
+    },
+    "jobs_from_log_all": 5,
+    "jobs_from_log_excl_target_rule": 4,
+    "executed_detail": [
+      "Read in{i}.txt",
+      "Side r-in{i}.txt",
+      "Mid r-in{i}.txt",
+      "Agg agg"
+    ],
+    "peak_tree_rss_mb": 77.5,
+    "rss_samples": 35,
+    "loadavg_before": [
+      "4.42",
+      "4.52",
+      "4.40"
+    ],
+    "loadavg_after": [
+      "4.42",
+      "4.52",
+      "4.40"
+    ],
+    "marker_log": "/home/pwwang/bench/out/marker_smk_s5_scope.log",
+    "log": "/home/pwwang/bench/out/logs_smk/smk_s5_r3_input4_changed.log",
+    "workdir": "/home/pwwang/bench/smkw_s5_scope",
+    "step": "5_caching_scope",
+    "n": 8,
+    "forks": 32,
+    "cache": true,
+    "rep": 3,
+    "note": "in4.txt content rewritten"
+  },
+  {
+    "tag": "smk_s5_r4_mid_script_changed",
+    "cmd": "/home/pwwang/bench/smk/bin/snakemake --cores 32 -s /mnt/f/E/hermes-workspace/pipen/bench/smk_cache/Snakefile",
+    "rc": 0,
+    "wall_sec": 1.778,
+    "jobs_executed": 9,
+    "jobs_by_proc": {
+      "Mid": 8,
+      "Agg": 1
+    },
+    "jobs_from_log_all": 10,
+    "jobs_from_log_excl_target_rule": 9,
+    "executed_detail": [
+      "Mid r-in{i}.txt",
+      "Mid r-in{i}.txt",
+      "Mid r-in{i}.txt",
+      "Mid r-in{i}.txt",
+      "Mid r-in{i}.txt",
+      "Mid r-in{i}.txt",
+      "Mid r-in{i}.txt",
+      "Mid r-in{i}.txt",
+      "Agg agg"
+    ],
+    "peak_tree_rss_mb": 80.6,
+    "rss_samples": 35,
+    "loadavg_before": [
+      "4.42",
+      "4.52",
+      "4.40"
+    ],
+    "loadavg_after": [
+      "4.47",
+      "4.52",
+      "4.41"
+    ],
+    "marker_log": "/home/pwwang/bench/out/marker_smk_s5_scope.log",
+    "log": "/home/pwwang/bench/out/logs_smk/smk_s5_r4_mid_script_changed.log",
+    "workdir": "/home/pwwang/bench/smkw_s5_scope",
+    "step": "5_caching_scope",
+    "n": 8,
+    "forks": 32,
+    "cache": true,
+    "rep": 4,
+    "note": "mid rule shell A -> B, default --rerun-triggers"
+  },
+  {
+    "tag": "smk_s5_r4b_mid_script_changed_mtime_trigger",
+    "cmd": "/home/pwwang/bench/smk/bin/snakemake --cores 32 -s /mnt/f/E/hermes-workspace/pipen/bench/smk_cache/Snakefile --rerun-triggers mtime",
+    "rc": 0,
+    "wall_sec": 0.762,
+    "jobs_executed": 0,
+    "jobs_by_proc": {},
+    "jobs_from_log_all": 0,
+    "jobs_from_log_excl_target_rule": 0,
+    "executed_detail": [],
+    "peak_tree_rss_mb": 76.8,
+    "rss_samples": 15,
+    "loadavg_before": [
+      "4.47",
+      "4.52",
+      "4.41"
+    ],
+    "loadavg_after": [
+      "4.47",
+      "4.52",
+      "4.41"
+    ],
+    "marker_log": "/home/pwwang/bench/out/marker_smk_s5_scope.log",
+    "log": "/home/pwwang/bench/out/logs_smk/smk_s5_r4b_mid_script_changed_mtime_trigger.log",
+    "workdir": "/home/pwwang/bench/smkw_s5_scope",
+    "step": "5_caching_scope",
+    "n": 8,
+    "forks": 32,
+    "cache": true,
+    "rep": 5,
+    "note": "same as r4 but --rerun-triggers mtime (traditional Snakemake)"
+  },
+  {
+    "tag": "smk_s5_r5_rerun",
+    "cmd": "/home/pwwang/bench/smk/bin/snakemake --cores 32 -s /mnt/f/E/hermes-workspace/pipen/bench/smk_cache/Snakefile",
+    "rc": 0,
+    "wall_sec": 0.762,
+    "jobs_executed": 0,
+    "jobs_by_proc": {},
+    "jobs_from_log_all": 0,
+    "jobs_from_log_excl_target_rule": 0,
+    "executed_detail": [],
+    "peak_tree_rss_mb": 76.9,
+    "rss_samples": 15,
+    "loadavg_before": [
+      "4.47",
+      "4.52",
+      "4.41"
+    ],
+    "loadavg_after": [
+      "4.47",
+      "4.52",
+      "4.41"
+    ],
+    "marker_log": "/home/pwwang/bench/out/marker_smk_s5_scope.log",
+    "log": "/home/pwwang/bench/out/logs_smk/smk_s5_r5_rerun.log",
+    "workdir": "/home/pwwang/bench/smkw_s5_scope",
+    "step": "5_caching_scope",
+    "n": 8,
+    "forks": 32,
+    "cache": true,
+    "rep": 6,
+    "note": "nothing changed (variant stays B)"
+  }
+]

@@ -1,0 +1,46 @@
+10-01 09:21:31 I core                      _____________________________________   __
+10-01 09:21:31 I core                      ___  __ \___  _/__  __ \__  ____/__  | / /
+10-01 09:21:31 I core                      __  /_/ /__  / __  /_/ /_  __/  __   |/ /
+10-01 09:21:31 I core                      _  ____/__/ /  _  ____/_  /___  _  /|  /
+10-01 09:21:31 I core                      /_/     /___/  /_/     /_____/  /_/ |_/
+10-01 09:21:31 I core
+10-01 09:21:31 I core                                  version: 1.2.3
+10-01 09:21:31 I core
+10-01 09:21:31 I core    ╔═════════════════════════════════════════════════════════════════════════╗
+10-01 09:21:31 I core    ║                               DAGPIPELINE                               ║
+10-01 09:21:31 I core    ╚═════════════════════════════════════════════════════════════════════════╝
+10-01 09:21:31 I core    plugins         : runinfo v1.1.5
+10-01 09:21:31 I core    # procs         : 2
+10-01 09:21:31 I core    profile         : default
+10-01 09:21:31 I core    outdir          : DagPipeline-output
+10-01 09:21:31 I core    cache           : False
+10-01 09:21:31 I core    dirsig          : 1
+10-01 09:21:31 I core    error_strategy  : ignore
+10-01 09:21:31 I core    forks           : 1
+10-01 09:21:31 I core    lang            : bash
+10-01 09:21:31 I core    loglevel        : info
+10-01 09:21:31 I core    num_retries     : 3
+10-01 09:21:31 I core    scheduler       : local
+10-01 09:21:31 I core    submission_batch: None
+10-01 09:21:31 I core    template        : liquid
+10-01 09:21:31 I core    workdir         : /home/pwwang/ws_bench/work/wd_s4_n20_f1_r1/DagPipeline
+10-01 09:21:31 I core    plugin_opts     : runinfo_lang=None
+10-01 09:21:31 I core                    : runinfo_path=True
+10-01 09:21:31 I core                    : runinfo_submod=False
+10-01 09:21:31 I core    Initializing plugins ...
+10-01 09:21:31 I core
+10-01 09:21:31 I core    ╭───────────────────────────────── Shard ─────────────────────────────────╮
+10-01 09:21:31 I core    │ fan-out shard                                                           │
+10-01 09:21:31 I core    ╰─────────────────────────────────────────────────────────────────────────╯
+10-01 09:21:31 I core    Shard: workdir: '/home/pwwang/ws_bench/work/wd_s4_n20_f1_r1/DagPipeline/Shard'
+10-01 09:21:31 I core    Shard: <<< [START]
+10-01 09:21:31 I core    Shard: >>> ['Agg']
+10-01 09:22:33 I core
+10-01 09:22:33 I core    ╭══════════════════════════════════ Agg ══════════════════════════════════╮
+10-01 09:22:33 I core    ║ aggregate all shard outputs into one file                               ║
+10-01 09:22:33 I core    ╰═════════════════════════════════════════════════════════════════════════╯
+10-01 09:22:33 I core    Agg: workdir: '/home/pwwang/ws_bench/work/wd_s4_n20_f1_r1/DagPipeline/Agg'
+10-01 09:22:33 I core    Agg: <<< ['Shard']
+10-01 09:22:33 I core    Agg: >>> [END]
+10-01 09:22:39 I core
+PIPELINE_RUN_SEC=61.472116

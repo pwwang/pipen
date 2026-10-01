@@ -1,0 +1,1278 @@
+{
+  "config": {
+    "root": "/mnt/f/E/hermes-workspace/pipen/bench",
+    "py": "/home/pwwang/ws_bench/.venv/bin/python",
+    "smk": "/home/pwwang/ws_bench/smk-venv/bin/snakemake",
+    "out_root": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run",
+    "work_root": "/home/pwwang/ws_bench/work",
+    "nproc": "8",
+    "reps": "1",
+    "scaling_ns": "20",
+    "conc_n": "20",
+    "conc_forks": "1,2",
+    "cache_scope_n": "8",
+    "cache_timing_n": "20",
+    "cache_timing_reps": "1",
+    "sleep": "0.05",
+    "runinfo": "1",
+    "runinfo_install": "1",
+    "base_python": "python3",
+    "pipen_install": "pipen==1.2.3",
+    "pipen_runinfo_pkg": "pipen-runinfo",
+    "smk_install": "snakemake==9.27.0",
+    "pipen_repo": "",
+    "archive": "",
+    "loglevel": "info",
+    "source": "/mnt/f/E/hermes-workspace/pipen/bench/bench.local.env"
+  },
+  "pipen_scaling": {
+    "wall_sec_by_n": {
+      "20": {
+        "median": 12.868,
+        "min": 12.868,
+        "max": 12.868,
+        "n_reps": 1,
+        "all": [
+          12.868
+        ]
+      }
+    },
+    "pipeline_run_sec_by_n": {
+      "20": {
+        "median": 12.418,
+        "min": 12.418,
+        "max": 12.418,
+        "n_reps": 1,
+        "all": [
+          12.418
+        ]
+      }
+    },
+    "sleep_floor_by_n": {
+      "20": 0.125
+    },
+    "overhead_by_n": {
+      "20": {
+        "median": 12.293,
+        "min": 12.293,
+        "max": 12.293,
+        "n_reps": 1,
+        "all": [
+          12.293
+        ]
+      }
+    },
+    "overhead_per_job_by_n": {
+      "20": {
+        "median": 0.615,
+        "min": 0.615,
+        "max": 0.615,
+        "n_reps": 1,
+        "all": [
+          0.615
+        ]
+      }
+    },
+    "peak_tree_rss_mb_by_n": {
+      "20": {
+        "median": 266.7,
+        "min": 266.7,
+        "max": 266.7,
+        "n_reps": 1,
+        "all": [
+          266.7
+        ]
+      }
+    },
+    "records": [
+      {
+        "step": "3_scaling",
+        "tag": "s3_n20_r1",
+        "n": 20,
+        "forks": 8,
+        "sleep_per_job": "0.05",
+        "cache": false,
+        "rep": 1,
+        "_script": "bench_pipen_dag.py",
+        "wall_sec": 12.868,
+        "pipeline_run_sec": 12.418,
+        "rc": 0,
+        "rc_ok": true,
+        "pipeline_ok": true,
+        "cached_jobs_log_lines": [],
+        "jobs_executed": 42,
+        "jobs_by_proc": {
+          "shard_start": 20,
+          "shard_end": 20,
+          "agg_start": 1,
+          "agg_end": 1
+        },
+        "peak_tree_rss_mb": 266.7,
+        "rss_samples": 252,
+        "loadavg_before": [
+          "0.64",
+          "0.82",
+          "1.99"
+        ],
+        "loadavg_after": [
+          "1.13",
+          "0.92",
+          "2.00"
+        ],
+        "runinfo_version": "1.1.5",
+        "runinfo_enabled": true,
+        "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s3_n20_r1.log",
+        "marker_log_local": "/home/pwwang/ws_bench/work/markers/marker_s3_n20_r1.log",
+        "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs/s3_n20_r1.log",
+        "sleep_floor_sec": 0.125,
+        "overhead_vs_sleep_floor_sec": 12.293,
+        "overhead_per_job_sec": 0.6146,
+        "agg_file": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/artefacts/agg_pipen_s3_n20_r1.txt",
+        "agg_sha256": "9cfbaaab688df1c3f9fc1198dcc26b0de5a321a57c60e6ba87c3fc80afbf03bd",
+        "agg_bytes": 50,
+        "agg_note": null,
+        "jobs": 21
+      }
+    ]
+  },
+  "pipen_concurrency": {
+    "records": [
+      {
+        "step": "4_concurrency",
+        "tag": "s4_n20_f1_r1",
+        "n": 20,
+        "forks": 1,
+        "sleep_per_job": "0.05",
+        "cache": false,
+        "rep": 1,
+        "_script": "bench_pipen_dag.py",
+        "wall_sec": 61.926,
+        "pipeline_run_sec": 61.472,
+        "rc": 0,
+        "rc_ok": true,
+        "pipeline_ok": true,
+        "cached_jobs_log_lines": [],
+        "jobs_executed": 42,
+        "jobs_by_proc": {
+          "shard_start": 20,
+          "shard_end": 20,
+          "agg_start": 1,
+          "agg_end": 1
+        },
+        "peak_tree_rss_mb": 118.0,
+        "rss_samples": 1218,
+        "loadavg_before": [
+          "1.13",
+          "0.92",
+          "2.00"
+        ],
+        "loadavg_after": [
+          "0.41",
+          "0.75",
+          "1.87"
+        ],
+        "runinfo_version": "1.1.5",
+        "runinfo_enabled": true,
+        "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s4_n20_f1_r1.log",
+        "marker_log_local": "/home/pwwang/ws_bench/work/markers/marker_s4_n20_f1_r1.log",
+        "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs/s4_n20_f1_r1.log",
+        "sleep_floor_sec": 1.0,
+        "overhead_vs_sleep_floor_sec": 60.472,
+        "agg_file": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/artefacts/agg_pipen_s4_n20_f1_r1.txt",
+        "agg_sha256": "9cfbaaab688df1c3f9fc1198dcc26b0de5a321a57c60e6ba87c3fc80afbf03bd",
+        "agg_bytes": 50,
+        "agg_note": null,
+        "jobs": 21,
+        "speedup_vs_forks1": 1.0
+      },
+      {
+        "step": "4_concurrency",
+        "tag": "s4_n20_f2_r1",
+        "n": 20,
+        "forks": 2,
+        "sleep_per_job": "0.05",
+        "cache": false,
+        "rep": 1,
+        "_script": "bench_pipen_dag.py",
+        "wall_sec": 31.806,
+        "pipeline_run_sec": 31.415,
+        "rc": 0,
+        "rc_ok": true,
+        "pipeline_ok": true,
+        "cached_jobs_log_lines": [],
+        "jobs_executed": 42,
+        "jobs_by_proc": {
+          "shard_start": 20,
+          "shard_end": 20,
+          "agg_start": 1,
+          "agg_end": 1
+        },
+        "peak_tree_rss_mb": 141.3,
+        "rss_samples": 626,
+        "loadavg_before": [
+          "0.41",
+          "0.75",
+          "1.87"
+        ],
+        "loadavg_after": [
+          "0.42",
+          "0.73",
+          "1.83"
+        ],
+        "runinfo_version": "1.1.5",
+        "runinfo_enabled": true,
+        "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s4_n20_f2_r1.log",
+        "marker_log_local": "/home/pwwang/ws_bench/work/markers/marker_s4_n20_f2_r1.log",
+        "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs/s4_n20_f2_r1.log",
+        "sleep_floor_sec": 0.5,
+        "overhead_vs_sleep_floor_sec": 30.915,
+        "agg_file": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/artefacts/agg_pipen_s4_n20_f2_r1.txt",
+        "agg_sha256": "9cfbaaab688df1c3f9fc1198dcc26b0de5a321a57c60e6ba87c3fc80afbf03bd",
+        "agg_bytes": 50,
+        "agg_note": null,
+        "jobs": 21,
+        "speedup_vs_forks1": 1.95
+      }
+    ],
+    "n100_single_rep_diagnostic": [
+      {
+        "n": 100,
+        "forks": 32,
+        "wall_sec": 16.437,
+        "pipeline_run_sec": 15.923,
+        "source": "archived run: bench/raw/logs_pipen/diag_sleep05.log + marker_diag_sleep05.log",
+        "measured_in": "archived full-size run (RESULTS.md section 4)",
+        "reps": 1
+      },
+      {
+        "n": 100,
+        "forks": 1,
+        "wall_sec": 330.685,
+        "pipeline_run_sec": 303.73,
+        "source": "archived run: bench/raw/logs_pipen/diag_forks1.log + marker_diag_forks1.log",
+        "measured_in": "archived full-size run (RESULTS.md section 4)",
+        "reps": 1
+      }
+    ]
+  },
+  "smk_scaling": {
+    "wall_sec_by_n": {
+      "20": {
+        "median": 1.78,
+        "min": 1.78,
+        "max": 1.78,
+        "n_reps": 1,
+        "all": [
+          1.78
+        ]
+      }
+    },
+    "sleep_floor_by_n": {
+      "20": 0.125
+    },
+    "overhead_by_n": {
+      "20": {
+        "median": 1.655,
+        "min": 1.655,
+        "max": 1.655,
+        "n_reps": 1,
+        "all": [
+          1.655
+        ]
+      }
+    },
+    "peak_tree_rss_mb_by_n": {
+      "20": {
+        "median": 115.3,
+        "min": 115.3,
+        "max": 115.3,
+        "n_reps": 1,
+        "all": [
+          115.3
+        ]
+      }
+    },
+    "records": [
+      {
+        "tag": "smk_s3_n20_r1",
+        "cmd": "/home/pwwang/ws_bench/smk-venv/bin/snakemake --cores 8 -s /mnt/f/E/hermes-workspace/pipen/bench/smk_dag/Snakefile",
+        "rc": 0,
+        "wall_sec": 1.78,
+        "jobs_executed": 42,
+        "jobs_by_proc": {
+          "shard_start": 20,
+          "shard_end": 20,
+          "agg_start": 1,
+          "agg_end": 1
+        },
+        "jobs_from_log_all": 22,
+        "jobs_from_log_excl_target_rule": 21,
+        "executed_detail": [
+          "shard_start 14",
+          "shard_start 5",
+          "shard_start 0",
+          "shard_start 15",
+          "shard_start 6",
+          "shard_start 1",
+          "shard_start 16",
+          "shard_start 19",
+          "shard_end 14",
+          "shard_end 5",
+          "shard_end 0",
+          "shard_end 15",
+          "shard_end 6",
+          "shard_end 1",
+          "shard_end 16",
+          "shard_start 8",
+          "shard_end 19",
+          "shard_start 4",
+          "shard_start 7",
+          "shard_start 2",
+          "shard_start 18",
+          "shard_start 11",
+          "shard_start 12",
+          "shard_start 3",
+          "shard_end 8",
+          "shard_start 9",
+          "shard_end 4",
+          "shard_end 7",
+          "shard_end 2",
+          "shard_end 18",
+          "shard_end 11",
+          "shard_end 12",
+          "shard_start 17",
+          "shard_end 3",
+          "shard_start 13",
+          "shard_start 10",
+          "shard_end 9",
+          "shard_end 17",
+          "shard_end 13",
+          "shard_end 10",
+          "agg_start 0",
+          "agg_end 0"
+        ],
+        "peak_tree_rss_mb": 115.3,
+        "rss_samples": 35,
+        "loadavg_before": [
+          "0.42",
+          "0.73",
+          "1.83"
+        ],
+        "loadavg_after": [
+          "0.38",
+          "0.71",
+          "1.82"
+        ],
+        "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_smk_s3_n20_r1.log",
+        "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs_smk/smk_s3_n20_r1.log",
+        "workdir": "/home/pwwang/ws_bench/work/smkw_smk_s3_n20_r1",
+        "step": "3_scaling",
+        "n": 20,
+        "forks": 8,
+        "sleep_per_job": "0.05",
+        "cache": false,
+        "rep": 1,
+        "sleep_floor_sec": 0.125,
+        "overhead_vs_sleep_floor_sec": 1.655,
+        "agg_file": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/artefacts/agg_smk_smk_s3_n20_r1.txt",
+        "agg_sha256": "9cfbaaab688df1c3f9fc1198dcc26b0de5a321a57c60e6ba87c3fc80afbf03bd",
+        "agg_bytes": 50,
+        "agg_note": null,
+        "jobs": 21
+      }
+    ]
+  },
+  "smk_concurrency": {
+    "records": [
+      {
+        "tag": "smk_s4_n20_c1",
+        "cmd": "/home/pwwang/ws_bench/smk-venv/bin/snakemake --cores 1 -s /mnt/f/E/hermes-workspace/pipen/bench/smk_dag/Snakefile",
+        "rc": 0,
+        "wall_sec": 2.744,
+        "jobs_executed": 42,
+        "jobs_by_proc": {
+          "shard_start": 20,
+          "shard_end": 20,
+          "agg_start": 1,
+          "agg_end": 1
+        },
+        "jobs_from_log_all": 22,
+        "jobs_from_log_excl_target_rule": 21,
+        "executed_detail": [
+          "shard_start 13",
+          "shard_end 13",
+          "shard_start 10",
+          "shard_end 10",
+          "shard_start 19",
+          "shard_end 19",
+          "shard_start 14",
+          "shard_end 14",
+          "shard_start 5",
+          "shard_end 5",
+          "shard_start 15",
+          "shard_end 15",
+          "shard_start 6",
+          "shard_end 6",
+          "shard_start 1",
+          "shard_end 1",
+          "shard_start 8",
+          "shard_end 8",
+          "shard_start 3",
+          "shard_end 3",
+          "shard_start 12",
+          "shard_end 12",
+          "shard_start 17",
+          "shard_end 17",
+          "shard_start 9",
+          "shard_end 9",
+          "shard_start 11",
+          "shard_end 11",
+          "shard_start 18",
+          "shard_end 18",
+          "shard_start 2",
+          "shard_end 2",
+          "shard_start 0",
+          "shard_end 0",
+          "shard_start 16",
+          "shard_end 16",
+          "shard_start 7",
+          "shard_end 7",
+          "shard_start 4",
+          "shard_end 4",
+          "agg_start 0",
+          "agg_end 0"
+        ],
+        "peak_tree_rss_mb": 81.9,
+        "rss_samples": 54,
+        "loadavg_before": [
+          "0.38",
+          "0.71",
+          "1.82"
+        ],
+        "loadavg_after": [
+          "0.38",
+          "0.71",
+          "1.82"
+        ],
+        "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_smk_s4_n20_c1.log",
+        "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs_smk/smk_s4_n20_c1.log",
+        "workdir": "/home/pwwang/ws_bench/work/smkw_smk_s4_n20_c1",
+        "step": "4_concurrency",
+        "n": 20,
+        "forks": 1,
+        "sleep_per_job": "0.05",
+        "cache": false,
+        "rep": 1,
+        "sleep_floor_sec": 1.0,
+        "overhead_vs_sleep_floor_sec": 1.744,
+        "agg_file": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/artefacts/agg_smk_smk_s4_n20_c1.txt",
+        "agg_sha256": "9cfbaaab688df1c3f9fc1198dcc26b0de5a321a57c60e6ba87c3fc80afbf03bd",
+        "agg_bytes": 50,
+        "agg_note": null,
+        "speedup_vs_cores1": 1.0
+      },
+      {
+        "tag": "smk_s4_n20_c2",
+        "cmd": "/home/pwwang/ws_bench/smk-venv/bin/snakemake --cores 2 -s /mnt/f/E/hermes-workspace/pipen/bench/smk_dag/Snakefile",
+        "rc": 0,
+        "wall_sec": 2.15,
+        "jobs_executed": 42,
+        "jobs_by_proc": {
+          "shard_start": 20,
+          "shard_end": 20,
+          "agg_start": 1,
+          "agg_end": 1
+        },
+        "jobs_from_log_all": 22,
+        "jobs_from_log_excl_target_rule": 21,
+        "executed_detail": [
+          "shard_start 16",
+          "shard_start 19",
+          "shard_end 16",
+          "shard_end 19",
+          "shard_start 14",
+          "shard_start 5",
+          "shard_end 14",
+          "shard_end 5",
+          "shard_start 0",
+          "shard_start 15",
+          "shard_end 0",
+          "shard_end 15",
+          "shard_start 6",
+          "shard_start 1",
+          "shard_end 6",
+          "shard_end 1",
+          "shard_start 8",
+          "shard_start 3",
+          "shard_end 8",
+          "shard_end 3",
+          "shard_start 12",
+          "shard_start 17",
+          "shard_end 12",
+          "shard_end 17",
+          "shard_start 10",
+          "shard_start 13",
+          "shard_end 10",
+          "shard_end 13",
+          "shard_start 9",
+          "shard_start 11",
+          "shard_end 9",
+          "shard_end 11",
+          "shard_start 18",
+          "shard_start 2",
+          "shard_end 18",
+          "shard_end 2",
+          "shard_start 7",
+          "shard_start 4",
+          "shard_end 7",
+          "shard_end 4",
+          "agg_start 0",
+          "agg_end 0"
+        ],
+        "peak_tree_rss_mb": 86.7,
+        "rss_samples": 42,
+        "loadavg_before": [
+          "0.38",
+          "0.71",
+          "1.82"
+        ],
+        "loadavg_after": [
+          "0.35",
+          "0.70",
+          "1.81"
+        ],
+        "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_smk_s4_n20_c2.log",
+        "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs_smk/smk_s4_n20_c2.log",
+        "workdir": "/home/pwwang/ws_bench/work/smkw_smk_s4_n20_c2",
+        "step": "4_concurrency",
+        "n": 20,
+        "forks": 2,
+        "sleep_per_job": "0.05",
+        "cache": false,
+        "rep": 1,
+        "sleep_floor_sec": 0.5,
+        "overhead_vs_sleep_floor_sec": 1.65,
+        "agg_file": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/artefacts/agg_smk_smk_s4_n20_c2.txt",
+        "agg_sha256": "9cfbaaab688df1c3f9fc1198dcc26b0de5a321a57c60e6ba87c3fc80afbf03bd",
+        "agg_bytes": 50,
+        "agg_note": null,
+        "speedup_vs_cores1": 1.28
+      }
+    ]
+  },
+  "caching": {
+    "pipen_scope_phases": [
+      {
+        "step": "5_caching_scope",
+        "tag": "s5_r1_cold",
+        "n": 8,
+        "forks": 8,
+        "cache": true,
+        "rep": 1,
+        "_script": "bench_cache_dag.py",
+        "note": "fresh workdir, cache on: everything must execute",
+        "wall_sec": 9.066,
+        "pipeline_run_sec": null,
+        "rc": 0,
+        "rc_ok": true,
+        "pipeline_ok": false,
+        "cached_jobs_log_lines": [],
+        "jobs_executed": 25,
+        "jobs_by_proc": {
+          "Read": 8,
+          "Mid": 8,
+          "Side": 8,
+          "Agg": 1
+        },
+        "peak_tree_rss_mb": 329.9,
+        "rss_samples": 178,
+        "loadavg_before": [
+          "0.15",
+          "0.73",
+          "2.03"
+        ],
+        "loadavg_after": [
+          "1.01",
+          "0.90",
+          "2.07"
+        ],
+        "runinfo_version": "1.1.5",
+        "runinfo_enabled": true,
+        "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s5_r1_cold.log",
+        "marker_log_local": "/home/pwwang/ws_bench/work/markers/marker_s5_r1_cold.log",
+        "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs/s5_r1_cold.log",
+        "executed_detail": [
+          "Read in3.txt",
+          "Read in1.txt",
+          "Read in4.txt",
+          "Read in0.txt",
+          "Read in2.txt",
+          "Read in6.txt",
+          "Read in5.txt",
+          "Read in7.txt",
+          "Mid r-in2.txt",
+          "Mid r-in4.txt",
+          "Mid r-in0.txt",
+          "Mid r-in7.txt",
+          "Mid r-in1.txt",
+          "Mid r-in5.txt",
+          "Mid r-in3.txt",
+          "Mid r-in6.txt",
+          "Side r-in5.txt",
+          "Side r-in4.txt",
+          "Side r-in7.txt",
+          "Side r-in6.txt",
+          "Side r-in3.txt",
+          "Side r-in1.txt",
+          "Side r-in0.txt",
+          "Side r-in2.txt",
+          "Agg agg"
+        ]
+      },
+      {
+        "step": "5_caching_scope",
+        "tag": "s5_r2_rerun",
+        "n": 8,
+        "forks": 8,
+        "cache": true,
+        "rep": 2,
+        "_script": "bench_cache_dag.py",
+        "note": "immediate re-run, nothing changed",
+        "wall_sec": 0.963,
+        "pipeline_run_sec": null,
+        "rc": 0,
+        "rc_ok": true,
+        "pipeline_ok": false,
+        "cached_jobs_log_lines": [
+          "10-01 09:20:27 I core    Read: Cached jobs: 0-7",
+          "10-01 09:20:27 I core    Mid: Cached jobs: 0-7",
+          "10-01 09:20:27 I core    Side: Cached jobs: 0-7",
+          "10-01 09:20:27 I core    Agg: Cached jobs: 0"
+        ],
+        "jobs_executed": 0,
+        "jobs_by_proc": {},
+        "peak_tree_rss_mb": 89.6,
+        "rss_samples": 18,
+        "loadavg_before": [
+          "1.01",
+          "0.90",
+          "2.07"
+        ],
+        "loadavg_after": [
+          "1.01",
+          "0.90",
+          "2.07"
+        ],
+        "runinfo_version": "1.1.5",
+        "runinfo_enabled": true,
+        "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s5_r2_rerun.log",
+        "marker_log_local": "/home/pwwang/ws_bench/work/markers/marker_s5_r2_rerun.log",
+        "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs/s5_r2_rerun.log",
+        "executed_detail": []
+      },
+      {
+        "step": "5_caching_scope",
+        "tag": "s5_r3_input3_changed",
+        "n": 8,
+        "forks": 8,
+        "cache": true,
+        "rep": 3,
+        "_script": "bench_cache_dag.py",
+        "note": "content of in4.txt rewritten",
+        "wall_sec": 8.947,
+        "pipeline_run_sec": null,
+        "rc": 0,
+        "rc_ok": true,
+        "pipeline_ok": false,
+        "cached_jobs_log_lines": [
+          "10-01 09:20:28 I core    Read: Cached jobs: 0-3, 5-7",
+          "10-01 09:20:30 I core    Mid: Cached jobs: 0-3, 5-7",
+          "10-01 09:20:32 I core    Side: Cached jobs: 0-3, 5-7"
+        ],
+        "jobs_executed": 4,
+        "jobs_by_proc": {
+          "Read": 1,
+          "Mid": 1,
+          "Side": 1,
+          "Agg": 1
+        },
+        "peak_tree_rss_mb": 120.4,
+        "rss_samples": 176,
+        "loadavg_before": [
+          "1.01",
+          "0.90",
+          "2.07"
+        ],
+        "loadavg_after": [
+          "1.00",
+          "0.90",
+          "2.06"
+        ],
+        "runinfo_version": "1.1.5",
+        "runinfo_enabled": true,
+        "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s5_r3_input3_changed.log",
+        "marker_log_local": "/home/pwwang/ws_bench/work/markers/marker_s5_r3_input3_changed.log",
+        "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs/s5_r3_input3_changed.log",
+        "executed_detail": [
+          "Read in4.txt",
+          "Mid r-in4.txt",
+          "Side r-in4.txt",
+          "Agg agg"
+        ]
+      },
+      {
+        "step": "5_caching_scope",
+        "tag": "s5_r4_mid_script_changed",
+        "n": 8,
+        "forks": 8,
+        "cache": true,
+        "rep": 4,
+        "_script": "bench_cache_dag.py",
+        "note": "Mid process script variant A -> B",
+        "wall_sec": 5.092,
+        "pipeline_run_sec": null,
+        "rc": 0,
+        "rc_ok": true,
+        "pipeline_ok": false,
+        "cached_jobs_log_lines": [
+          "10-01 09:20:37 I core    Read: Cached jobs: 0-7",
+          "10-01 09:20:39 I core    Side: Cached jobs: 0-7"
+        ],
+        "jobs_executed": 9,
+        "jobs_by_proc": {
+          "Mid": 8,
+          "Agg": 1
+        },
+        "peak_tree_rss_mb": 292.6,
+        "rss_samples": 100,
+        "loadavg_before": [
+          "1.00",
+          "0.90",
+          "2.06"
+        ],
+        "loadavg_after": [
+          "0.92",
+          "0.89",
+          "2.05"
+        ],
+        "runinfo_version": "1.1.5",
+        "runinfo_enabled": true,
+        "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s5_r4_mid_script_changed.log",
+        "marker_log_local": "/home/pwwang/ws_bench/work/markers/marker_s5_r4_mid_script_changed.log",
+        "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs/s5_r4_mid_script_changed.log",
+        "executed_detail": [
+          "Mid r-in3.txt",
+          "Mid r-in4.txt",
+          "Mid r-in0.txt",
+          "Mid r-in1.txt",
+          "Mid r-in7.txt",
+          "Mid r-in6.txt",
+          "Mid r-in2.txt",
+          "Mid r-in5.txt",
+          "Agg agg"
+        ]
+      },
+      {
+        "step": "5_caching_scope",
+        "tag": "s5_r5_rerun",
+        "n": 8,
+        "forks": 8,
+        "cache": true,
+        "rep": 5,
+        "_script": "bench_cache_dag.py",
+        "note": "re-run immediately after r4, nothing else changed (variant stays B)",
+        "wall_sec": 1.063,
+        "pipeline_run_sec": null,
+        "rc": 0,
+        "rc_ok": true,
+        "pipeline_ok": false,
+        "cached_jobs_log_lines": [
+          "10-01 09:20:42 I core    Read: Cached jobs: 0-7",
+          "10-01 09:20:42 I core    Mid: Cached jobs: 0-7",
+          "10-01 09:20:42 I core    Side: Cached jobs: 0-7",
+          "10-01 09:20:42 I core    Agg: Cached jobs: 0"
+        ],
+        "jobs_executed": 0,
+        "jobs_by_proc": {},
+        "peak_tree_rss_mb": 89.4,
+        "rss_samples": 20,
+        "loadavg_before": [
+          "0.92",
+          "0.89",
+          "2.05"
+        ],
+        "loadavg_after": [
+          "0.92",
+          "0.89",
+          "2.05"
+        ],
+        "runinfo_version": "1.1.5",
+        "runinfo_enabled": true,
+        "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s5_r5_rerun.log",
+        "marker_log_local": "/home/pwwang/ws_bench/work/markers/marker_s5_r5_rerun.log",
+        "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs/s5_r5_rerun.log",
+        "executed_detail": []
+      }
+    ],
+    "pipen_scope_agg_output": "# MID\nB:line0-v1\nB:line1-v1\nB:line2-v1\nB:line3-v1\nB:line3-v2\nB:line5-v1\nB:line6-v1\nB:line7-v1\n# SIDE\nA:line0-v1\nA:line1-v1\nA:line2-v1\nA:line3-v1\nA:line3-v2\nA:line5-v1\nA:line6-v1\nA:line7-v1\n",
+    "pipen_scope_agg_file": "/home/pwwang/ws_bench/work/CachePipeline-output/Agg/agg.txt",
+    "pipen_scope_modified_input": "/home/pwwang/ws_bench/work/cache_inputs_small/in4.txt",
+    "pipen_timing": [
+      {
+        "step": "5_caching_timing",
+        "tag": "s5_time_n20_cold_r1",
+        "n": 20,
+        "forks": 8,
+        "cache": true,
+        "rep": 1,
+        "_script": "bench_cache_dag.py",
+        "note": "cold",
+        "wall_sec": 27.392,
+        "pipeline_run_sec": null,
+        "rc": 0,
+        "rc_ok": true,
+        "pipeline_ok": false,
+        "cached_jobs_log_lines": [],
+        "jobs_executed": 61,
+        "jobs_by_proc": {
+          "Read": 20,
+          "Mid": 20,
+          "Side": 20,
+          "Agg": 1
+        },
+        "peak_tree_rss_mb": 290.0,
+        "rss_samples": 538,
+        "loadavg_before": [
+          "0.92",
+          "0.89",
+          "2.05"
+        ],
+        "loadavg_after": [
+          "0.61",
+          "0.81",
+          "1.99"
+        ],
+        "runinfo_version": "1.1.5",
+        "runinfo_enabled": true,
+        "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s5_time_n20_cold_r1.log",
+        "marker_log_local": "/home/pwwang/ws_bench/work/markers/marker_s5_time_n20_cold_r1.log",
+        "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs/s5_time_n20_cold_r1.log",
+        "agg_file": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/artefacts/agg_pipen_s5time_cold_n20_r1.txt",
+        "agg_sha256": "098f9c505c95f959d3633a87dec4378046c60f3844eba72f26de88e2cadd6a94",
+        "agg_bytes": 473,
+        "agg_note": null
+      },
+      {
+        "step": "5_caching_timing",
+        "tag": "s5_time_n20_warm1_r1",
+        "n": 20,
+        "forks": 8,
+        "cache": true,
+        "rep": 1,
+        "_script": "bench_cache_dag.py",
+        "note": "warm1",
+        "wall_sec": 0.917,
+        "pipeline_run_sec": null,
+        "rc": 0,
+        "rc_ok": true,
+        "pipeline_ok": false,
+        "cached_jobs_log_lines": [
+          "10-01 09:21:13 I core    Read: Cached jobs: 0-19",
+          "10-01 09:21:13 I core    Mid: Cached jobs: 0-19",
+          "10-01 09:21:14 I core    Side: Cached jobs: 0-19",
+          "10-01 09:21:14 I core    Agg: Cached jobs: 0"
+        ],
+        "jobs_executed": 0,
+        "jobs_by_proc": {},
+        "peak_tree_rss_mb": 89.6,
+        "rss_samples": 18,
+        "loadavg_before": [
+          "0.61",
+          "0.81",
+          "1.99"
+        ],
+        "loadavg_after": [
+          "0.64",
+          "0.82",
+          "1.99"
+        ],
+        "runinfo_version": "1.1.5",
+        "runinfo_enabled": true,
+        "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s5_time_n20_warm1_r1.log",
+        "marker_log_local": "/home/pwwang/ws_bench/work/markers/marker_s5_time_n20_warm1_r1.log",
+        "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs/s5_time_n20_warm1_r1.log"
+      },
+      {
+        "step": "5_caching_timing",
+        "tag": "s5_time_n20_warm2_r1",
+        "n": 20,
+        "forks": 8,
+        "cache": true,
+        "rep": 1,
+        "_script": "bench_cache_dag.py",
+        "note": "warm2",
+        "wall_sec": 0.969,
+        "pipeline_run_sec": null,
+        "rc": 0,
+        "rc_ok": true,
+        "pipeline_ok": false,
+        "cached_jobs_log_lines": [
+          "10-01 09:21:14 I core    Read: Cached jobs: 0-19",
+          "10-01 09:21:14 I core    Mid: Cached jobs: 0-19",
+          "10-01 09:21:15 I core    Side: Cached jobs: 0-19",
+          "10-01 09:21:15 I core    Agg: Cached jobs: 0"
+        ],
+        "jobs_executed": 0,
+        "jobs_by_proc": {},
+        "peak_tree_rss_mb": 89.6,
+        "rss_samples": 19,
+        "loadavg_before": [
+          "0.64",
+          "0.82",
+          "1.99"
+        ],
+        "loadavg_after": [
+          "0.64",
+          "0.82",
+          "1.99"
+        ],
+        "runinfo_version": "1.1.5",
+        "runinfo_enabled": true,
+        "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s5_time_n20_warm2_r1.log",
+        "marker_log_local": "/home/pwwang/ws_bench/work/markers/marker_s5_time_n20_warm2_r1.log",
+        "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs/s5_time_n20_warm2_r1.log"
+      }
+    ],
+    "smk_scope_phases": [
+      {
+        "tag": "smk_s5_r1_cold",
+        "cmd": "/home/pwwang/ws_bench/smk-venv/bin/snakemake --cores 8 -s /mnt/f/E/hermes-workspace/pipen/bench/smk_cache/Snakefile",
+        "rc": 0,
+        "wall_sec": 1.618,
+        "jobs_executed": 25,
+        "jobs_by_proc": {
+          "Read": 8,
+          "Side": 8,
+          "Mid": 8,
+          "Agg": 1
+        },
+        "jobs_from_log_all": 26,
+        "jobs_from_log_excl_target_rule": 25,
+        "executed_detail": [
+          "Read in{i}.txt",
+          "Read in{i}.txt",
+          "Read in{i}.txt",
+          "Read in{i}.txt",
+          "Read in{i}.txt",
+          "Read in{i}.txt",
+          "Read in{i}.txt",
+          "Read in{i}.txt",
+          "Side r-in{i}.txt",
+          "Mid r-in{i}.txt",
+          "Mid r-in{i}.txt",
+          "Side r-in{i}.txt",
+          "Side r-in{i}.txt",
+          "Side r-in{i}.txt",
+          "Side r-in{i}.txt",
+          "Mid r-in{i}.txt",
+          "Side r-in{i}.txt",
+          "Mid r-in{i}.txt",
+          "Side r-in{i}.txt",
+          "Mid r-in{i}.txt",
+          "Mid r-in{i}.txt",
+          "Side r-in{i}.txt",
+          "Mid r-in{i}.txt",
+          "Mid r-in{i}.txt",
+          "Agg agg"
+        ],
+        "peak_tree_rss_mb": 77.0,
+        "rss_samples": 31,
+        "loadavg_before": [
+          "0.35",
+          "0.70",
+          "1.81"
+        ],
+        "loadavg_after": [
+          "0.35",
+          "0.70",
+          "1.81"
+        ],
+        "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_smk_s5_scope.log",
+        "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs_smk/smk_s5_r1_cold.log",
+        "workdir": "/home/pwwang/ws_bench/work/smkw_s5_scope",
+        "step": "5_caching_scope",
+        "n": 8,
+        "forks": 8,
+        "cache": true,
+        "rep": 1,
+        "note": "fresh workdir",
+        "agg_file": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/artefacts/agg_smk_cache_r1_cold.txt",
+        "agg_sha256": "5fdaed2c04ad9f802f953ab410a56e8ace6ec426321b2ddd6699145b785dc0d0",
+        "agg_bytes": 189,
+        "agg_note": null
+      },
+      {
+        "tag": "smk_s5_r2_rerun",
+        "cmd": "/home/pwwang/ws_bench/smk-venv/bin/snakemake --cores 8 -s /mnt/f/E/hermes-workspace/pipen/bench/smk_cache/Snakefile",
+        "rc": 0,
+        "wall_sec": 0.509,
+        "jobs_executed": 0,
+        "jobs_by_proc": {},
+        "jobs_from_log_all": 0,
+        "jobs_from_log_excl_target_rule": 0,
+        "executed_detail": [],
+        "peak_tree_rss_mb": 77.0,
+        "rss_samples": 10,
+        "loadavg_before": [
+          "0.35",
+          "0.70",
+          "1.81"
+        ],
+        "loadavg_after": [
+          "0.35",
+          "0.70",
+          "1.81"
+        ],
+        "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_smk_s5_scope.log",
+        "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs_smk/smk_s5_r2_rerun.log",
+        "workdir": "/home/pwwang/ws_bench/work/smkw_s5_scope",
+        "step": "5_caching_scope",
+        "n": 8,
+        "forks": 8,
+        "cache": true,
+        "rep": 2,
+        "note": "nothing changed",
+        "agg_file": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/artefacts/agg_smk_cache_r2_rerun.txt",
+        "agg_sha256": "5fdaed2c04ad9f802f953ab410a56e8ace6ec426321b2ddd6699145b785dc0d0",
+        "agg_bytes": 189,
+        "agg_note": null
+      },
+      {
+        "tag": "smk_s5_r3_input4_changed",
+        "cmd": "/home/pwwang/ws_bench/smk-venv/bin/snakemake --cores 8 -s /mnt/f/E/hermes-workspace/pipen/bench/smk_cache/Snakefile",
+        "rc": 0,
+        "wall_sec": 1.524,
+        "jobs_executed": 4,
+        "jobs_by_proc": {
+          "Read": 1,
+          "Side": 1,
+          "Mid": 1,
+          "Agg": 1
+        },
+        "jobs_from_log_all": 5,
+        "jobs_from_log_excl_target_rule": 4,
+        "executed_detail": [
+          "Read in{i}.txt",
+          "Side r-in{i}.txt",
+          "Mid r-in{i}.txt",
+          "Agg agg"
+        ],
+        "peak_tree_rss_mb": 79.9,
+        "rss_samples": 30,
+        "loadavg_before": [
+          "0.35",
+          "0.70",
+          "1.81"
+        ],
+        "loadavg_after": [
+          "0.35",
+          "0.70",
+          "1.81"
+        ],
+        "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_smk_s5_scope.log",
+        "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs_smk/smk_s5_r3_input4_changed.log",
+        "workdir": "/home/pwwang/ws_bench/work/smkw_s5_scope",
+        "step": "5_caching_scope",
+        "n": 8,
+        "forks": 8,
+        "cache": true,
+        "rep": 3,
+        "note": "in4.txt content rewritten",
+        "agg_file": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/artefacts/agg_smk_cache_r3_input4_changed.txt",
+        "agg_sha256": "eaf9a7020fe839fc1e094ba96f8b03bff7e2582e51323c255ad22c797419a76f",
+        "agg_bytes": 189,
+        "agg_note": null
+      },
+      {
+        "tag": "smk_s5_r4_mid_script_changed",
+        "cmd": "/home/pwwang/ws_bench/smk-venv/bin/snakemake --cores 8 -s /mnt/f/E/hermes-workspace/pipen/bench/smk_cache/Snakefile",
+        "rc": 0,
+        "wall_sec": 1.524,
+        "jobs_executed": 9,
+        "jobs_by_proc": {
+          "Mid": 8,
+          "Agg": 1
+        },
+        "jobs_from_log_all": 10,
+        "jobs_from_log_excl_target_rule": 9,
+        "executed_detail": [
+          "Mid r-in{i}.txt",
+          "Mid r-in{i}.txt",
+          "Mid r-in{i}.txt",
+          "Mid r-in{i}.txt",
+          "Mid r-in{i}.txt",
+          "Mid r-in{i}.txt",
+          "Mid r-in{i}.txt",
+          "Mid r-in{i}.txt",
+          "Agg agg"
+        ],
+        "peak_tree_rss_mb": 77.0,
+        "rss_samples": 30,
+        "loadavg_before": [
+          "0.35",
+          "0.70",
+          "1.81"
+        ],
+        "loadavg_after": [
+          "0.33",
+          "0.69",
+          "1.80"
+        ],
+        "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_smk_s5_scope.log",
+        "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs_smk/smk_s5_r4_mid_script_changed.log",
+        "workdir": "/home/pwwang/ws_bench/work/smkw_s5_scope",
+        "step": "5_caching_scope",
+        "n": 8,
+        "forks": 8,
+        "cache": true,
+        "rep": 4,
+        "note": "mid rule shell A -> B, default --rerun-triggers",
+        "agg_file": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/artefacts/agg_smk_cache_r4_mid_script_changed.txt",
+        "agg_sha256": "5cd240789bfdf0b4c1320eb9984f5a3484f9bcb2845f0bece0fc5584c4766755",
+        "agg_bytes": 189,
+        "agg_note": null
+      },
+      {
+        "tag": "smk_s5_r4b_mid_script_changed_mtime_trigger",
+        "cmd": "/home/pwwang/ws_bench/smk-venv/bin/snakemake --cores 8 -s /mnt/f/E/hermes-workspace/pipen/bench/smk_cache/Snakefile --rerun-triggers mtime",
+        "rc": 0,
+        "wall_sec": 0.511,
+        "jobs_executed": 0,
+        "jobs_by_proc": {},
+        "jobs_from_log_all": 0,
+        "jobs_from_log_excl_target_rule": 0,
+        "executed_detail": [],
+        "peak_tree_rss_mb": 76.9,
+        "rss_samples": 10,
+        "loadavg_before": [
+          "0.33",
+          "0.69",
+          "1.80"
+        ],
+        "loadavg_after": [
+          "0.33",
+          "0.69",
+          "1.80"
+        ],
+        "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_smk_s5_scope.log",
+        "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs_smk/smk_s5_r4b_mid_script_changed_mtime_trigger.log",
+        "workdir": "/home/pwwang/ws_bench/work/smkw_s5_scope",
+        "step": "5_caching_scope",
+        "n": 8,
+        "forks": 8,
+        "cache": true,
+        "rep": 5,
+        "note": "same as r4 but --rerun-triggers mtime (traditional Snakemake)",
+        "agg_file": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/artefacts/agg_smk_cache_r4b_mid_script_changed_mtime_trigger.txt",
+        "agg_sha256": "5cd240789bfdf0b4c1320eb9984f5a3484f9bcb2845f0bece0fc5584c4766755",
+        "agg_bytes": 189,
+        "agg_note": null
+      },
+      {
+        "tag": "smk_s5_r5_rerun",
+        "cmd": "/home/pwwang/ws_bench/smk-venv/bin/snakemake --cores 8 -s /mnt/f/E/hermes-workspace/pipen/bench/smk_cache/Snakefile",
+        "rc": 0,
+        "wall_sec": 0.51,
+        "jobs_executed": 0,
+        "jobs_by_proc": {},
+        "jobs_from_log_all": 0,
+        "jobs_from_log_excl_target_rule": 0,
+        "executed_detail": [],
+        "peak_tree_rss_mb": 76.9,
+        "rss_samples": 10,
+        "loadavg_before": [
+          "0.33",
+          "0.69",
+          "1.80"
+        ],
+        "loadavg_after": [
+          "0.33",
+          "0.69",
+          "1.80"
+        ],
+        "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_smk_s5_scope.log",
+        "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs_smk/smk_s5_r5_rerun.log",
+        "workdir": "/home/pwwang/ws_bench/work/smkw_s5_scope",
+        "step": "5_caching_scope",
+        "n": 8,
+        "forks": 8,
+        "cache": true,
+        "rep": 6,
+        "note": "nothing changed (variant stays B)",
+        "agg_file": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/artefacts/agg_smk_cache_r5_rerun.txt",
+        "agg_sha256": "5cd240789bfdf0b4c1320eb9984f5a3484f9bcb2845f0bece0fc5584c4766755",
+        "agg_bytes": 189,
+        "agg_note": null
+      }
+    ],
+    "smk_scope_modified_input": "/home/pwwang/ws_bench/work/smkw_s5_scope/inputs/in4.txt"
+  },
+  "observed_parallelism": {
+    "pipen_s4_n20_f1_r1": [
+      "jobs=20 ends=20",
+      "first_start=1790871693.860684 last_end=1790871753.892742 span=60.032s",
+      "peak_concurrent_jobs=1",
+      "mean_concurrent_jobs=0.02",
+      "sum_job_durations=1.031s",
+      "job_duration_s: min=0.0514 median=0.0515 max=0.0519",
+      "start_spread=59.981s  (first job start delayed by 0.000s after the earliest)"
+    ],
+    "pipen_s4_n20_f2_r1": [
+      "jobs=20 ends=20",
+      "first_start=1790871761.620489 last_end=1790871788.701888 span=27.081s",
+      "peak_concurrent_jobs=2",
+      "mean_concurrent_jobs=0.04",
+      "sum_job_durations=1.029s",
+      "job_duration_s: min=0.0512 median=0.0515 max=0.0518",
+      "start_spread=27.030s  (first job start delayed by 0.000s after the earliest)"
+    ],
+    "pipen_s3_n20_r1": [
+      "jobs=20 ends=20",
+      "first_start=1790871678.039510 last_end=1790871689.085268 span=11.046s",
+      "peak_concurrent_jobs=8",
+      "mean_concurrent_jobs=0.09",
+      "sum_job_durations=1.029s",
+      "job_duration_s: min=0.0511 median=0.0514 max=0.0528",
+      "start_spread=10.995s  (first job start delayed by 0.000s after the earliest)"
+    ],
+    "smk_s4_n20_c1": [
+      "jobs=20 ends=20",
+      "first_start=1790871796.328738 last_end=1790871797.524700 span=1.196s",
+      "peak_concurrent_jobs=1",
+      "mean_concurrent_jobs=0.86",
+      "sum_job_durations=1.029s",
+      "job_duration_s: min=0.0514 median=0.0514 max=0.0517",
+      "start_spread=1.144s  (first job start delayed by 0.000s after the earliest)"
+    ],
+    "smk_s4_n20_c2": [
+      "jobs=20 ends=20",
+      "first_start=1790871799.060474 last_end=1790871799.659303 span=0.599s",
+      "peak_concurrent_jobs=2",
+      "mean_concurrent_jobs=1.72",
+      "sum_job_durations=1.028s",
+      "job_duration_s: min=0.0512 median=0.0514 max=0.0517",
+      "start_spread=0.548s  (first job start delayed by 0.000s after the earliest)"
+    ],
+    "smk_s3_n20_r1": [
+      "jobs=20 ends=20",
+      "first_start=1790871794.534439 last_end=1790871794.729234 span=0.195s",
+      "peak_concurrent_jobs=8",
+      "mean_concurrent_jobs=5.26",
+      "sum_job_durations=1.025s",
+      "job_duration_s: min=0.0511 median=0.0513 max=0.0516",
+      "start_spread=0.143s  (first job start delayed by 0.000s after the earliest)"
+    ]
+  },
+  "missing_inputs": [],
+  "artefact_dir": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run"
+}

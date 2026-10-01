@@ -1,0 +1,102 @@
+=== mcp package top level ===
+__init__.py
+__pycache__
+cli
+client
+os
+py.typed
+server
+shared
+types
+
+=== mcp/client ===
+__init__.py
+__main__.py
+__pycache__
+_input_required.py
+_memory.py
+_probe.py
+_transport.py
+auth
+caching.py
+client.py
+context.py
+extension.py
+session.py
+session_group.py
+sse.py
+stdio.py
+streamable_http.py
+subscriptions.py
+
+=== mcp/server ===
+__init__.py
+__main__.py
+__pycache__
+_otel.py
+_streamable_http_modern.py
+apps.py
+auth
+caching.py
+connection.py
+context.py
+elicitation.py
+extension.py
+fastmcp.py
+lowlevel
+mcpserver
+models.py
+request_state.py
+runner.py
+session.py
+sse.py
+stdio.py
+streamable_http.py
+streamable_http_manager.py
+subscriptions.py
+transport_security.py
+validation.py
+
+=== exports of mcp (dir) ===
+mcp version: ?
+mcp file: /home/pwwang/aidemo/.venv/lib/python3.12/site-packages/mcp/__init__.py
+public: ['CallToolRequest', 'Client', 'ClientCapabilities', 'ClientNotification', 'ClientRequest', 'ClientResult', 'ClientSession', 'ClientSessionGroup', 'CompleteRequest', 'CreateMessageRequest', 'CreateMessageResult', 'CreateMessageResultWithTools', 'ErrorData', 'GetPromptRequest', 'GetPromptResult', 'Implementation', 'IncludeContext', 'InitializeRequest', 'InitializeResult', 'InitializedNotification', 'InputRequiredRoundsExceededError', 'InvalidUriTemplate', 'JSONRPCError', 'JSONRPCRequest', 'JSONRPCResponse', 'ListPromptsRequest', 'ListPromptsResult', 'ListResourcesRequest', 'ListResourcesResult', 'ListToolsResult', 'LoggingLevel', 'LoggingMessageNotification', 'MCPDeprecationWarning', 'MCPError', 'Notification', 'PingRequest', 'ProgressNotification', 'PromptsCapability', 'ReadResourceRequest', 'ReadResourceResult', 'Resource', 'ResourceUpdatedNotification', 'ResourcesCapability', 'RootsCapability', 'SamplingCapability', 'SamplingContent', 'SamplingContextCapability', 'SamplingMessage', 'SamplingMessageContentBlock', 'SamplingRole', 'SamplingToolsCapability', 'ServerCapabilities', 'ServerNotification', 'ServerRequest', 'ServerResult', 'ServerSession', 'SetLevelRequest', 'StdioServerParameters', 'StopReason', 'SubscribeRequest', 'Tool', 'ToolChoice', 'ToolResultContent', 'ToolUseContent', 'ToolsCapability', 'UnsubscribeRequest', 'UriTemplate', 'UrlElicitationRequiredError', 'client', 'os', 'server', 'shared', 'stdio_client', 'stdio_server', 'types']
+mcp.client public: ['CacheConfig', 'CacheEntry', 'CacheKey', 'CacheMode', 'ClaimContext', 'Client', 'ClientExtension', 'ClientRequestContext', 'ClientSession', 'InMemoryResponseCacheStore', 'IncomingMessage', 'InputRequiredRoundsExceededError', 'NotificationBinding', 'ResponseCacheStore', 'ResultClaim', 'Transport', 'UnexpectedClaimedResult', 'advertise', 'caching', 'client', 'context', 'extension', 'session', 'session_group', 'sse', 'stdio', 'streamable_http', 'subscriptions']
+stdio params: <class 'mcp.client.stdio.StdioServerParameters'>
+ClientSession: <class 'mcp.client.session.ClientSession'>
+session methods: ['adopt', 'call_tool', 'complete', 'discover', 'discover_result', 'dispatch_input_request', 'get_prompt', 'initialize', 'initialize_result', 'instructions', 'list_prompts', 'list_resource_templates', 'list_resources', 'list_tools', 'protocol_version', 'read_resource', 'send_discover', 'send_notification', 'send_ping', 'send_progress_notification', 'send_request', 'send_roots_list_changed', 'server_capabilities', 'server_info', 'set_logging_level', 'subscribe_resource', 'unsubscribe_resource', 'validate_tool_result']
+MCPServer methods: ['add_prompt', 'add_resource', 'add_tool', 'call_tool', 'completion', 'custom_route', 'description', 'get_prompt', 'icons', 'instructions', 'list_prompts', 'list_resource_templates', 'list_resources', 'list_tools', 'middleware', 'name', 'prompt', 'read_resource', 'remove_prompt', 'remove_tool', 'resource', 'run', 'run_sse_async', 'run_stdio_async', 'run_streamable_http_async', 'session_manager', 'sse_app', 'streamable_http_app', 'title', 'tool', 'version', 'website_url']
+
+=== mcp CLI: mcp --help ===
+                                                                                
+ Usage: mcp [OPTIONS] COMMAND [ARGS]...                                         
+                                                                                
+ MCP development tools                                                          
+                                                                                
+╭─ Options ────────────────────────────────────────────────────────────────────╮
+│ --help          Show this message and exit.                                  │
+╰──────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ───────────────────────────────────────────────────────────────────╮
+│ version  Show the MCP version.                                               │
+│ dev      Run an MCP server with the MCP Inspector.                           │
+│ run      Run an MCP server.                                                  │
+│ install  Install an MCP server in the Claude desktop app.                    │
+╰──────────────────────────────────────────────────────────────────────────────╯
+
+RC=0
+
+=== pipen mcp --help ===
+[1m[4mUsage[0m[0m: pipen mcp [-h] [--transport {stdio,sse,streamable-http}] [--host HOST]
+                 [--port PORT]
+
+Expose pipen processes/pipelines as MCP tools
+
+[1m[4mOptions[0m[0m:
+  -h, --help            show this help message and exit
+  --transport {stdio,sse,streamable-http}
+                        MCP transport to use [default: stdio]
+  --host HOST           Host to bind to for sse/streamable-http [default:
+                        127.0.0.1]
+  --port PORT           Port to listen on for sse/streamable-http [default:
+                        8520]
+RC=0

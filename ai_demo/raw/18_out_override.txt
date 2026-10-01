@@ -1,0 +1,19 @@
+### pipen run demo_ns FastqStats ... --out.stats custom_stats.tsv
+09-30 21:49:49 I core    outdir          : out
+09-30 21:49:49 I core    FastqStats: >>> [END]
+RC=0
+--- files produced ---
+/home/pwwang/aidemo/run_out_override/out/FastqStats/read_stats.tsv
+--- generated job script ---
+zcat /home/pwwang/aidemo/testdata/s1_R1.fastq.gz /home/pwwang/aidemo/testdata/s1_R2.fastq.gz \
+  | awk -v min=0 -v sid=sample '
+      NR % 4 == 2 {
+          n++;
+          len += length($0);
+          if (length($0) > max) max = length($0);
+          if (length($0) >= min) kept++;
+      }
+      END {
+          printf("%s\t%d\t%d\t%d\t%.1f\n", sid, n, kept, max, len / n);
+      }
+    ' > out/FastqStats/read_stats.tsv

@@ -1,0 +1,55 @@
+import os
+
+N = int(os.environ.get("BN_N", "8"))
+MARKER = os.environ["BN_MARKER"]
+MIDV = os.environ.get("BN_MIDVARIANT", "A")
+SED = {"A": "sed 's/^/A:/'", "B": "sed 's/^/B:/'"}[MIDV]
+
+
+rule all:
+    input:
+        "agg.txt",
+
+
+rule read:
+    input:
+        "inputs/in{i}.txt",
+    output:
+        "work/r-in{i}.txt",
+    shell:
+        "echo \"Read in{{i}}.txt $(date +%s.%N)\" >> " + MARKER + "\n"
+        "cat {input} > {output}"
+
+
+rule mid:
+    input:
+        "work/r-in{i}.txt",
+    output:
+        "work/m-r-in{i}.txt",
+    shell:
+        "echo \"Mid r-in{{i}}.txt $(date +%s.%N)\" >> " + MARKER + "\n"
+        "cat {input} | " + SED + " > {output}"
+
+
+rule side:
+    input:
+        "work/r-in{i}.txt",
+    output:
+        "work/s-r-in{i}.txt",
+    shell:
+        "echo \"Side r-in{{i}}.txt $(date +%s.%N)\" >> " + MARKER + "\n"
+        "cat {input} | sed 's/^/A:/' > {output}"
+
+
+rule agg:
+    input:
+        expand("work/m-r-in{i}.txt", i=range(N))
+        + expand("work/s-r-in{i}.txt", i=range(N)),
+    output:
+        "agg.txt",
+    shell:
+        "echo \"Agg agg $(date +%s.%N)\" >> " + MARKER + "\n"
+        "echo '# MID' > {output}\n"
+        "cat " + " ".join(f"work/m-r-in{i}.txt" for i in range(N)) + " >> {output}\n"
+        "echo '# SIDE' >> {output}\n"
+        "cat " + " ".join(f"work/s-r-in{i}.txt" for i in range(N)) + " >> {output}"

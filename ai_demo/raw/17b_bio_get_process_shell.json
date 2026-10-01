@@ -1,0 +1,13 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Process: Shell  (namespace: misc)\nDescription: Run a shell command\n\nArguments:\n  Required:\n    --in.infile <str>  The input file\n  Optional:\n    --envs.cmd <str> (default: '')  The shell command to run Use `$infile` and `$outfile` to refer to input and output files\n    --envs.outdir <bool> (default: False)  Whether the `out.outfile` should be a directory.\nIf so a directory will be created before running the command.\n    --outdir <str>  Output directory of the pipeline\n    --forks <int>  Number of jobs to run simultaneously\n    --scheduler <str>  Scheduler to run the jobs\n    --profile <str>  Configuration profile to use\n    --cache <str>  Cache strategy: true/false/force\n\nExample:\n  run_process(\"misc\", \"Shell\", [\"--in.infile\", \"<value>\"])"
+    }
+  ],
+  "structured_content": {
+    "result": "Process: Shell  (namespace: misc)\nDescription: Run a shell command\n\nArguments:\n  Required:\n    --in.infile <str>  The input file\n  Optional:\n    --envs.cmd <str> (default: '')  The shell command to run Use `$infile` and `$outfile` to refer to input and output files\n    --envs.outdir <bool> (default: False)  Whether the `out.outfile` should be a directory.\nIf so a directory will be created before running the command.\n    --outdir <str>  Output directory of the pipeline\n    --forks <int>  Number of jobs to run simultaneously\n    --scheduler <str>  Scheduler to run the jobs\n    --profile <str>  Configuration profile to use\n    --cache <str>  Cache strategy: true/false/force\n\nExample:\n  run_process(\"misc\", \"Shell\", [\"--in.infile\", \"<value>\"])"
+  },
+  "is_error": false,
+  "result_type": "complete"
+}

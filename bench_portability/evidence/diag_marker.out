@@ -1,0 +1,34 @@
+=== marker files under OUT_ROOT/markers (OUT_ROOT is on the 9p mount /mnt/f) ===
+    33 lines  /mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s3_n20_r1.log
+    42 lines  /mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s4_n20_f1_r1.log
+    41 lines  /mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s4_n20_f2_r1.log
+     0 lines  /mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s5_r1_cold.log
+     0 lines  /mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s5_r2_rerun.log
+     0 lines  /mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s5_r3_input3_changed.log
+     0 lines  /mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s5_r4_mid_script_changed.log
+     0 lines  /mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s5_r5_rerun.log
+    27 lines  /mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s5_scope.log
+     0 lines  /mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s5_time_n20_cold_r1.log
+     0 lines  /mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s5_time_n20_warm1_r1.log
+     0 lines  /mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s5_time_n20_warm2_r1.log
+    50 lines  /mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s5_time_r1.log
+    41 lines  /mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_smk_s3_n20_r1.log
+    42 lines  /mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_smk_s4_n20_c1.log
+    42 lines  /mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_smk_s4_n20_c2.log
+    37 lines  /mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_smk_s5_scope.log
+
+=== ground truth: job dirs actually created in the caching-scope workdir ===
+25
+(scaling/concurrency workdirs are deleted after every rep, as designed)
+
+=== pipen's own job accounting for the scope cold phase ===
+
+=== agg.txt exported by the scope run (must contain N lines per branch) ===
+
+=== A/B: identical DAG, marker log on ext4 vs on the 9p mount ===
+marker on ext4: 42 lines   [expect 42 = 21 jobs x (start+end)]
+marker on 9p: 29 lines   [expect 42 = 21 jobs x (start+end)]
+
+=== mounts involved ===
+/dev/sdd on / type ext4 (rw,relatime,discard,errors=remount-ro,data=ordered)
+F:\ on /mnt/f type 9p (rw,noatime,aname=drvfs;path=F:\;uid=1002;gid=1002;symlinkroot=/mnt/,cache=0x5,access=client,msize=65536,trans=fd,rfd=6,wfd=6)

@@ -1,0 +1,86 @@
+CWD at run time: /home/pwwang/aidemo/run_cli_workdir
+
+$ pipen run demo_ns FastqStats --in.r1 <r1> --in.r2 <r2> --envs.min_length 50 --envs.sample_id s1 --outdir ./out
+09-30 21:45:13 I core                      _____________________________________   __
+09-30 21:45:13 I core                      ___  __ \___  _/__  __ \__  ____/__  | / /
+09-30 21:45:13 I core                      __  /_/ /__  / __  /_/ /_  __/  __   |/ /
+09-30 21:45:13 I core                      _  ____/__/ /  _  ____/_  /___  _  /|  /
+09-30 21:45:13 I core                      /_/     /___/  /_/     /_____/  /_/ |_/
+09-30 21:45:13 I core
+09-30 21:45:13 I core                                  version: 1.2.3
+09-30 21:45:13 I core
+09-30 21:45:13 I core    ╔══════════════════════════════ FASTQSTATS ═══════════════════════════════╗
+09-30 21:45:13 I core    ║ The Pipen class provides interface to assemble and run the pipeline     ║
+09-30 21:45:13 I core    ╚═════════════════════════════════════════════════════════════════════════╝
+09-30 21:45:13 I core    plugins         : args v1.3.0
+09-30 21:45:13 I core    # procs         : 1
+09-30 21:45:13 I core    profile         : default
+09-30 21:45:13 I core    outdir          : out
+09-30 21:45:13 I core    cache           : True
+09-30 21:45:13 I core    dirsig          : 1
+09-30 21:45:13 I core    error_strategy  : ignore
+09-30 21:45:13 I core    forks           : 1
+09-30 21:45:13 I core    lang            : bash
+09-30 21:45:13 I core    loglevel        : info
+09-30 21:45:13 I core    num_retries     : 3
+09-30 21:45:13 I core    scheduler       : local
+09-30 21:45:13 I core    submission_batch: None
+09-30 21:45:13 I core    template        : liquid
+09-30 21:45:13 I core    workdir         : .pipen/FastqStats
+09-30 21:45:13 I core    plugin_opts     : args_hide=False
+09-30 21:45:13 I core    Initializing plugins ...
+09-30 21:45:13 I core
+09-30 21:45:13 I core    ╭══════════════════════════════ FastqStats ═══════════════════════════════╮
+09-30 21:45:13 I core    ║ Read-length statistics of a paired-end FASTQ sample                     ║
+09-30 21:45:13 I core    ╰═════════════════════════════════════════════════════════════════════════╯
+09-30 21:45:13 I core    FastqStats: workdir: '.pipen/FastqStats/FastqStats'
+09-30 21:45:13 I core    FastqStats: <<< [START]
+09-30 21:45:13 I core    FastqStats: >>> [END]
+09-30 21:45:15 I core
+RC=0
+
+############ everything created under the run directory (incl. hidden)
+/home/pwwang/aidemo/run_cli_workdir
+/home/pwwang/aidemo/run_cli_workdir/.pipen
+/home/pwwang/aidemo/run_cli_workdir/.pipen/FastqStats
+/home/pwwang/aidemo/run_cli_workdir/.pipen/FastqStats/FastqStats
+/home/pwwang/aidemo/run_cli_workdir/.pipen/FastqStats/FastqStats/0
+/home/pwwang/aidemo/run_cli_workdir/.pipen/FastqStats/FastqStats/0/job.jid.used
+/home/pwwang/aidemo/run_cli_workdir/.pipen/FastqStats/FastqStats/0/job.rc
+/home/pwwang/aidemo/run_cli_workdir/.pipen/FastqStats/FastqStats/0/job.script
+/home/pwwang/aidemo/run_cli_workdir/.pipen/FastqStats/FastqStats/0/job.signature.toml
+/home/pwwang/aidemo/run_cli_workdir/.pipen/FastqStats/FastqStats/0/job.status
+/home/pwwang/aidemo/run_cli_workdir/.pipen/FastqStats/FastqStats/0/job.stderr
+/home/pwwang/aidemo/run_cli_workdir/.pipen/FastqStats/FastqStats/0/job.stdout
+/home/pwwang/aidemo/run_cli_workdir/.pipen/FastqStats/FastqStats/0/job.wrapped.local
+/home/pwwang/aidemo/run_cli_workdir/.pipen/FastqStats/FastqStats/0/output
+/home/pwwang/aidemo/run_cli_workdir/out
+/home/pwwang/aidemo/run_cli_workdir/out/FastqStats
+/home/pwwang/aidemo/run_cli_workdir/out/FastqStats/read_stats.tsv
+
+############ the generated job script
+===== /home/pwwang/aidemo/run_cli_workdir/.pipen/FastqStats/FastqStats/0/job.script =====
+zcat /home/pwwang/aidemo/testdata/s1_R1.fastq.gz /home/pwwang/aidemo/testdata/s1_R2.fastq.gz \
+  | awk -v min=50 -v sid=s1 '
+      NR % 4 == 2 {
+          n++;
+          len += length($0);
+          if (length($0) > max) max = length($0);
+          if (length($0) >= min) kept++;
+      }
+      END {
+          printf("%s\t%d\t%d\t%d\t%.1f\n", sid, n, kept, max, len / n);
+      }
+    ' > out/FastqStats/read_stats.tsv===== end =====
+
+############ the job stdout / stderr / status
+--- /home/pwwang/aidemo/run_cli_workdir/.pipen/FastqStats/FastqStats/0/job.rc ---
+0
+--- /home/pwwang/aidemo/run_cli_workdir/.pipen/FastqStats/FastqStats/0/job.status ---
+6
+--- /home/pwwang/aidemo/run_cli_workdir/.pipen/FastqStats/FastqStats/0/job.stderr ---
+--- /home/pwwang/aidemo/run_cli_workdir/.pipen/FastqStats/FastqStats/0/job.stdout ---
+
+############ produced outputs
+/home/pwwang/aidemo/run_cli_workdir/out/FastqStats/read_stats.tsv
+s1	80	57	80	59.9

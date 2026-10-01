@@ -1,0 +1,13 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Namespace: demo_extra_ns\nDescription: A second, independent pipen namespace package (generalisation check).\n\nAvailable processes:\n  FastaGc (proc): Compute the GC fraction of a FASTA file\n\nUse get_process('demo_extra_ns', '<process_name>') to see detailed arguments."
+    }
+  ],
+  "structured_content": {
+    "result": "Namespace: demo_extra_ns\nDescription: A second, independent pipen namespace package (generalisation check).\n\nAvailable processes:\n  FastaGc (proc): Compute the GC fraction of a FASTA file\n\nUse get_process('demo_extra_ns', '<process_name>') to see detailed arguments."
+  },
+  "is_error": false,
+  "result_type": "complete"
+}

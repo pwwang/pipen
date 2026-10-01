@@ -1,0 +1,62 @@
+10-01 09:20:28 I core                      _____________________________________   __
+10-01 09:20:28 I core                      ___  __ \___  _/__  __ \__  ____/__  | / /
+10-01 09:20:28 I core                      __  /_/ /__  / __  /_/ /_  __/  __   |/ /
+10-01 09:20:28 I core                      _  ____/__/ /  _  ____/_  /___  _  /|  /
+10-01 09:20:28 I core                      /_/     /___/  /_/     /_____/  /_/ |_/
+10-01 09:20:28 I core
+10-01 09:20:28 I core                                  version: 1.2.3
+10-01 09:20:28 I core
+10-01 09:20:28 I core    ╔═════════════════════════════════════════════════════════════════════════╗
+10-01 09:20:28 I core    ║                              CACHEPIPELINE                              ║
+10-01 09:20:28 I core    ╚═════════════════════════════════════════════════════════════════════════╝
+10-01 09:20:28 I core    plugins         : runinfo v1.1.5
+10-01 09:20:28 I core    # procs         : 4
+10-01 09:20:28 I core    profile         : default
+10-01 09:20:28 I core    outdir          : CachePipeline-output
+10-01 09:20:28 I core    cache           : True
+10-01 09:20:28 I core    dirsig          : 1
+10-01 09:20:28 I core    error_strategy  : ignore
+10-01 09:20:28 I core    forks           : 8
+10-01 09:20:28 I core    lang            : bash
+10-01 09:20:28 I core    loglevel        : info
+10-01 09:20:28 I core    num_retries     : 3
+10-01 09:20:28 I core    scheduler       : local
+10-01 09:20:28 I core    submission_batch: None
+10-01 09:20:28 I core    template        : liquid
+10-01 09:20:28 I core    workdir         : /home/pwwang/ws_bench/work/wd_s5_scope/CachePipeline
+10-01 09:20:28 I core    plugin_opts     : runinfo_lang=None
+10-01 09:20:28 I core                    : runinfo_path=True
+10-01 09:20:28 I core                    : runinfo_submod=False
+10-01 09:20:28 I core    Initializing plugins ...
+10-01 09:20:28 I core
+10-01 09:20:28 I core    ╭───────────────────────────────── Read ──────────────────────────────────╮
+10-01 09:20:28 I core    │ read each input file                                                    │
+10-01 09:20:28 I core    ╰─────────────────────────────────────────────────────────────────────────╯
+10-01 09:20:28 I core    Read: workdir: '/home/pwwang/ws_bench/work/wd_s5_scope/CachePipeline/Read'
+10-01 09:20:28 I core    Read: <<< [START]
+10-01 09:20:28 I core    Read: >>> ['Mid', 'Side']
+10-01 09:20:28 I core    Read: Cached jobs: 0-3, 5-7
+10-01 09:20:30 I core
+10-01 09:20:30 I core    ╭────────────────────────────────── Mid ──────────────────────────────────╮
+10-01 09:20:30 I core    │ mid branch                                                              │
+10-01 09:20:30 I core    ╰─────────────────────────────────────────────────────────────────────────╯
+10-01 09:20:30 I core    Mid: workdir: '/home/pwwang/ws_bench/work/wd_s5_scope/CachePipeline/Mid'
+10-01 09:20:30 I core    Mid: <<< ['Read']
+10-01 09:20:30 I core    Mid: >>> ['Agg']
+10-01 09:20:30 I core    Mid: Cached jobs: 0-3, 5-7
+10-01 09:20:32 I core
+10-01 09:20:32 I core    ╭───────────────────────────────── Side ──────────────────────────────────╮
+10-01 09:20:32 I core    │ sibling branch (unrelated to Mid)                                       │
+10-01 09:20:32 I core    ╰─────────────────────────────────────────────────────────────────────────╯
+10-01 09:20:32 I core    Side: workdir: '/home/pwwang/ws_bench/work/wd_s5_scope/CachePipeline/Side'
+10-01 09:20:32 I core    Side: <<< ['Read']
+10-01 09:20:32 I core    Side: >>> ['Agg']
+10-01 09:20:32 I core    Side: Cached jobs: 0-3, 5-7
+10-01 09:20:34 I core
+10-01 09:20:34 I core    ╭══════════════════════════════════ Agg ══════════════════════════════════╮
+10-01 09:20:34 I core    ║ aggregate both branches                                                 ║
+10-01 09:20:34 I core    ╰═════════════════════════════════════════════════════════════════════════╯
+10-01 09:20:34 I core    Agg: workdir: '/home/pwwang/ws_bench/work/wd_s5_scope/CachePipeline/Agg'
+10-01 09:20:34 I core    Agg: <<< ['Mid', 'Side']
+10-01 09:20:34 I core    Agg: >>> [END]
+10-01 09:20:36 I core

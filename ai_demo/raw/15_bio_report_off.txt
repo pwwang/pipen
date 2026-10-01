@@ -1,0 +1,17 @@
+############ is node/npm available?
+/home/pwwang/miniconda3/bin/node
+/home/pwwang/miniconda3/bin/npm
+(rc=0)
+
+############ full help (-h+) of a biopipen process: any report switch?
+
+############ attempt: run with --report false
+[1m[4mUsage[0m[0m: pipen [-h | -h+] [options]
+pipen: error: unrecognized arguments: --report false
+RC=0
+--- produced? ---
+cat: /home/pwwang/aidemo_bio/work/out_cli/Shell/shell_out_cli.txt: No such file or directory
+
+############ version of the report plugin in this venv
+Name: pipen-report
+Version: 1.2.6

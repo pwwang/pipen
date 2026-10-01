@@ -1,0 +1,13 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Namespace: demo_ns\nDescription: Toy scientific namespace used to demonstrate pipen's agent-facing surface.\n\nAvailable processes:\n  CountReads (proc): Count the reads in a single FASTQ file\n  FastqStats (proc): Read-length statistics of a paired-end FASTQ sample\n\nUse get_process('demo_ns', '<process_name>') to see detailed arguments."
+    }
+  ],
+  "structured_content": {
+    "result": "Namespace: demo_ns\nDescription: Toy scientific namespace used to demonstrate pipen's agent-facing surface.\n\nAvailable processes:\n  CountReads (proc): Count the reads in a single FASTQ file\n  FastqStats (proc): Read-length statistics of a paired-end FASTQ sample\n\nUse get_process('demo_ns', '<process_name>') to see detailed arguments."
+  },
+  "is_error": false,
+  "result_type": "complete"
+}

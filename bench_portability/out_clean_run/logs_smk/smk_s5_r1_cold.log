@@ -1,0 +1,336 @@
+Assuming unrestricted shared filesystem usage.
+
+SNAKEMAKE
+=========
+  Date: 2026-10-01 09:23:21
+  Workflow ID: a966b68c-4626-4288-875f-07c14348ac34
+  Platform: Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.39
+  Host: R5440549
+  User: pwwang
+  Snakemake version: 9.27.0
+  Python version: 3.12.2 | packaged by conda-forge | (main, Feb 16 2024, 20:50:58) [GCC 12.3.0]
+  Command: /home/pwwang/ws_bench/smk-venv/bin/snakemake --cores 8 -s /mnt/f/E/hermes-workspace/pipen/bench/smk_cache/Snakefile
+  Snakefile: /mnt/f/E/hermes-workspace/pipen/bench/smk_cache/Snakefile
+  Base directory: /mnt/f/E/hermes-workspace/pipen/bench/smk_cache
+  Run directory: /home/pwwang/ws_bench/work/smkw_s5_scope
+  Working directory: /home/pwwang/ws_bench/work/smkw_s5_scope
+  Config file(s): []
+  Config MD5: 99914b932bd37a50b983c5e7c90ae93b
+
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 8
+Rules claiming more threads will be scaled down.
+Job stats:
+job      count
+-----  -------
+read         8
+mid          8
+side         8
+agg          1
+all          1
+total       26
+
+Select jobs to execute...
+Execute 8 jobs...
+
+[Thu Oct  1 09:23:21 2026]
+localrule read:
+    input: inputs/in1.txt
+    output: work/r-in1.txt
+    jobid: 5
+    reason: Missing output files: work/r-in1.txt
+    wildcards: i=1
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:21 2026]
+localrule read:
+    input: inputs/in6.txt
+    output: work/r-in6.txt
+    jobid: 15
+    reason: Missing output files: work/r-in6.txt
+    wildcards: i=6
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:21 2026]
+localrule read:
+    input: inputs/in2.txt
+    output: work/r-in2.txt
+    jobid: 7
+    reason: Missing output files: work/r-in2.txt
+    wildcards: i=2
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:21 2026]
+localrule read:
+    input: inputs/in5.txt
+    output: work/r-in5.txt
+    jobid: 13
+    reason: Missing output files: work/r-in5.txt
+    wildcards: i=5
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:21 2026]
+localrule read:
+    input: inputs/in0.txt
+    output: work/r-in0.txt
+    jobid: 3
+    reason: Missing output files: work/r-in0.txt
+    wildcards: i=0
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:21 2026]
+localrule read:
+    input: inputs/in4.txt
+    output: work/r-in4.txt
+    jobid: 11
+    reason: Missing output files: work/r-in4.txt
+    wildcards: i=4
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:21 2026]
+localrule read:
+    input: inputs/in7.txt
+    output: work/r-in7.txt
+    jobid: 17
+    reason: Missing output files: work/r-in7.txt
+    wildcards: i=7
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:21 2026]
+localrule read:
+    input: inputs/in3.txt
+    output: work/r-in3.txt
+    jobid: 9
+    reason: Missing output files: work/r-in3.txt
+    wildcards: i=3
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:21 2026]
+Finished jobid: 5 (Rule: read)
+1 of 26 steps (4%) done
+[Thu Oct  1 09:23:21 2026]
+Finished jobid: 15 (Rule: read)
+2 of 26 steps (8%) done
+[Thu Oct  1 09:23:21 2026]
+Finished jobid: 7 (Rule: read)
+3 of 26 steps (12%) done
+[Thu Oct  1 09:23:21 2026]
+Finished jobid: 13 (Rule: read)
+4 of 26 steps (15%) done
+[Thu Oct  1 09:23:21 2026]
+Finished jobid: 3 (Rule: read)
+5 of 26 steps (19%) done
+[Thu Oct  1 09:23:21 2026]
+Finished jobid: 11 (Rule: read)
+6 of 26 steps (23%) done
+Select jobs to execute...
+Execute 6 jobs...
+
+[Thu Oct  1 09:23:21 2026]
+localrule side:
+    input: work/r-in2.txt
+    output: work/s-r-in2.txt
+    jobid: 20
+    reason: Missing output files: work/s-r-in2.txt; Input files updated by another job: work/r-in2.txt
+    wildcards: i=2
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:21 2026]
+localrule mid:
+    input: work/r-in6.txt
+    output: work/m-r-in6.txt
+    jobid: 14
+    reason: Missing output files: work/m-r-in6.txt; Input files updated by another job: work/r-in6.txt
+    wildcards: i=6
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:21 2026]
+localrule mid:
+    input: work/r-in1.txt
+    output: work/m-r-in1.txt
+    jobid: 4
+    reason: Missing output files: work/m-r-in1.txt; Input files updated by another job: work/r-in1.txt
+    wildcards: i=1
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:21 2026]
+localrule side:
+    input: work/r-in0.txt
+    output: work/s-r-in0.txt
+    jobid: 18
+    reason: Missing output files: work/s-r-in0.txt; Input files updated by another job: work/r-in0.txt
+    wildcards: i=0
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:21 2026]
+localrule side:
+    input: work/r-in1.txt
+    output: work/s-r-in1.txt
+    jobid: 19
+    reason: Missing output files: work/s-r-in1.txt; Input files updated by another job: work/r-in1.txt
+    wildcards: i=1
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:21 2026]
+localrule side:
+    input: work/r-in5.txt
+    output: work/s-r-in5.txt
+    jobid: 23
+    reason: Missing output files: work/s-r-in5.txt; Input files updated by another job: work/r-in5.txt
+    wildcards: i=5
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:21 2026]
+Finished jobid: 17 (Rule: read)
+7 of 26 steps (27%) done
+[Thu Oct  1 09:23:21 2026]
+Finished jobid: 9 (Rule: read)
+8 of 26 steps (31%) done
+[Thu Oct  1 09:23:21 2026]
+Finished jobid: 20 (Rule: side)
+9 of 26 steps (35%) done
+[Thu Oct  1 09:23:21 2026]
+Finished jobid: 14 (Rule: mid)
+10 of 26 steps (38%) done
+[Thu Oct  1 09:23:21 2026]
+Finished jobid: 4 (Rule: mid)
+11 of 26 steps (42%) done
+[Thu Oct  1 09:23:21 2026]
+Finished jobid: 18 (Rule: side)
+12 of 26 steps (46%) done
+Select jobs to execute...
+Execute 6 jobs...
+
+[Thu Oct  1 09:23:21 2026]
+localrule side:
+    input: work/r-in7.txt
+    output: work/s-r-in7.txt
+    jobid: 25
+    reason: Missing output files: work/s-r-in7.txt; Input files updated by another job: work/r-in7.txt
+    wildcards: i=7
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:21 2026]
+localrule mid:
+    input: work/r-in3.txt
+    output: work/m-r-in3.txt
+    jobid: 8
+    reason: Missing output files: work/m-r-in3.txt; Input files updated by another job: work/r-in3.txt
+    wildcards: i=3
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:21 2026]
+localrule side:
+    input: work/r-in4.txt
+    output: work/s-r-in4.txt
+    jobid: 22
+    reason: Missing output files: work/s-r-in4.txt; Input files updated by another job: work/r-in4.txt
+    wildcards: i=4
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:21 2026]
+localrule mid:
+    input: work/r-in4.txt
+    output: work/m-r-in4.txt
+    jobid: 10
+    reason: Missing output files: work/m-r-in4.txt; Input files updated by another job: work/r-in4.txt
+    wildcards: i=4
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:21 2026]
+localrule side:
+    input: work/r-in6.txt
+    output: work/s-r-in6.txt
+    jobid: 24
+    reason: Missing output files: work/s-r-in6.txt; Input files updated by another job: work/r-in6.txt
+    wildcards: i=6
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:21 2026]
+localrule mid:
+    input: work/r-in5.txt
+    output: work/m-r-in5.txt
+    jobid: 12
+    reason: Missing output files: work/m-r-in5.txt; Input files updated by another job: work/r-in5.txt
+    wildcards: i=5
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:21 2026]
+Finished jobid: 19 (Rule: side)
+13 of 26 steps (50%) done
+[Thu Oct  1 09:23:21 2026]
+Finished jobid: 23 (Rule: side)
+14 of 26 steps (54%) done
+[Thu Oct  1 09:23:21 2026]
+Finished jobid: 25 (Rule: side)
+15 of 26 steps (58%) done
+[Thu Oct  1 09:23:21 2026]
+Finished jobid: 8 (Rule: mid)
+16 of 26 steps (62%) done
+[Thu Oct  1 09:23:21 2026]
+Finished jobid: 22 (Rule: side)
+17 of 26 steps (65%) done
+[Thu Oct  1 09:23:21 2026]
+Finished jobid: 10 (Rule: mid)
+18 of 26 steps (69%) done
+Select jobs to execute...
+Execute 4 jobs...
+
+[Thu Oct  1 09:23:21 2026]
+localrule mid:
+    input: work/r-in2.txt
+    output: work/m-r-in2.txt
+    jobid: 6
+    reason: Missing output files: work/m-r-in2.txt; Input files updated by another job: work/r-in2.txt
+    wildcards: i=2
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:21 2026]
+localrule side:
+    input: work/r-in3.txt
+    output: work/s-r-in3.txt
+    jobid: 21
+    reason: Missing output files: work/s-r-in3.txt; Input files updated by another job: work/r-in3.txt
+    wildcards: i=3
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:21 2026]
+localrule mid:
+    input: work/r-in0.txt
+    output: work/m-r-in0.txt
+    jobid: 2
+    reason: Missing output files: work/m-r-in0.txt; Input files updated by another job: work/r-in0.txt
+    wildcards: i=0
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:21 2026]
+localrule mid:
+    input: work/r-in7.txt
+    output: work/m-r-in7.txt
+    jobid: 16
+    reason: Missing output files: work/m-r-in7.txt; Input files updated by another job: work/r-in7.txt
+    wildcards: i=7
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:21 2026]
+Finished jobid: 24 (Rule: side)
+19 of 26 steps (73%) done
+[Thu Oct  1 09:23:21 2026]
+Finished jobid: 12 (Rule: mid)
+20 of 26 steps (77%) done
+[Thu Oct  1 09:23:21 2026]
+Finished jobid: 6 (Rule: mid)
+21 of 26 steps (81%) done
+[Thu Oct  1 09:23:21 2026]
+Finished jobid: 21 (Rule: side)
+22 of 26 steps (85%) done
+[Thu Oct  1 09:23:21 2026]
+Finished jobid: 16 (Rule: mid)
+23 of 26 steps (88%) done
+[Thu Oct  1 09:23:21 2026]
+Finished jobid: 2 (Rule: mid)
+24 of 26 steps (92%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Oct  1 09:23:21 2026]
+localrule agg:
+    input: work/m-r-in0.txt, work/m-r-in1.txt, work/m-r-in2.txt, work/m-r-in3.txt, work/m-r-in4.txt, work/m-r-in5.txt, work/m-r-in6.txt, work/m-r-in7.txt, work/s-r-in0.txt, work/s-r-in1.txt, work/s-r-in2.txt, work/s-r-in3.txt, work/s-r-in4.txt, work/s-r-in5.txt, work/s-r-in6.txt, work/s-r-in7.txt
+    output: agg.txt
+    jobid: 1
+    reason: Missing output files: agg.txt; Input files updated by another job: work/m-r-in2.txt, work/s-r-in5.txt, work/s-r-in6.txt, work/s-r-in0.txt, work/m-r-in0.txt, work/m-r-in1.txt, work/s-r-in1.txt, work/m-r-in4.txt, work/s-r-in3.txt, work/m-r-in6.txt, work/s-r-in4.txt, work/s-r-in2.txt, work/m-r-in3.txt, work/m-r-in5.txt, work/s-r-in7.txt, work/m-r-in7.txt
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:21 2026]
+Finished jobid: 1 (Rule: agg)
+25 of 26 steps (96%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Oct  1 09:23:21 2026]
+localrule all:
+    input: agg.txt
+    jobid: 0
+    reason: Input files updated by another job: agg.txt
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:21 2026]
+Finished jobid: 0 (Rule: all)
+26 of 26 steps (100%) done
+Complete log(s): /home/pwwang/ws_bench/work/smkw_s5_scope/.snakemake/log/2026-10-01T092321.148964.snakemake.log
+Elapsed time: 0:00:00.165012

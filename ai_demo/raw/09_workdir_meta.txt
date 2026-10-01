@@ -1,0 +1,29 @@
+############ direct candidate paths for the demo workdir
+absent: /mnt/f/E/hermes-workspace/pipen/.pipen
+absent: /mnt/f/E/hermes-workspace/pipen/ai_demo/.pipen
+absent: /home/pwwang/.pipen/FastqStats
+
+############ tree of the first one that exists
+
+############ the generated job script
+
+############ '[truncated]' presence check on the capture file
+0
+--- longest lines in 05h json ---
+12: 27
+5: 2283
+9: 2283
+
+############ biopipen wheel metadata: Requires-Dist
+Name: biopipen
+Version: 1.5.1
+Requires-Python: >=3.9
+Requires-Dist: datar[pandas]<1,>=0.15.8
+Requires-Dist: pipen-board[report]<2,>=1.1
+Requires-Dist: pipen-cli-run<2,>=1.0
+Requires-Dist: pipen-deprecated<2,>=1.0
+Requires-Dist: pipen-filters<2,>=1.1.2
+Requires-Dist: pipen-poplog<2,>=1.1
+Requires-Dist: pipen-verbose<2,>=1.1
+Requires-Dist: pipen-log2file<2,>=1.1; extra == 'log2file'
+Requires-Dist: pipen-runinfo<2,>=1.1; extra == 'runinfo'

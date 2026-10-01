@@ -1,0 +1,22 @@
+# Verbatim console output of the FIRST pipen-runinfo A/B round (same DAG, same
+# N=20 / forks=8 / cache off, clean venv).  That round ran before the A/B script
+# was changed to use a scratch cwd for pipen's exported <Pipeline>-output/; the
+# config was identical.  Kept because the two rounds disagree, which is the
+# finding: the plugin effect is not resolvable above run-to-run noise.
+#
+# runinfo=off rep=1  rc=0 wall=11.808 marker_lines=42
+#                     job.runinfo.session files in this workdir: 0
+# runinfo=on rep=1  rc=0 wall=14.860 marker_lines=42
+#                     job.runinfo.session files in this workdir: 21
+# runinfo=off rep=2  rc=0 wall=11.723 marker_lines=42
+#                     job.runinfo.session files in this workdir: 0
+# runinfo=on rep=2  rc=0 wall=12.748 marker_lines=42
+#                     job.runinfo.session files in this workdir: 21
+# runinfo=off rep=3  rc=0 wall=11.719 marker_lines=42
+#                     job.runinfo.session files in this workdir: 0
+# runinfo=on rep=3  rc=0 wall=13.747 marker_lines=42
+#                     job.runinfo.session files in this workdir: 21
+#
+# medians: off=11.723 s, on=13.747 s  (delta +2.024 s, ratio 1.173)
+# second round (run_logs/02_runinfo_ab.log): off=11.782 s, on=11.806 s
+#            (delta +0.024 s, ratio 1.002)

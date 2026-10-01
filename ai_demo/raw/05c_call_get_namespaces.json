@@ -1,0 +1,13 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Available namespaces:\n\n  demo_extra_ns: A second, independent pipen namespace package (generalisation check).\n  demo_ns: Toy scientific namespace used to demonstrate pipen's agent-facing surface.\n\nUse get_processes('<namespace>') to see available processes."
+    }
+  ],
+  "structured_content": {
+    "result": "Available namespaces:\n\n  demo_extra_ns: A second, independent pipen namespace package (generalisation check).\n  demo_ns: Toy scientific namespace used to demonstrate pipen's agent-facing surface.\n\nUse get_processes('<namespace>') to see available processes."
+  },
+  "is_error": false,
+  "result_type": "complete"
+}

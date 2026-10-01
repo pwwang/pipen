@@ -1,0 +1,82 @@
+### pipen run demo_ns FastqStats --help+  (full option set)
+Usage: pipen [-h | -h+] [options]
+
+Read-length statistics of a paired-end FASTQ sample
+Use `@configfile` to load default values for the options.
+
+Pipeline Options:
+  --name NAME           The name for the pipeline, will affect the default
+                        workdir and outdir. [default: FastqStats]
+  --profile PROFILE     The default profile from the configuration to run the
+                        pipeline. This profile will be used unless a profile
+                        is specified in the process or in the .run method of
+                        pipen. You can check the available profiles by running
+                        `pipen profile`
+  --lang LANG           The language interpreter to use for the
+                        pipeline/process [default: bash]
+  --outdir OUTDIR       The output directory of the pipeline [default:
+                        ./<name>-output]
+  --loglevel {DEBUG,INFO,WARNING,ERROR,CRITICAL}
+                        The logging level for the main logger, only takes
+                        effect after pipeline is initialized [default: INFO]
+  --cache {True,False,force}
+                        Whether enable caching for processes [default: True]
+                        - True: Enable caching for all processes
+                        - False: Disable caching for all processes
+                        - force: Forcing caching even when jobs signature
+                          changed
+                           Such as envs or script file change
+  --dirsig              The depth to check the Last Modification Time of a
+                        directory. Since modifying the content won't change
+                        its LMT.
+  --error_strategy {ignore,halt,retry}, --error-strategy {ignore,halt,retry}
+                        How we should deal with job errors.
+                        - ignore: Let other jobs keep running. But the process
+                          is still failing when done.
+                        - halt: Halt the pipeline, other running jobs will be
+                          killed.
+                        - retry: Retry this job on the scheduler system.
+  --num_retries NUM_RETRIES, --num-retries NUM_RETRIES
+                        How many times to retry the job when failed
+  --forks FORKS         How many jobs to run simultaneously by the scheduler
+  --submission_batch SUBMISSION_BATCH, --submission-batch SUBMISSION_BATCH
+                        How many jobs to submit simultaneously to the
+                        scheduler system
+  --scheduler SCHEDULER
+                        The scheduler to run the jobs
+  --scheduler_opts SCHEDULER_OPTS, --scheduler-opts SCHEDULER_OPTS
+                        The default scheduler options. Will update to the
+                        default one [default: {}]
+  --plugins PLUGINS [PLUGINS ...]
+                        A list of plugins to only enabled or disabled for this
+                        pipeline. To disable plugins, use `-<plugin_name>`
+  --plugin_opts PLUGIN_OPTS, --plugin-opts PLUGIN_OPTS
+                        Plugin options. Will update to the default. [default:
+                        {}]
+  --template_opts TEMPLATE_OPTS, --template-opts TEMPLATE_OPTS
+                        Template options. Will update to the default.
+                        [default: {}]
+  --workdir WORKDIR     The working directory of the pipeline
+  --output_flatten, --output-flatten
+                        Whether to flatten the output from jobs of the process
+...
+### option count in --help+  vs  --help
+--help+ option lines: 24
+--help  option lines: 12
+
+### a couple of options that only appear in --help+
+--cache
+--dirsig
+--error_strategy
+--lang
+--loglevel
+--num_retries
+--plugin_opts
+--plugins
+--scheduler_opts
+--submission_batch
+--template_opts
+--workdir
+
+### error_strategy present in --help+ ?
+1

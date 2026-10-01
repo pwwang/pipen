@@ -1,0 +1,70 @@
+=== files ===
+__init__.py
+__main__.py
+__pycache__
+_job_caching.py
+channel.py
+cli
+defaults.py
+exceptions.py
+job.py
+pipen.py
+pluginmgr.py
+proc.py
+procgroup.py
+progressbar.py
+py.typed
+scheduler.py
+template.py
+utils.py
+version.py
+
+=== grep 'plugin' in pipen/config.py ===
+grep: /home/pwwang/ws_bench/.venv/lib/python3.12/site-packages/pipen/config.py: No such file or directory
+
+=== grep 'plugin' in pipen/defaults.py ===
+60:    # pipeline level: plugins
+61:    plugins=None,
+62:    # pipeline level: plugin opts
+63:    plugin_opts={},
+78:# For pipen scheduler plugins
+80:# For pipen template plugins
+82:# For pipen template cli plugins
+
+=== how plugins get loaded (simplug) ===
+24:from .pluginmgr import plugin
+127:        self._kwargs.setdefault("plugin_opts", {}).update(kwargs.pop("plugin_opts", {}))
+142:            # Load plugins from entrypotins at runtime to avoid
+144:            plugin.load_entrypoints()
+146:        plugins = self._kwargs.get("plugins", None)
+147:        if plugins is None:
+148:            plugins = self.config.plugins
+149:        self.plugin_context = plugin.plugins_context(plugins)
+150:        self.plugin_context.__enter__()
+152:        # make sure core plugin is enabled
+153:        plugin.get_plugin("core").enable()
+156:            plugin.hooks.on_setup(self)
+186:            logger.info("Initializing plugins ...")
+187:            await plugin.hooks.on_start(self)
+211:            await plugin.hooks.on_complete(self, succeeded)
+213:            self.plugin_context.__exit__()
+350:        enabled_plugins = (
+355:            for name, plg in plugin.get_enabled_plugins().items()
+358:        for i, plug in enumerate(enabled_plugins):
+359:            logger.info(fmt, "plugins" if i == 0 else "", plug)
+374:        for i, (key, val) in enumerate(sorted(self.config.plugin_opts.items())):
+375:            logger.info(fmt, "plugin_opts" if i == 0 else "", f"{key}={val}")
+386:        2. The plugin_opts defined in plugins (via on_setup() hook)
+401:        # allow plugins to change the default configs
+402:        await plugin.hooks.on_init(self)
+407:        self.config.plugin_opts.update(self._kwargs.pop("plugin_opts", {}))
+
+=== probe: instantiate a tiny pipeline with plugins = ['-runinfo'] ===
+RAN_OK_with_plugins_-runinfo
+--- runinfo files present? (expect none) ---
+--- for contrast, the same DAG without the plugins setting ---
+RAN_OK_with_plugins_-runinfo
+--- runinfo files present? (expect all three) ---
+/tmp/probe_plugin_on_wd/Pipe/P/0/job.runinfo.device
+/tmp/probe_plugin_on_wd/Pipe/P/0/job.runinfo.session
+/tmp/probe_plugin_on_wd/Pipe/P/0/job.runinfo.time

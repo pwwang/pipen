@@ -1,0 +1,578 @@
+{
+  "config": {
+    "root": "/mnt/f/E/hermes-workspace/pipen/bench",
+    "py": "/home/pwwang/ws_bench/.venv/bin/python",
+    "smk": "/home/pwwang/ws_bench/smk-venv/bin/snakemake",
+    "out_root": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run",
+    "work_root": "/home/pwwang/ws_bench/work",
+    "nproc": "8",
+    "reps": "1",
+    "scaling_ns": "20",
+    "conc_n": "20",
+    "conc_forks": "1,2",
+    "cache_scope_n": "8",
+    "cache_timing_n": "20",
+    "cache_timing_reps": "1",
+    "sleep": "0.05",
+    "runinfo": "1",
+    "runinfo_install": "1",
+    "base_python": "python3",
+    "pipen_install": "pipen==1.2.3",
+    "pipen_runinfo_pkg": "pipen-runinfo",
+    "smk_install": "snakemake==9.27.0",
+    "pipen_repo": "",
+    "archive": "",
+    "loglevel": "info",
+    "source": "/mnt/f/E/hermes-workspace/pipen/bench/bench.local.env"
+  },
+  "per_job_table_pipen": [
+    {
+      "job_dir": "Read/0",
+      "output_files": [
+        "r-in0.txt"
+      ],
+      "output_content": [
+        "r-in0.txt=line0-v1"
+      ],
+      "output_mtime": "2026-10-01T09:20:20.285745",
+      "reran_in_phase": {
+        "r1_cold": true,
+        "r2_rerun": false,
+        "r3_input3_changed": false,
+        "r4_mid_script_changed": false,
+        "r5_rerun": false
+      }
+    },
+    {
+      "job_dir": "Read/1",
+      "output_files": [
+        "r-in1.txt"
+      ],
+      "output_content": [
+        "r-in1.txt=line1-v1"
+      ],
+      "output_mtime": "2026-10-01T09:20:20.285208",
+      "reran_in_phase": {
+        "r1_cold": true,
+        "r2_rerun": false,
+        "r3_input3_changed": false,
+        "r4_mid_script_changed": false,
+        "r5_rerun": false
+      }
+    },
+    {
+      "job_dir": "Read/2",
+      "output_files": [
+        "r-in2.txt"
+      ],
+      "output_content": [
+        "r-in2.txt=line2-v1"
+      ],
+      "output_mtime": "2026-10-01T09:20:20.285992",
+      "reran_in_phase": {
+        "r1_cold": true,
+        "r2_rerun": false,
+        "r3_input3_changed": false,
+        "r4_mid_script_changed": false,
+        "r5_rerun": false
+      }
+    },
+    {
+      "job_dir": "Read/3",
+      "output_files": [
+        "r-in3.txt"
+      ],
+      "output_content": [
+        "r-in3.txt=line3-v1"
+      ],
+      "output_mtime": "2026-10-01T09:20:20.285208",
+      "reran_in_phase": {
+        "r1_cold": true,
+        "r2_rerun": false,
+        "r3_input3_changed": false,
+        "r4_mid_script_changed": false,
+        "r5_rerun": false
+      }
+    },
+    {
+      "job_dir": "Read/4",
+      "output_files": [
+        "r-in4.txt"
+      ],
+      "output_content": [
+        "r-in4.txt=line3-v2"
+      ],
+      "output_mtime": "2026-10-01T09:20:30.293072",
+      "reran_in_phase": {
+        "r1_cold": true,
+        "r2_rerun": false,
+        "r3_input3_changed": true,
+        "r4_mid_script_changed": false,
+        "r5_rerun": false
+      }
+    },
+    {
+      "job_dir": "Read/5",
+      "output_files": [
+        "r-in5.txt"
+      ],
+      "output_content": [
+        "r-in5.txt=line5-v1"
+      ],
+      "output_mtime": "2026-10-01T09:20:20.285992",
+      "reran_in_phase": {
+        "r1_cold": true,
+        "r2_rerun": false,
+        "r3_input3_changed": false,
+        "r4_mid_script_changed": false,
+        "r5_rerun": false
+      }
+    },
+    {
+      "job_dir": "Read/6",
+      "output_files": [
+        "r-in6.txt"
+      ],
+      "output_content": [
+        "r-in6.txt=line6-v1"
+      ],
+      "output_mtime": "2026-10-01T09:20:20.285992",
+      "reran_in_phase": {
+        "r1_cold": true,
+        "r2_rerun": false,
+        "r3_input3_changed": false,
+        "r4_mid_script_changed": false,
+        "r5_rerun": false
+      }
+    },
+    {
+      "job_dir": "Read/7",
+      "output_files": [
+        "r-in7.txt"
+      ],
+      "output_content": [
+        "r-in7.txt=line7-v1"
+      ],
+      "output_mtime": "2026-10-01T09:20:20.287360",
+      "reran_in_phase": {
+        "r1_cold": true,
+        "r2_rerun": false,
+        "r3_input3_changed": false,
+        "r4_mid_script_changed": false,
+        "r5_rerun": false
+      }
+    },
+    {
+      "job_dir": "Mid/0",
+      "output_files": [
+        "m-r-in0.txt"
+      ],
+      "output_content": [
+        "m-r-in0.txt=B:line0-v1"
+      ],
+      "output_mtime": "2026-10-01T09:20:39.439069",
+      "reran_in_phase": {
+        "r1_cold": true,
+        "r2_rerun": false,
+        "r3_input3_changed": false,
+        "r4_mid_script_changed": true,
+        "r5_rerun": false
+      }
+    },
+    {
+      "job_dir": "Mid/1",
+      "output_files": [
+        "m-r-in1.txt"
+      ],
+      "output_content": [
+        "m-r-in1.txt=B:line1-v1"
+      ],
+      "output_mtime": "2026-10-01T09:20:39.445639",
+      "reran_in_phase": {
+        "r1_cold": true,
+        "r2_rerun": false,
+        "r3_input3_changed": false,
+        "r4_mid_script_changed": true,
+        "r5_rerun": false
+      }
+    },
+    {
+      "job_dir": "Mid/2",
+      "output_files": [
+        "m-r-in2.txt"
+      ],
+      "output_content": [
+        "m-r-in2.txt=B:line2-v1"
+      ],
+      "output_mtime": "2026-10-01T09:20:39.461733",
+      "reran_in_phase": {
+        "r1_cold": true,
+        "r2_rerun": false,
+        "r3_input3_changed": false,
+        "r4_mid_script_changed": true,
+        "r5_rerun": false
+      }
+    },
+    {
+      "job_dir": "Mid/3",
+      "output_files": [
+        "m-r-in3.txt"
+      ],
+      "output_content": [
+        "m-r-in3.txt=B:line3-v1"
+      ],
+      "output_mtime": "2026-10-01T09:20:39.424322",
+      "reran_in_phase": {
+        "r1_cold": true,
+        "r2_rerun": false,
+        "r3_input3_changed": false,
+        "r4_mid_script_changed": true,
+        "r5_rerun": false
+      }
+    },
+    {
+      "job_dir": "Mid/4",
+      "output_files": [
+        "m-r-in4.txt"
+      ],
+      "output_content": [
+        "m-r-in4.txt=B:line3-v2"
+      ],
+      "output_mtime": "2026-10-01T09:20:39.431349",
+      "reran_in_phase": {
+        "r1_cold": true,
+        "r2_rerun": false,
+        "r3_input3_changed": true,
+        "r4_mid_script_changed": true,
+        "r5_rerun": false
+      }
+    },
+    {
+      "job_dir": "Mid/5",
+      "output_files": [
+        "m-r-in5.txt"
+      ],
+      "output_content": [
+        "m-r-in5.txt=B:line5-v1"
+      ],
+      "output_mtime": "2026-10-01T09:20:39.463964",
+      "reran_in_phase": {
+        "r1_cold": true,
+        "r2_rerun": false,
+        "r3_input3_changed": false,
+        "r4_mid_script_changed": true,
+        "r5_rerun": false
+      }
+    },
+    {
+      "job_dir": "Mid/6",
+      "output_files": [
+        "m-r-in6.txt"
+      ],
+      "output_content": [
+        "m-r-in6.txt=B:line6-v1"
+      ],
+      "output_mtime": "2026-10-01T09:20:39.455960",
+      "reran_in_phase": {
+        "r1_cold": true,
+        "r2_rerun": false,
+        "r3_input3_changed": false,
+        "r4_mid_script_changed": true,
+        "r5_rerun": false
+      }
+    },
+    {
+      "job_dir": "Mid/7",
+      "output_files": [
+        "m-r-in7.txt"
+      ],
+      "output_content": [
+        "m-r-in7.txt=B:line7-v1"
+      ],
+      "output_mtime": "2026-10-01T09:20:39.450052",
+      "reran_in_phase": {
+        "r1_cold": true,
+        "r2_rerun": false,
+        "r3_input3_changed": false,
+        "r4_mid_script_changed": true,
+        "r5_rerun": false
+      }
+    },
+    {
+      "job_dir": "Side/0",
+      "output_files": [
+        "s-r-in0.txt"
+      ],
+      "output_content": [
+        "s-r-in0.txt=A:line0-v1"
+      ],
+      "output_mtime": "2026-10-01T09:20:24.585699",
+      "reran_in_phase": {
+        "r1_cold": true,
+        "r2_rerun": false,
+        "r3_input3_changed": false,
+        "r4_mid_script_changed": false,
+        "r5_rerun": false
+      }
+    },
+    {
+      "job_dir": "Side/1",
+      "output_files": [
+        "s-r-in1.txt"
+      ],
+      "output_content": [
+        "s-r-in1.txt=A:line1-v1"
+      ],
+      "output_mtime": "2026-10-01T09:20:24.579637",
+      "reran_in_phase": {
+        "r1_cold": true,
+        "r2_rerun": false,
+        "r3_input3_changed": false,
+        "r4_mid_script_changed": false,
+        "r5_rerun": false
+      }
+    },
+    {
+      "job_dir": "Side/2",
+      "output_files": [
+        "s-r-in2.txt"
+      ],
+      "output_content": [
+        "s-r-in2.txt=A:line2-v1"
+      ],
+      "output_mtime": "2026-10-01T09:20:24.589702",
+      "reran_in_phase": {
+        "r1_cold": true,
+        "r2_rerun": false,
+        "r3_input3_changed": false,
+        "r4_mid_script_changed": false,
+        "r5_rerun": false
+      }
+    },
+    {
+      "job_dir": "Side/3",
+      "output_files": [
+        "s-r-in3.txt"
+      ],
+      "output_content": [
+        "s-r-in3.txt=A:line3-v1"
+      ],
+      "output_mtime": "2026-10-01T09:20:24.575765",
+      "reran_in_phase": {
+        "r1_cold": true,
+        "r2_rerun": false,
+        "r3_input3_changed": false,
+        "r4_mid_script_changed": false,
+        "r5_rerun": false
+      }
+    },
+    {
+      "job_dir": "Side/4",
+      "output_files": [
+        "s-r-in4.txt"
+      ],
+      "output_content": [
+        "s-r-in4.txt=A:line3-v2"
+      ],
+      "output_mtime": "2026-10-01T09:20:34.528968",
+      "reran_in_phase": {
+        "r1_cold": true,
+        "r2_rerun": false,
+        "r3_input3_changed": true,
+        "r4_mid_script_changed": false,
+        "r5_rerun": false
+      }
+    },
+    {
+      "job_dir": "Side/5",
+      "output_files": [
+        "s-r-in5.txt"
+      ],
+      "output_content": [
+        "s-r-in5.txt=A:line5-v1"
+      ],
+      "output_mtime": "2026-10-01T09:20:24.550695",
+      "reran_in_phase": {
+        "r1_cold": true,
+        "r2_rerun": false,
+        "r3_input3_changed": false,
+        "r4_mid_script_changed": false,
+        "r5_rerun": false
+      }
+    },
+    {
+      "job_dir": "Side/6",
+      "output_files": [
+        "s-r-in6.txt"
+      ],
+      "output_content": [
+        "s-r-in6.txt=A:line6-v1"
+      ],
+      "output_mtime": "2026-10-01T09:20:24.569433",
+      "reran_in_phase": {
+        "r1_cold": true,
+        "r2_rerun": false,
+        "r3_input3_changed": false,
+        "r4_mid_script_changed": false,
+        "r5_rerun": false
+      }
+    },
+    {
+      "job_dir": "Side/7",
+      "output_files": [
+        "s-r-in7.txt"
+      ],
+      "output_content": [
+        "s-r-in7.txt=A:line7-v1"
+      ],
+      "output_mtime": "2026-10-01T09:20:24.564164",
+      "reran_in_phase": {
+        "r1_cold": true,
+        "r2_rerun": false,
+        "r3_input3_changed": false,
+        "r4_mid_script_changed": false,
+        "r5_rerun": false
+      }
+    },
+    {
+      "job_dir": "Agg/0",
+      "output_files": [],
+      "output_content": [],
+      "output_mtime": "1969-12-31T17:00:00.000000",
+      "reran_in_phase": {
+        "r1_cold": true,
+        "r2_rerun": false,
+        "r3_input3_changed": true,
+        "r4_mid_script_changed": true,
+        "r5_rerun": false
+      }
+    }
+  ],
+  "phase_executed_jobs": {
+    "r1_cold": [
+      "Read in3.txt",
+      "Read in1.txt",
+      "Read in4.txt",
+      "Read in0.txt",
+      "Read in2.txt",
+      "Read in6.txt",
+      "Read in5.txt",
+      "Read in7.txt",
+      "Mid r-in2.txt",
+      "Mid r-in4.txt",
+      "Mid r-in0.txt",
+      "Mid r-in7.txt",
+      "Mid r-in1.txt",
+      "Mid r-in5.txt",
+      "Mid r-in3.txt",
+      "Mid r-in6.txt",
+      "Side r-in5.txt",
+      "Side r-in4.txt",
+      "Side r-in7.txt",
+      "Side r-in6.txt",
+      "Side r-in3.txt",
+      "Side r-in1.txt",
+      "Side r-in0.txt",
+      "Side r-in2.txt",
+      "Agg agg"
+    ],
+    "r2_rerun": [],
+    "r3_input3_changed": [
+      "Read in4.txt",
+      "Mid r-in4.txt",
+      "Side r-in4.txt",
+      "Agg agg"
+    ],
+    "r4_mid_script_changed": [
+      "Mid r-in3.txt",
+      "Mid r-in4.txt",
+      "Mid r-in0.txt",
+      "Mid r-in1.txt",
+      "Mid r-in7.txt",
+      "Mid r-in6.txt",
+      "Mid r-in2.txt",
+      "Mid r-in5.txt",
+      "Agg agg"
+    ],
+    "r5_rerun": []
+  },
+  "cache_freshness_proof": {
+    "modified_input_file": "/home/pwwang/ws_bench/work/cache_inputs_small/in4.txt",
+    "modified_input_content": "line3-v2\n",
+    "untouched_input_example": {
+      "file": "/home/pwwang/ws_bench/work/cache_inputs_small/in0.txt",
+      "content": "line0-v1\n"
+    },
+    "note_on_modified_content": "the driver overwrites the modified input with the literal string 'line3-v2' (the same literal the archived run used); the original file held 'line<N>-v1'.  Only the fact that the content changed matters for the invalidation test.",
+    "mid_branch_output_after_all_phases": {
+      "in0.txt": {
+        "produced_by": "Mid job 0",
+        "output_file": "/home/pwwang/ws_bench/work/wd_s5_scope/CachePipeline/Mid/0/output/m-r-in0.txt",
+        "content": "B:line0-v1",
+        "branch_was_invalidated": false
+      },
+      "in1.txt": {
+        "produced_by": "Mid job 1",
+        "output_file": "/home/pwwang/ws_bench/work/wd_s5_scope/CachePipeline/Mid/1/output/m-r-in1.txt",
+        "content": "B:line1-v1",
+        "branch_was_invalidated": false
+      },
+      "in2.txt": {
+        "produced_by": "Mid job 2",
+        "output_file": "/home/pwwang/ws_bench/work/wd_s5_scope/CachePipeline/Mid/2/output/m-r-in2.txt",
+        "content": "B:line2-v1",
+        "branch_was_invalidated": false
+      },
+      "in3.txt": {
+        "produced_by": "Mid job 3",
+        "output_file": "/home/pwwang/ws_bench/work/wd_s5_scope/CachePipeline/Mid/3/output/m-r-in3.txt",
+        "content": "B:line3-v1",
+        "branch_was_invalidated": false
+      },
+      "in4.txt": {
+        "produced_by": "Mid job 4",
+        "output_file": "/home/pwwang/ws_bench/work/wd_s5_scope/CachePipeline/Mid/4/output/m-r-in4.txt",
+        "content": "B:line3-v2",
+        "branch_was_invalidated": true
+      },
+      "in5.txt": {
+        "produced_by": "Mid job 5",
+        "output_file": "/home/pwwang/ws_bench/work/wd_s5_scope/CachePipeline/Mid/5/output/m-r-in5.txt",
+        "content": "B:line5-v1",
+        "branch_was_invalidated": false
+      },
+      "in6.txt": {
+        "produced_by": "Mid job 6",
+        "output_file": "/home/pwwang/ws_bench/work/wd_s5_scope/CachePipeline/Mid/6/output/m-r-in6.txt",
+        "content": "B:line6-v1",
+        "branch_was_invalidated": false
+      },
+      "in7.txt": {
+        "produced_by": "Mid job 7",
+        "output_file": "/home/pwwang/ws_bench/work/wd_s5_scope/CachePipeline/Mid/7/output/m-r-in7.txt",
+        "content": "B:line7-v1",
+        "branch_was_invalidated": false
+      }
+    },
+    "agg_exported_output": {
+      "/home/pwwang/ws_bench/work/CachePipeline-output/Agg/agg.txt": {
+        "resolved": "/home/pwwang/ws_bench/work/CachePipeline-output/Agg/agg.txt",
+        "mtime": "2026-10-01T09:21:13.073193",
+        "n_lines": 42
+      },
+      "/home/pwwang/ws_bench/work/DagPipeline-output/Agg/agg.txt": {
+        "resolved": "/home/pwwang/ws_bench/work/DagPipeline-output/Agg/agg.txt",
+        "mtime": "2026-10-01T09:23:10.788972",
+        "n_lines": 20
+      },
+      "/home/pwwang/ws_bench/work/smkw_s5_scope/agg.txt": {
+        "resolved": "/home/pwwang/ws_bench/work/smkw_s5_scope/agg.txt",
+        "mtime": "2026-10-01T09:23:24.927999",
+        "n_lines": 18
+      }
+    },
+    "shared_export_caveat": "the Agg job's output dir is a symlink to <cwd>/CachePipeline-output/Agg, i.e. a single path shared by every run of a same-named pipeline in the same cwd; a later run overwrites this file, so the per-branch per-job outputs in the workdir are used as the freshness proof instead.",
+    "modified_value_propagated_to_mid_branch": true
+  },
+  "unavailable": {}
+}

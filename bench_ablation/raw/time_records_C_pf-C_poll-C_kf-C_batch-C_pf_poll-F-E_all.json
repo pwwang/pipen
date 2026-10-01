@@ -1,0 +1,2332 @@
+{
+  "mode": "time",
+  "reps": 3,
+  "arms": [
+    "C_pf",
+    "C_poll",
+    "C_kf",
+    "C_batch",
+    "C_pf_poll",
+    "F",
+    "E_all"
+  ],
+  "source_tree_sha256_before": {
+    "pipen": "ee7c6459f2a6438e8acf26beac7813fcb83b20e26f7510ca2792e0b694a9d1aa",
+    "xqute": "4e0010c6873f5f0e9dc1ec141f428c4f3f686f46e8ee545ba69c6ec006d20d85"
+  },
+  "source_tree_sha256_after": {
+    "pipen": "ee7c6459f2a6438e8acf26beac7813fcb83b20e26f7510ca2792e0b694a9d1aa",
+    "xqute": "4e0010c6873f5f0e9dc1ec141f428c4f3f686f46e8ee545ba69c6ec006d20d85"
+  },
+  "source_unchanged": true,
+  "driver_total_sec": 235.3,
+  "records": [
+    {
+      "tag": "C_pf_n100_r1",
+      "arm": "C_pf",
+      "arm_label": "SLEEP_INTERVAL_PRODUCER_MAX_FORKS 1.0 -> 0.001 (alone)",
+      "n": 100,
+      "rep": 1,
+      "forks": 32,
+      "shard_sleep_sec": 0.05,
+      "cache": false,
+      "wall_sec": 13.179,
+      "rc": 0,
+      "pipeline_run_sec": 12.553,
+      "sleep_floor_sec": 0.1562,
+      "jobs_executed_total": 101,
+      "jobs_by_proc_starts": {
+        "shard": 200,
+        "agg": 2
+      },
+      "shard_jobs_started": 100,
+      "agg_jobs": 1,
+      "unmatched_starts": 0,
+      "job_start_span_sec": 7.988,
+      "job_start_rate_per_sec_median_of_start_gaps": null,
+      "job_start_rate_per_sec_span": 12.39,
+      "end_to_end_rate_per_sec": 9.86,
+      "median_shard_job_duration_sec": 0.052,
+      "peak_concurrent_jobs_from_markers": 7,
+      "mean_concurrent_jobs_from_markers": 0.513,
+      "occupancy_sampler": {
+        "sampler_interval_sec": 0.05,
+        "n_samples": 218,
+        "peak_wrapper_processes": 32,
+        "mean_wrapper_processes": 16.518,
+        "peak_descendant_processes_incl_self": 71,
+        "mean_descendant_processes_incl_self": 34.349
+      },
+      "effective": {
+        "arm": "C_pf",
+        "requested": {
+          "SLEEP_INTERVAL_PRODUCER_MAX_FORKS": 0.001
+        },
+        "effective": {
+          "SLEEP_INTERVAL_PRODUCER_MAX_FORKS": 0.001,
+          "SLEEP_INTERVAL_PRODUCER_MAX_FORKS_resolved_from": "xqute.xqute module global"
+        },
+        "source_files": {
+          "xqute/schedulers/local_scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/schedulers/local_scheduler.py",
+          "xqute/xqute.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/xqute.py",
+          "xqute/scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/scheduler.py",
+          "pipen/scheduler.py": "/home/pwwang/github/pipen/pipen/scheduler.py"
+        },
+        "source_sha256": {
+          "xqute/schedulers/local_scheduler.py": "70cff3432b26e92a582a17c2ac20409432a75d49e8ae1776795f8fdd9b095539",
+          "xqute/xqute.py": "126eed84bc42fd385ec61ecd1e3a7c7443adc124e9cebd9fefb1a120f2716e6e",
+          "xqute/scheduler.py": "6b810caae3951b894e3abb1557a97afb9b0e762f384766128eac62ffa2ebebca",
+          "pipen/scheduler.py": "da3a22ed2c13a1031fdf80a43b8321bbff6d83665d82b94d9870dfa188d4a16d"
+        }
+      },
+      "sleep_census": null,
+      "job_status_census": {
+        "n_job_dirs": 101,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "job_rc_histogram": {
+          "0": 101
+        },
+        "n_jobs_marked_failed_before_running": 0,
+        "jobs_marked_failed_before_running": [],
+        "note": "job.status: 6=FINISHED 3=SUBMITTED 7=FAILED 4=RUNNING; rc=-3 == 'fail before running'"
+      },
+      "correctness": {
+        "agg_file_found": true,
+        "agg_content_equals_expected_0_to_N_minus_1": true,
+        "n_jobs_marked_failed_before_running": 0,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "all_jobs_finished": true
+      },
+      "agg_outputs": [
+        {
+          "path": "/home/pwwang/bench_abl/wd/C_pf_n100_r1/AblPipeline-output/Agg/agg.txt",
+          "sha256": "6d506216aa5bad159f167e2535293b4e5ec8e1073b64449d30b66b460ebf6da0",
+          "lines": 100,
+          "bytes": 290
+        }
+      ],
+      "loadavg_before": [
+        "4.33",
+        "4.60",
+        "4.44"
+      ],
+      "loadavg_after": [
+        "4.33",
+        "4.59",
+        "4.44"
+      ],
+      "marker_log": "/home/pwwang/bench_abl/out/markers/marker_C_pf_n100_r1.log",
+      "log": "/home/pwwang/bench_abl/out/logs/C_pf_n100_r1.log",
+      "workdir": "/home/pwwang/bench_abl/wd/C_pf_n100_r1",
+      "overhead_wall_sec": 13.023,
+      "overhead_wall_per_job_sec": 0.1302,
+      "overhead_run_sec": 12.397,
+      "overhead_run_per_job_sec": 0.124
+    },
+    {
+      "tag": "C_pf_n100_r2",
+      "arm": "C_pf",
+      "arm_label": "SLEEP_INTERVAL_PRODUCER_MAX_FORKS 1.0 -> 0.001 (alone)",
+      "n": 100,
+      "rep": 2,
+      "forks": 32,
+      "shard_sleep_sec": 0.05,
+      "cache": false,
+      "wall_sec": 13.089,
+      "rc": 0,
+      "pipeline_run_sec": 12.405,
+      "sleep_floor_sec": 0.1562,
+      "jobs_executed_total": 101,
+      "jobs_by_proc_starts": {
+        "shard": 200,
+        "agg": 2
+      },
+      "shard_jobs_started": 100,
+      "agg_jobs": 1,
+      "unmatched_starts": 0,
+      "job_start_span_sec": 7.815,
+      "job_start_rate_per_sec_median_of_start_gaps": null,
+      "job_start_rate_per_sec_span": 12.67,
+      "end_to_end_rate_per_sec": 10.01,
+      "median_shard_job_duration_sec": 0.0519,
+      "peak_concurrent_jobs_from_markers": 5,
+      "mean_concurrent_jobs_from_markers": 0.521,
+      "occupancy_sampler": {
+        "sampler_interval_sec": 0.05,
+        "n_samples": 213,
+        "peak_wrapper_processes": 32,
+        "mean_wrapper_processes": 16.765,
+        "peak_descendant_processes_incl_self": 68,
+        "mean_descendant_processes_incl_self": 34.784
+      },
+      "effective": {
+        "arm": "C_pf",
+        "requested": {
+          "SLEEP_INTERVAL_PRODUCER_MAX_FORKS": 0.001
+        },
+        "effective": {
+          "SLEEP_INTERVAL_PRODUCER_MAX_FORKS": 0.001,
+          "SLEEP_INTERVAL_PRODUCER_MAX_FORKS_resolved_from": "xqute.xqute module global"
+        },
+        "source_files": {
+          "xqute/schedulers/local_scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/schedulers/local_scheduler.py",
+          "xqute/xqute.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/xqute.py",
+          "xqute/scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/scheduler.py",
+          "pipen/scheduler.py": "/home/pwwang/github/pipen/pipen/scheduler.py"
+        },
+        "source_sha256": {
+          "xqute/schedulers/local_scheduler.py": "70cff3432b26e92a582a17c2ac20409432a75d49e8ae1776795f8fdd9b095539",
+          "xqute/xqute.py": "126eed84bc42fd385ec61ecd1e3a7c7443adc124e9cebd9fefb1a120f2716e6e",
+          "xqute/scheduler.py": "6b810caae3951b894e3abb1557a97afb9b0e762f384766128eac62ffa2ebebca",
+          "pipen/scheduler.py": "da3a22ed2c13a1031fdf80a43b8321bbff6d83665d82b94d9870dfa188d4a16d"
+        }
+      },
+      "sleep_census": null,
+      "job_status_census": {
+        "n_job_dirs": 101,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "job_rc_histogram": {
+          "0": 101
+        },
+        "n_jobs_marked_failed_before_running": 0,
+        "jobs_marked_failed_before_running": [],
+        "note": "job.status: 6=FINISHED 3=SUBMITTED 7=FAILED 4=RUNNING; rc=-3 == 'fail before running'"
+      },
+      "correctness": {
+        "agg_file_found": true,
+        "agg_content_equals_expected_0_to_N_minus_1": true,
+        "n_jobs_marked_failed_before_running": 0,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "all_jobs_finished": true
+      },
+      "agg_outputs": [
+        {
+          "path": "/home/pwwang/bench_abl/wd/C_pf_n100_r2/AblPipeline-output/Agg/agg.txt",
+          "sha256": "6d506216aa5bad159f167e2535293b4e5ec8e1073b64449d30b66b460ebf6da0",
+          "lines": 100,
+          "bytes": 290
+        }
+      ],
+      "loadavg_before": [
+        "4.33",
+        "4.59",
+        "4.44"
+      ],
+      "loadavg_after": [
+        "4.35",
+        "4.58",
+        "4.44"
+      ],
+      "marker_log": "/home/pwwang/bench_abl/out/markers/marker_C_pf_n100_r2.log",
+      "log": "/home/pwwang/bench_abl/out/logs/C_pf_n100_r2.log",
+      "workdir": "/home/pwwang/bench_abl/wd/C_pf_n100_r2",
+      "overhead_wall_sec": 12.932,
+      "overhead_wall_per_job_sec": 0.1293,
+      "overhead_run_sec": 12.249,
+      "overhead_run_per_job_sec": 0.1225
+    },
+    {
+      "tag": "C_pf_n100_r3",
+      "arm": "C_pf",
+      "arm_label": "SLEEP_INTERVAL_PRODUCER_MAX_FORKS 1.0 -> 0.001 (alone)",
+      "n": 100,
+      "rep": 3,
+      "forks": 32,
+      "shard_sleep_sec": 0.05,
+      "cache": false,
+      "wall_sec": 14.242,
+      "rc": 0,
+      "pipeline_run_sec": 13.468,
+      "sleep_floor_sec": 0.1562,
+      "jobs_executed_total": 101,
+      "jobs_by_proc_starts": {
+        "shard": 200,
+        "agg": 2
+      },
+      "shard_jobs_started": 100,
+      "agg_jobs": 1,
+      "unmatched_starts": 0,
+      "job_start_span_sec": 8.005,
+      "job_start_rate_per_sec_median_of_start_gaps": null,
+      "job_start_rate_per_sec_span": 12.37,
+      "end_to_end_rate_per_sec": 9.0,
+      "median_shard_job_duration_sec": 0.052,
+      "peak_concurrent_jobs_from_markers": 5,
+      "mean_concurrent_jobs_from_markers": 0.476,
+      "occupancy_sampler": {
+        "sampler_interval_sec": 0.05,
+        "n_samples": 232,
+        "peak_wrapper_processes": 32,
+        "mean_wrapper_processes": 15.302,
+        "peak_descendant_processes_incl_self": 69,
+        "mean_descendant_processes_incl_self": 31.772
+      },
+      "effective": {
+        "arm": "C_pf",
+        "requested": {
+          "SLEEP_INTERVAL_PRODUCER_MAX_FORKS": 0.001
+        },
+        "effective": {
+          "SLEEP_INTERVAL_PRODUCER_MAX_FORKS": 0.001,
+          "SLEEP_INTERVAL_PRODUCER_MAX_FORKS_resolved_from": "xqute.xqute module global"
+        },
+        "source_files": {
+          "xqute/schedulers/local_scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/schedulers/local_scheduler.py",
+          "xqute/xqute.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/xqute.py",
+          "xqute/scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/scheduler.py",
+          "pipen/scheduler.py": "/home/pwwang/github/pipen/pipen/scheduler.py"
+        },
+        "source_sha256": {
+          "xqute/schedulers/local_scheduler.py": "70cff3432b26e92a582a17c2ac20409432a75d49e8ae1776795f8fdd9b095539",
+          "xqute/xqute.py": "126eed84bc42fd385ec61ecd1e3a7c7443adc124e9cebd9fefb1a120f2716e6e",
+          "xqute/scheduler.py": "6b810caae3951b894e3abb1557a97afb9b0e762f384766128eac62ffa2ebebca",
+          "pipen/scheduler.py": "da3a22ed2c13a1031fdf80a43b8321bbff6d83665d82b94d9870dfa188d4a16d"
+        }
+      },
+      "sleep_census": null,
+      "job_status_census": {
+        "n_job_dirs": 101,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "job_rc_histogram": {
+          "0": 101
+        },
+        "n_jobs_marked_failed_before_running": 0,
+        "jobs_marked_failed_before_running": [],
+        "note": "job.status: 6=FINISHED 3=SUBMITTED 7=FAILED 4=RUNNING; rc=-3 == 'fail before running'"
+      },
+      "correctness": {
+        "agg_file_found": true,
+        "agg_content_equals_expected_0_to_N_minus_1": true,
+        "n_jobs_marked_failed_before_running": 0,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "all_jobs_finished": true
+      },
+      "agg_outputs": [
+        {
+          "path": "/home/pwwang/bench_abl/wd/C_pf_n100_r3/AblPipeline-output/Agg/agg.txt",
+          "sha256": "6d506216aa5bad159f167e2535293b4e5ec8e1073b64449d30b66b460ebf6da0",
+          "lines": 100,
+          "bytes": 290
+        }
+      ],
+      "loadavg_before": [
+        "4.35",
+        "4.58",
+        "4.44"
+      ],
+      "loadavg_after": [
+        "4.34",
+        "4.57",
+        "4.44"
+      ],
+      "marker_log": "/home/pwwang/bench_abl/out/markers/marker_C_pf_n100_r3.log",
+      "log": "/home/pwwang/bench_abl/out/logs/C_pf_n100_r3.log",
+      "workdir": "/home/pwwang/bench_abl/wd/C_pf_n100_r3",
+      "overhead_wall_sec": 14.085,
+      "overhead_wall_per_job_sec": 0.1409,
+      "overhead_run_sec": 13.312,
+      "overhead_run_per_job_sec": 0.1331
+    },
+    {
+      "tag": "C_poll_n100_r1",
+      "arm": "C_poll",
+      "arm_label": "SLEEP_INTERVAL_POLLING_JOBS 1.0 -> 0.001 (alone)",
+      "n": 100,
+      "rep": 1,
+      "forks": 32,
+      "shard_sleep_sec": 0.05,
+      "cache": false,
+      "wall_sec": 11.998,
+      "rc": 0,
+      "pipeline_run_sec": 11.334,
+      "sleep_floor_sec": 0.1562,
+      "jobs_executed_total": 101,
+      "jobs_by_proc_starts": {
+        "shard": 200,
+        "agg": 2
+      },
+      "shard_jobs_started": 100,
+      "agg_jobs": 1,
+      "unmatched_starts": 0,
+      "job_start_span_sec": 6.899,
+      "job_start_rate_per_sec_median_of_start_gaps": null,
+      "job_start_rate_per_sec_span": 14.35,
+      "end_to_end_rate_per_sec": 11.11,
+      "median_shard_job_duration_sec": 0.052,
+      "peak_concurrent_jobs_from_markers": 6,
+      "mean_concurrent_jobs_from_markers": 0.58,
+      "occupancy_sampler": {
+        "sampler_interval_sec": 0.05,
+        "n_samples": 156,
+        "peak_wrapper_processes": 32,
+        "mean_wrapper_processes": 16.468,
+        "peak_descendant_processes_incl_self": 67,
+        "mean_descendant_processes_incl_self": 33.654
+      },
+      "effective": {
+        "arm": "C_poll",
+        "requested": {
+          "SLEEP_INTERVAL_POLLING_JOBS": 0.001
+        },
+        "effective": {
+          "SLEEP_INTERVAL_POLLING_JOBS": 0.001,
+          "SLEEP_INTERVAL_POLLING_JOBS_resolved_from": "xqute.xqute module global"
+        },
+        "source_files": {
+          "xqute/schedulers/local_scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/schedulers/local_scheduler.py",
+          "xqute/xqute.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/xqute.py",
+          "xqute/scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/scheduler.py",
+          "pipen/scheduler.py": "/home/pwwang/github/pipen/pipen/scheduler.py"
+        },
+        "source_sha256": {
+          "xqute/schedulers/local_scheduler.py": "70cff3432b26e92a582a17c2ac20409432a75d49e8ae1776795f8fdd9b095539",
+          "xqute/xqute.py": "126eed84bc42fd385ec61ecd1e3a7c7443adc124e9cebd9fefb1a120f2716e6e",
+          "xqute/scheduler.py": "6b810caae3951b894e3abb1557a97afb9b0e762f384766128eac62ffa2ebebca",
+          "pipen/scheduler.py": "da3a22ed2c13a1031fdf80a43b8321bbff6d83665d82b94d9870dfa188d4a16d"
+        }
+      },
+      "sleep_census": null,
+      "job_status_census": {
+        "n_job_dirs": 101,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "job_rc_histogram": {
+          "0": 101
+        },
+        "n_jobs_marked_failed_before_running": 0,
+        "jobs_marked_failed_before_running": [],
+        "note": "job.status: 6=FINISHED 3=SUBMITTED 7=FAILED 4=RUNNING; rc=-3 == 'fail before running'"
+      },
+      "correctness": {
+        "agg_file_found": true,
+        "agg_content_equals_expected_0_to_N_minus_1": true,
+        "n_jobs_marked_failed_before_running": 0,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "all_jobs_finished": true
+      },
+      "agg_outputs": [
+        {
+          "path": "/home/pwwang/bench_abl/wd/C_poll_n100_r1/AblPipeline-output/Agg/agg.txt",
+          "sha256": "6d506216aa5bad159f167e2535293b4e5ec8e1073b64449d30b66b460ebf6da0",
+          "lines": 100,
+          "bytes": 290
+        }
+      ],
+      "loadavg_before": [
+        "4.34",
+        "4.57",
+        "4.44"
+      ],
+      "loadavg_after": [
+        "4.41",
+        "4.57",
+        "4.45"
+      ],
+      "marker_log": "/home/pwwang/bench_abl/out/markers/marker_C_poll_n100_r1.log",
+      "log": "/home/pwwang/bench_abl/out/logs/C_poll_n100_r1.log",
+      "workdir": "/home/pwwang/bench_abl/wd/C_poll_n100_r1",
+      "overhead_wall_sec": 11.842,
+      "overhead_wall_per_job_sec": 0.1184,
+      "overhead_run_sec": 11.178,
+      "overhead_run_per_job_sec": 0.1118
+    },
+    {
+      "tag": "C_poll_n100_r2",
+      "arm": "C_poll",
+      "arm_label": "SLEEP_INTERVAL_POLLING_JOBS 1.0 -> 0.001 (alone)",
+      "n": 100,
+      "rep": 2,
+      "forks": 32,
+      "shard_sleep_sec": 0.05,
+      "cache": false,
+      "wall_sec": 12.077,
+      "rc": 0,
+      "pipeline_run_sec": 11.388,
+      "sleep_floor_sec": 0.1562,
+      "jobs_executed_total": 101,
+      "jobs_by_proc_starts": {
+        "shard": 200,
+        "agg": 2
+      },
+      "shard_jobs_started": 100,
+      "agg_jobs": 1,
+      "unmatched_starts": 0,
+      "job_start_span_sec": 9.821,
+      "job_start_rate_per_sec_median_of_start_gaps": null,
+      "job_start_rate_per_sec_span": 10.08,
+      "end_to_end_rate_per_sec": 8.33,
+      "median_shard_job_duration_sec": 0.052,
+      "peak_concurrent_jobs_from_markers": 6,
+      "mean_concurrent_jobs_from_markers": 0.434,
+      "occupancy_sampler": {
+        "sampler_interval_sec": 0.05,
+        "n_samples": 159,
+        "peak_wrapper_processes": 32,
+        "mean_wrapper_processes": 16.358,
+        "peak_descendant_processes_incl_self": 65,
+        "mean_descendant_processes_incl_self": 33.371
+      },
+      "effective": {
+        "arm": "C_poll",
+        "requested": {
+          "SLEEP_INTERVAL_POLLING_JOBS": 0.001
+        },
+        "effective": {
+          "SLEEP_INTERVAL_POLLING_JOBS": 0.001,
+          "SLEEP_INTERVAL_POLLING_JOBS_resolved_from": "xqute.xqute module global"
+        },
+        "source_files": {
+          "xqute/schedulers/local_scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/schedulers/local_scheduler.py",
+          "xqute/xqute.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/xqute.py",
+          "xqute/scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/scheduler.py",
+          "pipen/scheduler.py": "/home/pwwang/github/pipen/pipen/scheduler.py"
+        },
+        "source_sha256": {
+          "xqute/schedulers/local_scheduler.py": "70cff3432b26e92a582a17c2ac20409432a75d49e8ae1776795f8fdd9b095539",
+          "xqute/xqute.py": "126eed84bc42fd385ec61ecd1e3a7c7443adc124e9cebd9fefb1a120f2716e6e",
+          "xqute/scheduler.py": "6b810caae3951b894e3abb1557a97afb9b0e762f384766128eac62ffa2ebebca",
+          "pipen/scheduler.py": "da3a22ed2c13a1031fdf80a43b8321bbff6d83665d82b94d9870dfa188d4a16d"
+        }
+      },
+      "sleep_census": null,
+      "job_status_census": {
+        "n_job_dirs": 101,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "job_rc_histogram": {
+          "0": 101
+        },
+        "n_jobs_marked_failed_before_running": 0,
+        "jobs_marked_failed_before_running": [],
+        "note": "job.status: 6=FINISHED 3=SUBMITTED 7=FAILED 4=RUNNING; rc=-3 == 'fail before running'"
+      },
+      "correctness": {
+        "agg_file_found": true,
+        "agg_content_equals_expected_0_to_N_minus_1": true,
+        "n_jobs_marked_failed_before_running": 0,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "all_jobs_finished": true
+      },
+      "agg_outputs": [
+        {
+          "path": "/home/pwwang/bench_abl/wd/C_poll_n100_r2/AblPipeline-output/Agg/agg.txt",
+          "sha256": "6d506216aa5bad159f167e2535293b4e5ec8e1073b64449d30b66b460ebf6da0",
+          "lines": 100,
+          "bytes": 290
+        }
+      ],
+      "loadavg_before": [
+        "4.41",
+        "4.57",
+        "4.45"
+      ],
+      "loadavg_after": [
+        "4.88",
+        "4.67",
+        "4.48"
+      ],
+      "marker_log": "/home/pwwang/bench_abl/out/markers/marker_C_poll_n100_r2.log",
+      "log": "/home/pwwang/bench_abl/out/logs/C_poll_n100_r2.log",
+      "workdir": "/home/pwwang/bench_abl/wd/C_poll_n100_r2",
+      "overhead_wall_sec": 11.921,
+      "overhead_wall_per_job_sec": 0.1192,
+      "overhead_run_sec": 11.232,
+      "overhead_run_per_job_sec": 0.1123
+    },
+    {
+      "tag": "C_poll_n100_r3",
+      "arm": "C_poll",
+      "arm_label": "SLEEP_INTERVAL_POLLING_JOBS 1.0 -> 0.001 (alone)",
+      "n": 100,
+      "rep": 3,
+      "forks": 32,
+      "shard_sleep_sec": 0.05,
+      "cache": false,
+      "wall_sec": 12.035,
+      "rc": 0,
+      "pipeline_run_sec": 11.347,
+      "sleep_floor_sec": 0.1562,
+      "jobs_executed_total": 101,
+      "jobs_by_proc_starts": {
+        "shard": 200,
+        "agg": 2
+      },
+      "shard_jobs_started": 100,
+      "agg_jobs": 1,
+      "unmatched_starts": 0,
+      "job_start_span_sec": 6.856,
+      "job_start_rate_per_sec_median_of_start_gaps": null,
+      "job_start_rate_per_sec_span": 14.44,
+      "end_to_end_rate_per_sec": 11.07,
+      "median_shard_job_duration_sec": 0.052,
+      "peak_concurrent_jobs_from_markers": 8,
+      "mean_concurrent_jobs_from_markers": 0.599,
+      "occupancy_sampler": {
+        "sampler_interval_sec": 0.05,
+        "n_samples": 160,
+        "peak_wrapper_processes": 32,
+        "mean_wrapper_processes": 16.5,
+        "peak_descendant_processes_incl_self": 66,
+        "mean_descendant_processes_incl_self": 33.806
+      },
+      "effective": {
+        "arm": "C_poll",
+        "requested": {
+          "SLEEP_INTERVAL_POLLING_JOBS": 0.001
+        },
+        "effective": {
+          "SLEEP_INTERVAL_POLLING_JOBS": 0.001,
+          "SLEEP_INTERVAL_POLLING_JOBS_resolved_from": "xqute.xqute module global"
+        },
+        "source_files": {
+          "xqute/schedulers/local_scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/schedulers/local_scheduler.py",
+          "xqute/xqute.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/xqute.py",
+          "xqute/scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/scheduler.py",
+          "pipen/scheduler.py": "/home/pwwang/github/pipen/pipen/scheduler.py"
+        },
+        "source_sha256": {
+          "xqute/schedulers/local_scheduler.py": "70cff3432b26e92a582a17c2ac20409432a75d49e8ae1776795f8fdd9b095539",
+          "xqute/xqute.py": "126eed84bc42fd385ec61ecd1e3a7c7443adc124e9cebd9fefb1a120f2716e6e",
+          "xqute/scheduler.py": "6b810caae3951b894e3abb1557a97afb9b0e762f384766128eac62ffa2ebebca",
+          "pipen/scheduler.py": "da3a22ed2c13a1031fdf80a43b8321bbff6d83665d82b94d9870dfa188d4a16d"
+        }
+      },
+      "sleep_census": null,
+      "job_status_census": {
+        "n_job_dirs": 101,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "job_rc_histogram": {
+          "0": 101
+        },
+        "n_jobs_marked_failed_before_running": 0,
+        "jobs_marked_failed_before_running": [],
+        "note": "job.status: 6=FINISHED 3=SUBMITTED 7=FAILED 4=RUNNING; rc=-3 == 'fail before running'"
+      },
+      "correctness": {
+        "agg_file_found": true,
+        "agg_content_equals_expected_0_to_N_minus_1": true,
+        "n_jobs_marked_failed_before_running": 0,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "all_jobs_finished": true
+      },
+      "agg_outputs": [
+        {
+          "path": "/home/pwwang/bench_abl/wd/C_poll_n100_r3/AblPipeline-output/Agg/agg.txt",
+          "sha256": "6d506216aa5bad159f167e2535293b4e5ec8e1073b64449d30b66b460ebf6da0",
+          "lines": 100,
+          "bytes": 290
+        }
+      ],
+      "loadavg_before": [
+        "4.88",
+        "4.67",
+        "4.48"
+      ],
+      "loadavg_after": [
+        "4.91",
+        "4.68",
+        "4.49"
+      ],
+      "marker_log": "/home/pwwang/bench_abl/out/markers/marker_C_poll_n100_r3.log",
+      "log": "/home/pwwang/bench_abl/out/logs/C_poll_n100_r3.log",
+      "workdir": "/home/pwwang/bench_abl/wd/C_poll_n100_r3",
+      "overhead_wall_sec": 11.879,
+      "overhead_wall_per_job_sec": 0.1188,
+      "overhead_run_sec": 11.191,
+      "overhead_run_per_job_sec": 0.1119
+    },
+    {
+      "tag": "C_kf_n100_r1",
+      "arm": "C_kf",
+      "arm_label": "SLEEP_INTERVAL_KEEP_FEEDING 0.1 -> 0.001 (alone)",
+      "n": 100,
+      "rep": 1,
+      "forks": 32,
+      "shard_sleep_sec": 0.05,
+      "cache": false,
+      "wall_sec": 16.345,
+      "rc": 0,
+      "pipeline_run_sec": 15.638,
+      "sleep_floor_sec": 0.1562,
+      "jobs_executed_total": 101,
+      "jobs_by_proc_starts": {
+        "shard": 200,
+        "agg": 2
+      },
+      "shard_jobs_started": 100,
+      "agg_jobs": 1,
+      "unmatched_starts": 0,
+      "job_start_span_sec": 9.573,
+      "job_start_rate_per_sec_median_of_start_gaps": null,
+      "job_start_rate_per_sec_span": 10.34,
+      "end_to_end_rate_per_sec": 6.6,
+      "median_shard_job_duration_sec": 0.052,
+      "peak_concurrent_jobs_from_markers": 6,
+      "mean_concurrent_jobs_from_markers": 0.343,
+      "occupancy_sampler": {
+        "sampler_interval_sec": 0.05,
+        "n_samples": 281,
+        "peak_wrapper_processes": 32,
+        "mean_wrapper_processes": 13.167,
+        "peak_descendant_processes_incl_self": 69,
+        "mean_descendant_processes_incl_self": 27.569
+      },
+      "effective": {
+        "arm": "C_kf",
+        "requested": {
+          "SLEEP_INTERVAL_KEEP_FEEDING": 0.001
+        },
+        "effective": {
+          "SLEEP_INTERVAL_KEEP_FEEDING": 0.001,
+          "SLEEP_INTERVAL_KEEP_FEEDING_resolved_from": "xqute.xqute module global"
+        },
+        "source_files": {
+          "xqute/schedulers/local_scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/schedulers/local_scheduler.py",
+          "xqute/xqute.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/xqute.py",
+          "xqute/scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/scheduler.py",
+          "pipen/scheduler.py": "/home/pwwang/github/pipen/pipen/scheduler.py"
+        },
+        "source_sha256": {
+          "xqute/schedulers/local_scheduler.py": "70cff3432b26e92a582a17c2ac20409432a75d49e8ae1776795f8fdd9b095539",
+          "xqute/xqute.py": "126eed84bc42fd385ec61ecd1e3a7c7443adc124e9cebd9fefb1a120f2716e6e",
+          "xqute/scheduler.py": "6b810caae3951b894e3abb1557a97afb9b0e762f384766128eac62ffa2ebebca",
+          "pipen/scheduler.py": "da3a22ed2c13a1031fdf80a43b8321bbff6d83665d82b94d9870dfa188d4a16d"
+        }
+      },
+      "sleep_census": null,
+      "job_status_census": {
+        "n_job_dirs": 101,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "job_rc_histogram": {
+          "0": 101
+        },
+        "n_jobs_marked_failed_before_running": 0,
+        "jobs_marked_failed_before_running": [],
+        "note": "job.status: 6=FINISHED 3=SUBMITTED 7=FAILED 4=RUNNING; rc=-3 == 'fail before running'"
+      },
+      "correctness": {
+        "agg_file_found": true,
+        "agg_content_equals_expected_0_to_N_minus_1": true,
+        "n_jobs_marked_failed_before_running": 0,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "all_jobs_finished": true
+      },
+      "agg_outputs": [
+        {
+          "path": "/home/pwwang/bench_abl/wd/C_kf_n100_r1/AblPipeline-output/Agg/agg.txt",
+          "sha256": "6d506216aa5bad159f167e2535293b4e5ec8e1073b64449d30b66b460ebf6da0",
+          "lines": 100,
+          "bytes": 290
+        }
+      ],
+      "loadavg_before": [
+        "4.91",
+        "4.68",
+        "4.49"
+      ],
+      "loadavg_after": [
+        "4.86",
+        "4.69",
+        "4.49"
+      ],
+      "marker_log": "/home/pwwang/bench_abl/out/markers/marker_C_kf_n100_r1.log",
+      "log": "/home/pwwang/bench_abl/out/logs/C_kf_n100_r1.log",
+      "workdir": "/home/pwwang/bench_abl/wd/C_kf_n100_r1",
+      "overhead_wall_sec": 16.188,
+      "overhead_wall_per_job_sec": 0.1619,
+      "overhead_run_sec": 15.482,
+      "overhead_run_per_job_sec": 0.1548
+    },
+    {
+      "tag": "C_kf_n100_r2",
+      "arm": "C_kf",
+      "arm_label": "SLEEP_INTERVAL_KEEP_FEEDING 0.1 -> 0.001 (alone)",
+      "n": 100,
+      "rep": 2,
+      "forks": 32,
+      "shard_sleep_sec": 0.05,
+      "cache": false,
+      "wall_sec": 16.073,
+      "rc": 0,
+      "pipeline_run_sec": 15.463,
+      "sleep_floor_sec": 0.1562,
+      "jobs_executed_total": 101,
+      "jobs_by_proc_starts": {
+        "shard": 200,
+        "agg": 2
+      },
+      "shard_jobs_started": 100,
+      "agg_jobs": 1,
+      "unmatched_starts": 0,
+      "job_start_span_sec": 9.62,
+      "job_start_rate_per_sec_median_of_start_gaps": null,
+      "job_start_rate_per_sec_span": 10.29,
+      "end_to_end_rate_per_sec": 8.21,
+      "median_shard_job_duration_sec": 0.052,
+      "peak_concurrent_jobs_from_markers": 12,
+      "mean_concurrent_jobs_from_markers": 0.428,
+      "occupancy_sampler": {
+        "sampler_interval_sec": 0.05,
+        "n_samples": 277,
+        "peak_wrapper_processes": 32,
+        "mean_wrapper_processes": 13.303,
+        "peak_descendant_processes_incl_self": 77,
+        "mean_descendant_processes_incl_self": 27.798
+      },
+      "effective": {
+        "arm": "C_kf",
+        "requested": {
+          "SLEEP_INTERVAL_KEEP_FEEDING": 0.001
+        },
+        "effective": {
+          "SLEEP_INTERVAL_KEEP_FEEDING": 0.001,
+          "SLEEP_INTERVAL_KEEP_FEEDING_resolved_from": "xqute.xqute module global"
+        },
+        "source_files": {
+          "xqute/schedulers/local_scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/schedulers/local_scheduler.py",
+          "xqute/xqute.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/xqute.py",
+          "xqute/scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/scheduler.py",
+          "pipen/scheduler.py": "/home/pwwang/github/pipen/pipen/scheduler.py"
+        },
+        "source_sha256": {
+          "xqute/schedulers/local_scheduler.py": "70cff3432b26e92a582a17c2ac20409432a75d49e8ae1776795f8fdd9b095539",
+          "xqute/xqute.py": "126eed84bc42fd385ec61ecd1e3a7c7443adc124e9cebd9fefb1a120f2716e6e",
+          "xqute/scheduler.py": "6b810caae3951b894e3abb1557a97afb9b0e762f384766128eac62ffa2ebebca",
+          "pipen/scheduler.py": "da3a22ed2c13a1031fdf80a43b8321bbff6d83665d82b94d9870dfa188d4a16d"
+        }
+      },
+      "sleep_census": null,
+      "job_status_census": {
+        "n_job_dirs": 101,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "job_rc_histogram": {
+          "0": 101
+        },
+        "n_jobs_marked_failed_before_running": 0,
+        "jobs_marked_failed_before_running": [],
+        "note": "job.status: 6=FINISHED 3=SUBMITTED 7=FAILED 4=RUNNING; rc=-3 == 'fail before running'"
+      },
+      "correctness": {
+        "agg_file_found": true,
+        "agg_content_equals_expected_0_to_N_minus_1": true,
+        "n_jobs_marked_failed_before_running": 0,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "all_jobs_finished": true
+      },
+      "agg_outputs": [
+        {
+          "path": "/home/pwwang/bench_abl/wd/C_kf_n100_r2/AblPipeline-output/Agg/agg.txt",
+          "sha256": "6d506216aa5bad159f167e2535293b4e5ec8e1073b64449d30b66b460ebf6da0",
+          "lines": 100,
+          "bytes": 290
+        }
+      ],
+      "loadavg_before": [
+        "4.86",
+        "4.69",
+        "4.49"
+      ],
+      "loadavg_after": [
+        "5.04",
+        "4.74",
+        "4.51"
+      ],
+      "marker_log": "/home/pwwang/bench_abl/out/markers/marker_C_kf_n100_r2.log",
+      "log": "/home/pwwang/bench_abl/out/logs/C_kf_n100_r2.log",
+      "workdir": "/home/pwwang/bench_abl/wd/C_kf_n100_r2",
+      "overhead_wall_sec": 15.917,
+      "overhead_wall_per_job_sec": 0.1592,
+      "overhead_run_sec": 15.307,
+      "overhead_run_per_job_sec": 0.1531
+    },
+    {
+      "tag": "C_kf_n100_r3",
+      "arm": "C_kf",
+      "arm_label": "SLEEP_INTERVAL_KEEP_FEEDING 0.1 -> 0.001 (alone)",
+      "n": 100,
+      "rep": 3,
+      "forks": 32,
+      "shard_sleep_sec": 0.05,
+      "cache": false,
+      "wall_sec": 15.984,
+      "rc": 0,
+      "pipeline_run_sec": 15.35,
+      "sleep_floor_sec": 0.1562,
+      "jobs_executed_total": 101,
+      "jobs_by_proc_starts": {
+        "shard": 200,
+        "agg": 2
+      },
+      "shard_jobs_started": 100,
+      "agg_jobs": 1,
+      "unmatched_starts": 0,
+      "job_start_span_sec": 9.599,
+      "job_start_rate_per_sec_median_of_start_gaps": null,
+      "job_start_rate_per_sec_span": 10.31,
+      "end_to_end_rate_per_sec": 6.67,
+      "median_shard_job_duration_sec": 0.052,
+      "peak_concurrent_jobs_from_markers": 11,
+      "mean_concurrent_jobs_from_markers": 0.386,
+      "occupancy_sampler": {
+        "sampler_interval_sec": 0.05,
+        "n_samples": 274,
+        "peak_wrapper_processes": 35,
+        "mean_wrapper_processes": 13.46,
+        "peak_descendant_processes_incl_self": 69,
+        "mean_descendant_processes_incl_self": 28.047
+      },
+      "effective": {
+        "arm": "C_kf",
+        "requested": {
+          "SLEEP_INTERVAL_KEEP_FEEDING": 0.001
+        },
+        "effective": {
+          "SLEEP_INTERVAL_KEEP_FEEDING": 0.001,
+          "SLEEP_INTERVAL_KEEP_FEEDING_resolved_from": "xqute.xqute module global"
+        },
+        "source_files": {
+          "xqute/schedulers/local_scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/schedulers/local_scheduler.py",
+          "xqute/xqute.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/xqute.py",
+          "xqute/scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/scheduler.py",
+          "pipen/scheduler.py": "/home/pwwang/github/pipen/pipen/scheduler.py"
+        },
+        "source_sha256": {
+          "xqute/schedulers/local_scheduler.py": "70cff3432b26e92a582a17c2ac20409432a75d49e8ae1776795f8fdd9b095539",
+          "xqute/xqute.py": "126eed84bc42fd385ec61ecd1e3a7c7443adc124e9cebd9fefb1a120f2716e6e",
+          "xqute/scheduler.py": "6b810caae3951b894e3abb1557a97afb9b0e762f384766128eac62ffa2ebebca",
+          "pipen/scheduler.py": "da3a22ed2c13a1031fdf80a43b8321bbff6d83665d82b94d9870dfa188d4a16d"
+        }
+      },
+      "sleep_census": null,
+      "job_status_census": {
+        "n_job_dirs": 101,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "job_rc_histogram": {
+          "0": 101
+        },
+        "n_jobs_marked_failed_before_running": 0,
+        "jobs_marked_failed_before_running": [],
+        "note": "job.status: 6=FINISHED 3=SUBMITTED 7=FAILED 4=RUNNING; rc=-3 == 'fail before running'"
+      },
+      "correctness": {
+        "agg_file_found": true,
+        "agg_content_equals_expected_0_to_N_minus_1": true,
+        "n_jobs_marked_failed_before_running": 0,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "all_jobs_finished": true
+      },
+      "agg_outputs": [
+        {
+          "path": "/home/pwwang/bench_abl/wd/C_kf_n100_r3/AblPipeline-output/Agg/agg.txt",
+          "sha256": "6d506216aa5bad159f167e2535293b4e5ec8e1073b64449d30b66b460ebf6da0",
+          "lines": 100,
+          "bytes": 290
+        }
+      ],
+      "loadavg_before": [
+        "5.04",
+        "4.74",
+        "4.51"
+      ],
+      "loadavg_after": [
+        "4.95",
+        "4.73",
+        "4.51"
+      ],
+      "marker_log": "/home/pwwang/bench_abl/out/markers/marker_C_kf_n100_r3.log",
+      "log": "/home/pwwang/bench_abl/out/logs/C_kf_n100_r3.log",
+      "workdir": "/home/pwwang/bench_abl/wd/C_kf_n100_r3",
+      "overhead_wall_sec": 15.828,
+      "overhead_wall_per_job_sec": 0.1583,
+      "overhead_run_sec": 15.194,
+      "overhead_run_per_job_sec": 0.1519
+    },
+    {
+      "tag": "C_batch_n100_r1",
+      "arm": "C_batch",
+      "arm_label": "DEFAULT_SUBMISSION_BATCH 8 -> 64 (alone)",
+      "n": 100,
+      "rep": 1,
+      "forks": 32,
+      "shard_sleep_sec": 0.05,
+      "cache": false,
+      "wall_sec": 15.296,
+      "rc": 0,
+      "pipeline_run_sec": 14.666,
+      "sleep_floor_sec": 0.1562,
+      "jobs_executed_total": 101,
+      "jobs_by_proc_starts": {
+        "shard": 200,
+        "agg": 2
+      },
+      "shard_jobs_started": 100,
+      "agg_jobs": 1,
+      "unmatched_starts": 0,
+      "job_start_span_sec": 9.878,
+      "job_start_rate_per_sec_median_of_start_gaps": null,
+      "job_start_rate_per_sec_span": 10.02,
+      "end_to_end_rate_per_sec": 8.23,
+      "median_shard_job_duration_sec": 0.0519,
+      "peak_concurrent_jobs_from_markers": 6,
+      "mean_concurrent_jobs_from_markers": 0.428,
+      "occupancy_sampler": {
+        "sampler_interval_sec": 0.05,
+        "n_samples": 256,
+        "peak_wrapper_processes": 32,
+        "mean_wrapper_processes": 13.91,
+        "peak_descendant_processes_incl_self": 70,
+        "mean_descendant_processes_incl_self": 29.039
+      },
+      "effective": {
+        "arm": "C_batch",
+        "requested": {
+          "SUBMISSION_BATCH": 64
+        },
+        "effective": {
+          "submission_batch": 64,
+          "submission_batch_resolved_from": "xqute.scheduler.Scheduler.submission_batch (self.__class__ lookup)"
+        },
+        "source_files": {
+          "xqute/schedulers/local_scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/schedulers/local_scheduler.py",
+          "xqute/xqute.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/xqute.py",
+          "xqute/scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/scheduler.py",
+          "pipen/scheduler.py": "/home/pwwang/github/pipen/pipen/scheduler.py"
+        },
+        "source_sha256": {
+          "xqute/schedulers/local_scheduler.py": "70cff3432b26e92a582a17c2ac20409432a75d49e8ae1776795f8fdd9b095539",
+          "xqute/xqute.py": "126eed84bc42fd385ec61ecd1e3a7c7443adc124e9cebd9fefb1a120f2716e6e",
+          "xqute/scheduler.py": "6b810caae3951b894e3abb1557a97afb9b0e762f384766128eac62ffa2ebebca",
+          "pipen/scheduler.py": "da3a22ed2c13a1031fdf80a43b8321bbff6d83665d82b94d9870dfa188d4a16d"
+        }
+      },
+      "sleep_census": null,
+      "job_status_census": {
+        "n_job_dirs": 101,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "job_rc_histogram": {
+          "0": 101
+        },
+        "n_jobs_marked_failed_before_running": 0,
+        "jobs_marked_failed_before_running": [],
+        "note": "job.status: 6=FINISHED 3=SUBMITTED 7=FAILED 4=RUNNING; rc=-3 == 'fail before running'"
+      },
+      "correctness": {
+        "agg_file_found": true,
+        "agg_content_equals_expected_0_to_N_minus_1": true,
+        "n_jobs_marked_failed_before_running": 0,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "all_jobs_finished": true
+      },
+      "agg_outputs": [
+        {
+          "path": "/home/pwwang/bench_abl/wd/C_batch_n100_r1/AblPipeline-output/Agg/agg.txt",
+          "sha256": "6d506216aa5bad159f167e2535293b4e5ec8e1073b64449d30b66b460ebf6da0",
+          "lines": 100,
+          "bytes": 290
+        }
+      ],
+      "loadavg_before": [
+        "4.95",
+        "4.73",
+        "4.51"
+      ],
+      "loadavg_after": [
+        "4.74",
+        "4.70",
+        "4.50"
+      ],
+      "marker_log": "/home/pwwang/bench_abl/out/markers/marker_C_batch_n100_r1.log",
+      "log": "/home/pwwang/bench_abl/out/logs/C_batch_n100_r1.log",
+      "workdir": "/home/pwwang/bench_abl/wd/C_batch_n100_r1",
+      "overhead_wall_sec": 15.14,
+      "overhead_wall_per_job_sec": 0.1514,
+      "overhead_run_sec": 14.51,
+      "overhead_run_per_job_sec": 0.1451
+    },
+    {
+      "tag": "C_batch_n100_r2",
+      "arm": "C_batch",
+      "arm_label": "DEFAULT_SUBMISSION_BATCH 8 -> 64 (alone)",
+      "n": 100,
+      "rep": 2,
+      "forks": 32,
+      "shard_sleep_sec": 0.05,
+      "cache": false,
+      "wall_sec": 15.746,
+      "rc": 0,
+      "pipeline_run_sec": 15.093,
+      "sleep_floor_sec": 0.1562,
+      "jobs_executed_total": 101,
+      "jobs_by_proc_starts": {
+        "shard": 200,
+        "agg": 2
+      },
+      "shard_jobs_started": 100,
+      "agg_jobs": 1,
+      "unmatched_starts": 0,
+      "job_start_span_sec": 10.028,
+      "job_start_rate_per_sec_median_of_start_gaps": null,
+      "job_start_rate_per_sec_span": 9.87,
+      "end_to_end_rate_per_sec": 6.44,
+      "median_shard_job_duration_sec": 0.052,
+      "peak_concurrent_jobs_from_markers": 26,
+      "mean_concurrent_jobs_from_markers": 0.336,
+      "occupancy_sampler": {
+        "sampler_interval_sec": 0.05,
+        "n_samples": 269,
+        "peak_wrapper_processes": 39,
+        "mean_wrapper_processes": 14.082,
+        "peak_descendant_processes_incl_self": 80,
+        "mean_descendant_processes_incl_self": 29.223
+      },
+      "effective": {
+        "arm": "C_batch",
+        "requested": {
+          "SUBMISSION_BATCH": 64
+        },
+        "effective": {
+          "submission_batch": 64,
+          "submission_batch_resolved_from": "xqute.scheduler.Scheduler.submission_batch (self.__class__ lookup)"
+        },
+        "source_files": {
+          "xqute/schedulers/local_scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/schedulers/local_scheduler.py",
+          "xqute/xqute.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/xqute.py",
+          "xqute/scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/scheduler.py",
+          "pipen/scheduler.py": "/home/pwwang/github/pipen/pipen/scheduler.py"
+        },
+        "source_sha256": {
+          "xqute/schedulers/local_scheduler.py": "70cff3432b26e92a582a17c2ac20409432a75d49e8ae1776795f8fdd9b095539",
+          "xqute/xqute.py": "126eed84bc42fd385ec61ecd1e3a7c7443adc124e9cebd9fefb1a120f2716e6e",
+          "xqute/scheduler.py": "6b810caae3951b894e3abb1557a97afb9b0e762f384766128eac62ffa2ebebca",
+          "pipen/scheduler.py": "da3a22ed2c13a1031fdf80a43b8321bbff6d83665d82b94d9870dfa188d4a16d"
+        }
+      },
+      "sleep_census": null,
+      "job_status_census": {
+        "n_job_dirs": 101,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "job_rc_histogram": {
+          "0": 101
+        },
+        "n_jobs_marked_failed_before_running": 0,
+        "jobs_marked_failed_before_running": [],
+        "note": "job.status: 6=FINISHED 3=SUBMITTED 7=FAILED 4=RUNNING; rc=-3 == 'fail before running'"
+      },
+      "correctness": {
+        "agg_file_found": true,
+        "agg_content_equals_expected_0_to_N_minus_1": true,
+        "n_jobs_marked_failed_before_running": 0,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "all_jobs_finished": true
+      },
+      "agg_outputs": [
+        {
+          "path": "/home/pwwang/bench_abl/wd/C_batch_n100_r2/AblPipeline-output/Agg/agg.txt",
+          "sha256": "6d506216aa5bad159f167e2535293b4e5ec8e1073b64449d30b66b460ebf6da0",
+          "lines": 100,
+          "bytes": 290
+        }
+      ],
+      "loadavg_before": [
+        "4.74",
+        "4.70",
+        "4.50"
+      ],
+      "loadavg_after": [
+        "4.66",
+        "4.68",
+        "4.50"
+      ],
+      "marker_log": "/home/pwwang/bench_abl/out/markers/marker_C_batch_n100_r2.log",
+      "log": "/home/pwwang/bench_abl/out/logs/C_batch_n100_r2.log",
+      "workdir": "/home/pwwang/bench_abl/wd/C_batch_n100_r2",
+      "overhead_wall_sec": 15.59,
+      "overhead_wall_per_job_sec": 0.1559,
+      "overhead_run_sec": 14.937,
+      "overhead_run_per_job_sec": 0.1494
+    },
+    {
+      "tag": "C_batch_n100_r3",
+      "arm": "C_batch",
+      "arm_label": "DEFAULT_SUBMISSION_BATCH 8 -> 64 (alone)",
+      "n": 100,
+      "rep": 3,
+      "forks": 32,
+      "shard_sleep_sec": 0.05,
+      "cache": false,
+      "wall_sec": 15.769,
+      "rc": 0,
+      "pipeline_run_sec": 15.146,
+      "sleep_floor_sec": 0.1562,
+      "jobs_executed_total": 101,
+      "jobs_by_proc_starts": {
+        "shard": 200,
+        "agg": 2
+      },
+      "shard_jobs_started": 100,
+      "agg_jobs": 1,
+      "unmatched_starts": 0,
+      "job_start_span_sec": 9.994,
+      "job_start_rate_per_sec_median_of_start_gaps": null,
+      "job_start_rate_per_sec_span": 9.91,
+      "end_to_end_rate_per_sec": 7.9,
+      "median_shard_job_duration_sec": 0.052,
+      "peak_concurrent_jobs_from_markers": 6,
+      "mean_concurrent_jobs_from_markers": 0.413,
+      "occupancy_sampler": {
+        "sampler_interval_sec": 0.05,
+        "n_samples": 268,
+        "peak_wrapper_processes": 32,
+        "mean_wrapper_processes": 13.459,
+        "peak_descendant_processes_incl_self": 70,
+        "mean_descendant_processes_incl_self": 28.228
+      },
+      "effective": {
+        "arm": "C_batch",
+        "requested": {
+          "SUBMISSION_BATCH": 64
+        },
+        "effective": {
+          "submission_batch": 64,
+          "submission_batch_resolved_from": "xqute.scheduler.Scheduler.submission_batch (self.__class__ lookup)"
+        },
+        "source_files": {
+          "xqute/schedulers/local_scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/schedulers/local_scheduler.py",
+          "xqute/xqute.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/xqute.py",
+          "xqute/scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/scheduler.py",
+          "pipen/scheduler.py": "/home/pwwang/github/pipen/pipen/scheduler.py"
+        },
+        "source_sha256": {
+          "xqute/schedulers/local_scheduler.py": "70cff3432b26e92a582a17c2ac20409432a75d49e8ae1776795f8fdd9b095539",
+          "xqute/xqute.py": "126eed84bc42fd385ec61ecd1e3a7c7443adc124e9cebd9fefb1a120f2716e6e",
+          "xqute/scheduler.py": "6b810caae3951b894e3abb1557a97afb9b0e762f384766128eac62ffa2ebebca",
+          "pipen/scheduler.py": "da3a22ed2c13a1031fdf80a43b8321bbff6d83665d82b94d9870dfa188d4a16d"
+        }
+      },
+      "sleep_census": null,
+      "job_status_census": {
+        "n_job_dirs": 101,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "job_rc_histogram": {
+          "0": 101
+        },
+        "n_jobs_marked_failed_before_running": 0,
+        "jobs_marked_failed_before_running": [],
+        "note": "job.status: 6=FINISHED 3=SUBMITTED 7=FAILED 4=RUNNING; rc=-3 == 'fail before running'"
+      },
+      "correctness": {
+        "agg_file_found": true,
+        "agg_content_equals_expected_0_to_N_minus_1": true,
+        "n_jobs_marked_failed_before_running": 0,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "all_jobs_finished": true
+      },
+      "agg_outputs": [
+        {
+          "path": "/home/pwwang/bench_abl/wd/C_batch_n100_r3/AblPipeline-output/Agg/agg.txt",
+          "sha256": "6d506216aa5bad159f167e2535293b4e5ec8e1073b64449d30b66b460ebf6da0",
+          "lines": 100,
+          "bytes": 290
+        }
+      ],
+      "loadavg_before": [
+        "4.66",
+        "4.68",
+        "4.50"
+      ],
+      "loadavg_after": [
+        "4.53",
+        "4.65",
+        "4.50"
+      ],
+      "marker_log": "/home/pwwang/bench_abl/out/markers/marker_C_batch_n100_r3.log",
+      "log": "/home/pwwang/bench_abl/out/logs/C_batch_n100_r3.log",
+      "workdir": "/home/pwwang/bench_abl/wd/C_batch_n100_r3",
+      "overhead_wall_sec": 15.612,
+      "overhead_wall_per_job_sec": 0.1561,
+      "overhead_run_sec": 14.99,
+      "overhead_run_per_job_sec": 0.1499
+    },
+    {
+      "tag": "C_pf_poll_n100_r1",
+      "arm": "C_pf_poll",
+      "arm_label": "SLEEP_INTERVAL_PRODUCER_MAX_FORKS + SLEEP_INTERVAL_POLLING_JOBS -> 0.001 (alone, no other change)",
+      "n": 100,
+      "rep": 1,
+      "forks": 32,
+      "shard_sleep_sec": 0.05,
+      "cache": false,
+      "wall_sec": 11.724,
+      "rc": 0,
+      "pipeline_run_sec": 11.082,
+      "sleep_floor_sec": 0.1562,
+      "jobs_executed_total": 101,
+      "jobs_by_proc_starts": {
+        "shard": 200,
+        "agg": 2
+      },
+      "shard_jobs_started": 100,
+      "agg_jobs": 1,
+      "unmatched_starts": 0,
+      "job_start_span_sec": 6.432,
+      "job_start_rate_per_sec_median_of_start_gaps": null,
+      "job_start_rate_per_sec_span": 15.39,
+      "end_to_end_rate_per_sec": 11.39,
+      "median_shard_job_duration_sec": 0.0521,
+      "peak_concurrent_jobs_from_markers": 5,
+      "mean_concurrent_jobs_from_markers": 0.688,
+      "occupancy_sampler": {
+        "sampler_interval_sec": 0.05,
+        "n_samples": 155,
+        "peak_wrapper_processes": 33,
+        "mean_wrapper_processes": 16.097,
+        "peak_descendant_processes_incl_self": 66,
+        "mean_descendant_processes_incl_self": 32.516
+      },
+      "effective": {
+        "arm": "C_pf_poll",
+        "requested": {
+          "SLEEP_INTERVAL_PRODUCER_MAX_FORKS": 0.001,
+          "SLEEP_INTERVAL_POLLING_JOBS": 0.001
+        },
+        "effective": {
+          "SLEEP_INTERVAL_PRODUCER_MAX_FORKS": 0.001,
+          "SLEEP_INTERVAL_PRODUCER_MAX_FORKS_resolved_from": "xqute.xqute module global",
+          "SLEEP_INTERVAL_POLLING_JOBS": 0.001,
+          "SLEEP_INTERVAL_POLLING_JOBS_resolved_from": "xqute.xqute module global"
+        },
+        "source_files": {
+          "xqute/schedulers/local_scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/schedulers/local_scheduler.py",
+          "xqute/xqute.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/xqute.py",
+          "xqute/scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/scheduler.py",
+          "pipen/scheduler.py": "/home/pwwang/github/pipen/pipen/scheduler.py"
+        },
+        "source_sha256": {
+          "xqute/schedulers/local_scheduler.py": "70cff3432b26e92a582a17c2ac20409432a75d49e8ae1776795f8fdd9b095539",
+          "xqute/xqute.py": "126eed84bc42fd385ec61ecd1e3a7c7443adc124e9cebd9fefb1a120f2716e6e",
+          "xqute/scheduler.py": "6b810caae3951b894e3abb1557a97afb9b0e762f384766128eac62ffa2ebebca",
+          "pipen/scheduler.py": "da3a22ed2c13a1031fdf80a43b8321bbff6d83665d82b94d9870dfa188d4a16d"
+        }
+      },
+      "sleep_census": null,
+      "job_status_census": {
+        "n_job_dirs": 101,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "job_rc_histogram": {
+          "0": 101
+        },
+        "n_jobs_marked_failed_before_running": 0,
+        "jobs_marked_failed_before_running": [],
+        "note": "job.status: 6=FINISHED 3=SUBMITTED 7=FAILED 4=RUNNING; rc=-3 == 'fail before running'"
+      },
+      "correctness": {
+        "agg_file_found": true,
+        "agg_content_equals_expected_0_to_N_minus_1": true,
+        "n_jobs_marked_failed_before_running": 0,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "all_jobs_finished": true
+      },
+      "agg_outputs": [
+        {
+          "path": "/home/pwwang/bench_abl/wd/C_pf_poll_n100_r1/AblPipeline-output/Agg/agg.txt",
+          "sha256": "6d506216aa5bad159f167e2535293b4e5ec8e1073b64449d30b66b460ebf6da0",
+          "lines": 100,
+          "bytes": 290
+        }
+      ],
+      "loadavg_before": [
+        "4.53",
+        "4.65",
+        "4.50"
+      ],
+      "loadavg_after": [
+        "4.75",
+        "4.69",
+        "4.51"
+      ],
+      "marker_log": "/home/pwwang/bench_abl/out/markers/marker_C_pf_poll_n100_r1.log",
+      "log": "/home/pwwang/bench_abl/out/logs/C_pf_poll_n100_r1.log",
+      "workdir": "/home/pwwang/bench_abl/wd/C_pf_poll_n100_r1",
+      "overhead_wall_sec": 11.567,
+      "overhead_wall_per_job_sec": 0.1157,
+      "overhead_run_sec": 10.926,
+      "overhead_run_per_job_sec": 0.1093
+    },
+    {
+      "tag": "C_pf_poll_n100_r2",
+      "arm": "C_pf_poll",
+      "arm_label": "SLEEP_INTERVAL_PRODUCER_MAX_FORKS + SLEEP_INTERVAL_POLLING_JOBS -> 0.001 (alone, no other change)",
+      "n": 100,
+      "rep": 2,
+      "forks": 32,
+      "shard_sleep_sec": 0.05,
+      "cache": false,
+      "wall_sec": 11.39,
+      "rc": 0,
+      "pipeline_run_sec": 10.738,
+      "sleep_floor_sec": 0.1562,
+      "jobs_executed_total": 101,
+      "jobs_by_proc_starts": {
+        "shard": 200,
+        "agg": 2
+      },
+      "shard_jobs_started": 100,
+      "agg_jobs": 1,
+      "unmatched_starts": 0,
+      "job_start_span_sec": 9.27,
+      "job_start_rate_per_sec_median_of_start_gaps": null,
+      "job_start_rate_per_sec_span": 10.68,
+      "end_to_end_rate_per_sec": 8.8,
+      "median_shard_job_duration_sec": 0.052,
+      "peak_concurrent_jobs_from_markers": 7,
+      "mean_concurrent_jobs_from_markers": 0.474,
+      "occupancy_sampler": {
+        "sampler_interval_sec": 0.05,
+        "n_samples": 147,
+        "peak_wrapper_processes": 32,
+        "mean_wrapper_processes": 16.299,
+        "peak_descendant_processes_incl_self": 65,
+        "mean_descendant_processes_incl_self": 33.109
+      },
+      "effective": {
+        "arm": "C_pf_poll",
+        "requested": {
+          "SLEEP_INTERVAL_PRODUCER_MAX_FORKS": 0.001,
+          "SLEEP_INTERVAL_POLLING_JOBS": 0.001
+        },
+        "effective": {
+          "SLEEP_INTERVAL_PRODUCER_MAX_FORKS": 0.001,
+          "SLEEP_INTERVAL_PRODUCER_MAX_FORKS_resolved_from": "xqute.xqute module global",
+          "SLEEP_INTERVAL_POLLING_JOBS": 0.001,
+          "SLEEP_INTERVAL_POLLING_JOBS_resolved_from": "xqute.xqute module global"
+        },
+        "source_files": {
+          "xqute/schedulers/local_scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/schedulers/local_scheduler.py",
+          "xqute/xqute.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/xqute.py",
+          "xqute/scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/scheduler.py",
+          "pipen/scheduler.py": "/home/pwwang/github/pipen/pipen/scheduler.py"
+        },
+        "source_sha256": {
+          "xqute/schedulers/local_scheduler.py": "70cff3432b26e92a582a17c2ac20409432a75d49e8ae1776795f8fdd9b095539",
+          "xqute/xqute.py": "126eed84bc42fd385ec61ecd1e3a7c7443adc124e9cebd9fefb1a120f2716e6e",
+          "xqute/scheduler.py": "6b810caae3951b894e3abb1557a97afb9b0e762f384766128eac62ffa2ebebca",
+          "pipen/scheduler.py": "da3a22ed2c13a1031fdf80a43b8321bbff6d83665d82b94d9870dfa188d4a16d"
+        }
+      },
+      "sleep_census": null,
+      "job_status_census": {
+        "n_job_dirs": 101,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "job_rc_histogram": {
+          "0": 101
+        },
+        "n_jobs_marked_failed_before_running": 0,
+        "jobs_marked_failed_before_running": [],
+        "note": "job.status: 6=FINISHED 3=SUBMITTED 7=FAILED 4=RUNNING; rc=-3 == 'fail before running'"
+      },
+      "correctness": {
+        "agg_file_found": true,
+        "agg_content_equals_expected_0_to_N_minus_1": true,
+        "n_jobs_marked_failed_before_running": 0,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "all_jobs_finished": true
+      },
+      "agg_outputs": [
+        {
+          "path": "/home/pwwang/bench_abl/wd/C_pf_poll_n100_r2/AblPipeline-output/Agg/agg.txt",
+          "sha256": "6d506216aa5bad159f167e2535293b4e5ec8e1073b64449d30b66b460ebf6da0",
+          "lines": 100,
+          "bytes": 290
+        }
+      ],
+      "loadavg_before": [
+        "4.75",
+        "4.69",
+        "4.51"
+      ],
+      "loadavg_after": [
+        "5.02",
+        "4.75",
+        "4.53"
+      ],
+      "marker_log": "/home/pwwang/bench_abl/out/markers/marker_C_pf_poll_n100_r2.log",
+      "log": "/home/pwwang/bench_abl/out/logs/C_pf_poll_n100_r2.log",
+      "workdir": "/home/pwwang/bench_abl/wd/C_pf_poll_n100_r2",
+      "overhead_wall_sec": 11.234,
+      "overhead_wall_per_job_sec": 0.1123,
+      "overhead_run_sec": 10.582,
+      "overhead_run_per_job_sec": 0.1058
+    },
+    {
+      "tag": "C_pf_poll_n100_r3",
+      "arm": "C_pf_poll",
+      "arm_label": "SLEEP_INTERVAL_PRODUCER_MAX_FORKS + SLEEP_INTERVAL_POLLING_JOBS -> 0.001 (alone, no other change)",
+      "n": 100,
+      "rep": 3,
+      "forks": 32,
+      "shard_sleep_sec": 0.05,
+      "cache": false,
+      "wall_sec": 11.501,
+      "rc": 0,
+      "pipeline_run_sec": 10.869,
+      "sleep_floor_sec": 0.1562,
+      "jobs_executed_total": 101,
+      "jobs_by_proc_starts": {
+        "shard": 200,
+        "agg": 2
+      },
+      "shard_jobs_started": 100,
+      "agg_jobs": 1,
+      "unmatched_starts": 0,
+      "job_start_span_sec": 6.347,
+      "job_start_rate_per_sec_median_of_start_gaps": null,
+      "job_start_rate_per_sec_span": 15.6,
+      "end_to_end_rate_per_sec": 11.68,
+      "median_shard_job_duration_sec": 0.0521,
+      "peak_concurrent_jobs_from_markers": 6,
+      "mean_concurrent_jobs_from_markers": 0.631,
+      "occupancy_sampler": {
+        "sampler_interval_sec": 0.05,
+        "n_samples": 147,
+        "peak_wrapper_processes": 32,
+        "mean_wrapper_processes": 15.762,
+        "peak_descendant_processes_incl_self": 65,
+        "mean_descendant_processes_incl_self": 32.136
+      },
+      "effective": {
+        "arm": "C_pf_poll",
+        "requested": {
+          "SLEEP_INTERVAL_PRODUCER_MAX_FORKS": 0.001,
+          "SLEEP_INTERVAL_POLLING_JOBS": 0.001
+        },
+        "effective": {
+          "SLEEP_INTERVAL_PRODUCER_MAX_FORKS": 0.001,
+          "SLEEP_INTERVAL_PRODUCER_MAX_FORKS_resolved_from": "xqute.xqute module global",
+          "SLEEP_INTERVAL_POLLING_JOBS": 0.001,
+          "SLEEP_INTERVAL_POLLING_JOBS_resolved_from": "xqute.xqute module global"
+        },
+        "source_files": {
+          "xqute/schedulers/local_scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/schedulers/local_scheduler.py",
+          "xqute/xqute.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/xqute.py",
+          "xqute/scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/scheduler.py",
+          "pipen/scheduler.py": "/home/pwwang/github/pipen/pipen/scheduler.py"
+        },
+        "source_sha256": {
+          "xqute/schedulers/local_scheduler.py": "70cff3432b26e92a582a17c2ac20409432a75d49e8ae1776795f8fdd9b095539",
+          "xqute/xqute.py": "126eed84bc42fd385ec61ecd1e3a7c7443adc124e9cebd9fefb1a120f2716e6e",
+          "xqute/scheduler.py": "6b810caae3951b894e3abb1557a97afb9b0e762f384766128eac62ffa2ebebca",
+          "pipen/scheduler.py": "da3a22ed2c13a1031fdf80a43b8321bbff6d83665d82b94d9870dfa188d4a16d"
+        }
+      },
+      "sleep_census": null,
+      "job_status_census": {
+        "n_job_dirs": 101,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "job_rc_histogram": {
+          "0": 101
+        },
+        "n_jobs_marked_failed_before_running": 0,
+        "jobs_marked_failed_before_running": [],
+        "note": "job.status: 6=FINISHED 3=SUBMITTED 7=FAILED 4=RUNNING; rc=-3 == 'fail before running'"
+      },
+      "correctness": {
+        "agg_file_found": true,
+        "agg_content_equals_expected_0_to_N_minus_1": true,
+        "n_jobs_marked_failed_before_running": 0,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "all_jobs_finished": true
+      },
+      "agg_outputs": [
+        {
+          "path": "/home/pwwang/bench_abl/wd/C_pf_poll_n100_r3/AblPipeline-output/Agg/agg.txt",
+          "sha256": "6d506216aa5bad159f167e2535293b4e5ec8e1073b64449d30b66b460ebf6da0",
+          "lines": 100,
+          "bytes": 290
+        }
+      ],
+      "loadavg_before": [
+        "5.02",
+        "4.75",
+        "4.53"
+      ],
+      "loadavg_after": [
+        "5.24",
+        "4.81",
+        "4.56"
+      ],
+      "marker_log": "/home/pwwang/bench_abl/out/markers/marker_C_pf_poll_n100_r3.log",
+      "log": "/home/pwwang/bench_abl/out/logs/C_pf_poll_n100_r3.log",
+      "workdir": "/home/pwwang/bench_abl/wd/C_pf_poll_n100_r3",
+      "overhead_wall_sec": 11.345,
+      "overhead_wall_per_job_sec": 0.1135,
+      "overhead_run_sec": 10.713,
+      "overhead_run_per_job_sec": 0.1071
+    },
+    {
+      "tag": "F_n100_r1",
+      "arm": "F",
+      "arm_label": "the 2x `sleep 1` in the local job wrapper removed (alone)",
+      "n": 100,
+      "rep": 1,
+      "forks": 32,
+      "shard_sleep_sec": 0.05,
+      "cache": false,
+      "wall_sec": 6.018,
+      "rc": 0,
+      "pipeline_run_sec": 5.394,
+      "sleep_floor_sec": 0.1562,
+      "jobs_executed_total": 100,
+      "jobs_by_proc_starts": {
+        "shard": 200
+      },
+      "shard_jobs_started": 100,
+      "agg_jobs": 0,
+      "unmatched_starts": 0,
+      "job_start_span_sec": 3.601,
+      "job_start_rate_per_sec_median_of_start_gaps": null,
+      "job_start_rate_per_sec_span": 27.49,
+      "end_to_end_rate_per_sec": 27.36,
+      "median_shard_job_duration_sec": 0.052,
+      "peak_concurrent_jobs_from_markers": 7,
+      "mean_concurrent_jobs_from_markers": 1.425,
+      "occupancy_sampler": {
+        "sampler_interval_sec": 0.05,
+        "n_samples": 81,
+        "peak_wrapper_processes": 3,
+        "mean_wrapper_processes": 0.173,
+        "peak_descendant_processes_incl_self": 10,
+        "mean_descendant_processes_incl_self": 1.383
+      },
+      "effective": {
+        "arm": "F",
+        "requested": {
+          "WRAPPER_SLEEPS": "removed"
+        },
+        "effective": {
+          "wrapper_sleeps": "removed (jobcmd_wrapper_init/jobcmd_prep -> base)"
+        },
+        "source_files": {
+          "xqute/schedulers/local_scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/schedulers/local_scheduler.py",
+          "xqute/xqute.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/xqute.py",
+          "xqute/scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/scheduler.py",
+          "pipen/scheduler.py": "/home/pwwang/github/pipen/pipen/scheduler.py"
+        },
+        "source_sha256": {
+          "xqute/schedulers/local_scheduler.py": "70cff3432b26e92a582a17c2ac20409432a75d49e8ae1776795f8fdd9b095539",
+          "xqute/xqute.py": "126eed84bc42fd385ec61ecd1e3a7c7443adc124e9cebd9fefb1a120f2716e6e",
+          "xqute/scheduler.py": "6b810caae3951b894e3abb1557a97afb9b0e762f384766128eac62ffa2ebebca",
+          "pipen/scheduler.py": "da3a22ed2c13a1031fdf80a43b8321bbff6d83665d82b94d9870dfa188d4a16d"
+        }
+      },
+      "sleep_census": null,
+      "job_status_census": {
+        "n_job_dirs": 100,
+        "job_status_histogram": {
+          "3": 100
+        },
+        "job_rc_histogram": {
+          "-3": 100
+        },
+        "n_jobs_marked_failed_before_running": 100,
+        "jobs_marked_failed_before_running": [
+          "AblPipeline/Shard/0",
+          "AblPipeline/Shard/1",
+          "AblPipeline/Shard/10",
+          "AblPipeline/Shard/11",
+          "AblPipeline/Shard/12",
+          "AblPipeline/Shard/13",
+          "AblPipeline/Shard/14",
+          "AblPipeline/Shard/15",
+          "AblPipeline/Shard/16",
+          "AblPipeline/Shard/17",
+          "AblPipeline/Shard/18",
+          "AblPipeline/Shard/19",
+          "AblPipeline/Shard/2",
+          "AblPipeline/Shard/20",
+          "AblPipeline/Shard/21",
+          "AblPipeline/Shard/22",
+          "AblPipeline/Shard/23",
+          "AblPipeline/Shard/24",
+          "AblPipeline/Shard/25",
+          "AblPipeline/Shard/26"
+        ],
+        "note": "job.status: 6=FINISHED 3=SUBMITTED 7=FAILED 4=RUNNING; rc=-3 == 'fail before running'"
+      },
+      "correctness": {
+        "agg_file_found": false,
+        "agg_content_equals_expected_0_to_N_minus_1": false,
+        "n_jobs_marked_failed_before_running": 100,
+        "job_status_histogram": {
+          "3": 100
+        },
+        "all_jobs_finished": false
+      },
+      "agg_outputs": [],
+      "loadavg_before": [
+        "5.24",
+        "4.81",
+        "4.56"
+      ],
+      "loadavg_after": [
+        "7.48",
+        "5.32",
+        "4.72"
+      ],
+      "marker_log": "/home/pwwang/bench_abl/out/markers/marker_F_n100_r1.log",
+      "log": "/home/pwwang/bench_abl/out/logs/F_n100_r1.log",
+      "workdir": "/home/pwwang/bench_abl/wd/F_n100_r1",
+      "overhead_wall_sec": 5.862,
+      "overhead_wall_per_job_sec": 0.0586,
+      "overhead_run_sec": 5.238,
+      "overhead_run_per_job_sec": 0.0524
+    },
+    {
+      "tag": "F_n100_r2",
+      "arm": "F",
+      "arm_label": "the 2x `sleep 1` in the local job wrapper removed (alone)",
+      "n": 100,
+      "rep": 2,
+      "forks": 32,
+      "shard_sleep_sec": 0.05,
+      "cache": false,
+      "wall_sec": 6.763,
+      "rc": 0,
+      "pipeline_run_sec": 6.12,
+      "sleep_floor_sec": 0.1562,
+      "jobs_executed_total": 100,
+      "jobs_by_proc_starts": {
+        "shard": 200
+      },
+      "shard_jobs_started": 100,
+      "agg_jobs": 0,
+      "unmatched_starts": 0,
+      "job_start_span_sec": 4.085,
+      "job_start_rate_per_sec_median_of_start_gaps": null,
+      "job_start_rate_per_sec_span": 24.23,
+      "end_to_end_rate_per_sec": 20.36,
+      "median_shard_job_duration_sec": 0.052,
+      "peak_concurrent_jobs_from_markers": 7,
+      "mean_concurrent_jobs_from_markers": 1.218,
+      "occupancy_sampler": {
+        "sampler_interval_sec": 0.05,
+        "n_samples": 98,
+        "peak_wrapper_processes": 4,
+        "mean_wrapper_processes": 0.378,
+        "peak_descendant_processes_incl_self": 9,
+        "mean_descendant_processes_incl_self": 1.745
+      },
+      "effective": {
+        "arm": "F",
+        "requested": {
+          "WRAPPER_SLEEPS": "removed"
+        },
+        "effective": {
+          "wrapper_sleeps": "removed (jobcmd_wrapper_init/jobcmd_prep -> base)"
+        },
+        "source_files": {
+          "xqute/schedulers/local_scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/schedulers/local_scheduler.py",
+          "xqute/xqute.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/xqute.py",
+          "xqute/scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/scheduler.py",
+          "pipen/scheduler.py": "/home/pwwang/github/pipen/pipen/scheduler.py"
+        },
+        "source_sha256": {
+          "xqute/schedulers/local_scheduler.py": "70cff3432b26e92a582a17c2ac20409432a75d49e8ae1776795f8fdd9b095539",
+          "xqute/xqute.py": "126eed84bc42fd385ec61ecd1e3a7c7443adc124e9cebd9fefb1a120f2716e6e",
+          "xqute/scheduler.py": "6b810caae3951b894e3abb1557a97afb9b0e762f384766128eac62ffa2ebebca",
+          "pipen/scheduler.py": "da3a22ed2c13a1031fdf80a43b8321bbff6d83665d82b94d9870dfa188d4a16d"
+        }
+      },
+      "sleep_census": null,
+      "job_status_census": {
+        "n_job_dirs": 100,
+        "job_status_histogram": {
+          "3": 99,
+          "6": 1
+        },
+        "job_rc_histogram": {
+          "-3": 99,
+          "0": 1
+        },
+        "n_jobs_marked_failed_before_running": 99,
+        "jobs_marked_failed_before_running": [
+          "AblPipeline/Shard/0",
+          "AblPipeline/Shard/1",
+          "AblPipeline/Shard/10",
+          "AblPipeline/Shard/11",
+          "AblPipeline/Shard/12",
+          "AblPipeline/Shard/13",
+          "AblPipeline/Shard/14",
+          "AblPipeline/Shard/15",
+          "AblPipeline/Shard/16",
+          "AblPipeline/Shard/17",
+          "AblPipeline/Shard/18",
+          "AblPipeline/Shard/19",
+          "AblPipeline/Shard/2",
+          "AblPipeline/Shard/20",
+          "AblPipeline/Shard/21",
+          "AblPipeline/Shard/22",
+          "AblPipeline/Shard/23",
+          "AblPipeline/Shard/24",
+          "AblPipeline/Shard/25",
+          "AblPipeline/Shard/26"
+        ],
+        "note": "job.status: 6=FINISHED 3=SUBMITTED 7=FAILED 4=RUNNING; rc=-3 == 'fail before running'"
+      },
+      "correctness": {
+        "agg_file_found": false,
+        "agg_content_equals_expected_0_to_N_minus_1": false,
+        "n_jobs_marked_failed_before_running": 99,
+        "job_status_histogram": {
+          "3": 99,
+          "6": 1
+        },
+        "all_jobs_finished": false
+      },
+      "agg_outputs": [],
+      "loadavg_before": [
+        "7.48",
+        "5.32",
+        "4.72"
+      ],
+      "loadavg_after": [
+        "7.60",
+        "5.38",
+        "4.75"
+      ],
+      "marker_log": "/home/pwwang/bench_abl/out/markers/marker_F_n100_r2.log",
+      "log": "/home/pwwang/bench_abl/out/logs/F_n100_r2.log",
+      "workdir": "/home/pwwang/bench_abl/wd/F_n100_r2",
+      "overhead_wall_sec": 6.607,
+      "overhead_wall_per_job_sec": 0.0661,
+      "overhead_run_sec": 5.964,
+      "overhead_run_per_job_sec": 0.0596
+    },
+    {
+      "tag": "F_n100_r3",
+      "arm": "F",
+      "arm_label": "the 2x `sleep 1` in the local job wrapper removed (alone)",
+      "n": 100,
+      "rep": 3,
+      "forks": 32,
+      "shard_sleep_sec": 0.05,
+      "cache": false,
+      "wall_sec": 6.927,
+      "rc": 0,
+      "pipeline_run_sec": 6.256,
+      "sleep_floor_sec": 0.1562,
+      "jobs_executed_total": 100,
+      "jobs_by_proc_starts": {
+        "shard": 200
+      },
+      "shard_jobs_started": 100,
+      "agg_jobs": 0,
+      "unmatched_starts": 0,
+      "job_start_span_sec": 4.079,
+      "job_start_rate_per_sec_median_of_start_gaps": null,
+      "job_start_rate_per_sec_span": 24.27,
+      "end_to_end_rate_per_sec": 24.21,
+      "median_shard_job_duration_sec": 0.0521,
+      "peak_concurrent_jobs_from_markers": 7,
+      "mean_concurrent_jobs_from_markers": 1.262,
+      "occupancy_sampler": {
+        "sampler_interval_sec": 0.05,
+        "n_samples": 97,
+        "peak_wrapper_processes": 2,
+        "mean_wrapper_processes": 0.155,
+        "peak_descendant_processes_incl_self": 7,
+        "mean_descendant_processes_incl_self": 1.32
+      },
+      "effective": {
+        "arm": "F",
+        "requested": {
+          "WRAPPER_SLEEPS": "removed"
+        },
+        "effective": {
+          "wrapper_sleeps": "removed (jobcmd_wrapper_init/jobcmd_prep -> base)"
+        },
+        "source_files": {
+          "xqute/schedulers/local_scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/schedulers/local_scheduler.py",
+          "xqute/xqute.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/xqute.py",
+          "xqute/scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/scheduler.py",
+          "pipen/scheduler.py": "/home/pwwang/github/pipen/pipen/scheduler.py"
+        },
+        "source_sha256": {
+          "xqute/schedulers/local_scheduler.py": "70cff3432b26e92a582a17c2ac20409432a75d49e8ae1776795f8fdd9b095539",
+          "xqute/xqute.py": "126eed84bc42fd385ec61ecd1e3a7c7443adc124e9cebd9fefb1a120f2716e6e",
+          "xqute/scheduler.py": "6b810caae3951b894e3abb1557a97afb9b0e762f384766128eac62ffa2ebebca",
+          "pipen/scheduler.py": "da3a22ed2c13a1031fdf80a43b8321bbff6d83665d82b94d9870dfa188d4a16d"
+        }
+      },
+      "sleep_census": null,
+      "job_status_census": {
+        "n_job_dirs": 100,
+        "job_status_histogram": {
+          "3": 100
+        },
+        "job_rc_histogram": {
+          "-3": 100
+        },
+        "n_jobs_marked_failed_before_running": 100,
+        "jobs_marked_failed_before_running": [
+          "AblPipeline/Shard/0",
+          "AblPipeline/Shard/1",
+          "AblPipeline/Shard/10",
+          "AblPipeline/Shard/11",
+          "AblPipeline/Shard/12",
+          "AblPipeline/Shard/13",
+          "AblPipeline/Shard/14",
+          "AblPipeline/Shard/15",
+          "AblPipeline/Shard/16",
+          "AblPipeline/Shard/17",
+          "AblPipeline/Shard/18",
+          "AblPipeline/Shard/19",
+          "AblPipeline/Shard/2",
+          "AblPipeline/Shard/20",
+          "AblPipeline/Shard/21",
+          "AblPipeline/Shard/22",
+          "AblPipeline/Shard/23",
+          "AblPipeline/Shard/24",
+          "AblPipeline/Shard/25",
+          "AblPipeline/Shard/26"
+        ],
+        "note": "job.status: 6=FINISHED 3=SUBMITTED 7=FAILED 4=RUNNING; rc=-3 == 'fail before running'"
+      },
+      "correctness": {
+        "agg_file_found": false,
+        "agg_content_equals_expected_0_to_N_minus_1": false,
+        "n_jobs_marked_failed_before_running": 100,
+        "job_status_histogram": {
+          "3": 100
+        },
+        "all_jobs_finished": false
+      },
+      "agg_outputs": [],
+      "loadavg_before": [
+        "7.60",
+        "5.38",
+        "4.75"
+      ],
+      "loadavg_after": [
+        "7.39",
+        "5.38",
+        "4.75"
+      ],
+      "marker_log": "/home/pwwang/bench_abl/out/markers/marker_F_n100_r3.log",
+      "log": "/home/pwwang/bench_abl/out/logs/F_n100_r3.log",
+      "workdir": "/home/pwwang/bench_abl/wd/F_n100_r3",
+      "overhead_wall_sec": 6.771,
+      "overhead_wall_per_job_sec": 0.0677,
+      "overhead_run_sec": 6.1,
+      "overhead_run_per_job_sec": 0.061
+    },
+    {
+      "tag": "E_all_n100_r1",
+      "arm": "E_all",
+      "arm_label": "all of the above relaxed together",
+      "n": 100,
+      "rep": 1,
+      "forks": 32,
+      "shard_sleep_sec": 0.05,
+      "cache": false,
+      "wall_sec": 2.957,
+      "rc": 0,
+      "pipeline_run_sec": 2.303,
+      "sleep_floor_sec": 0.1562,
+      "jobs_executed_total": 99,
+      "jobs_by_proc_starts": {
+        "shard": 198
+      },
+      "shard_jobs_started": 99,
+      "agg_jobs": 0,
+      "unmatched_starts": 0,
+      "job_start_span_sec": 1.802,
+      "job_start_rate_per_sec_median_of_start_gaps": null,
+      "job_start_rate_per_sec_span": 54.4,
+      "end_to_end_rate_per_sec": 53.42,
+      "median_shard_job_duration_sec": 0.052,
+      "peak_concurrent_jobs_from_markers": 5,
+      "mean_concurrent_jobs_from_markers": 2.792,
+      "occupancy_sampler": {
+        "sampler_interval_sec": 0.05,
+        "n_samples": 19,
+        "peak_wrapper_processes": 4,
+        "mean_wrapper_processes": 0.737,
+        "peak_descendant_processes_incl_self": 10,
+        "mean_descendant_processes_incl_self": 2.211
+      },
+      "effective": {
+        "arm": "E_all",
+        "requested": {
+          "SUBMIT_JOB_SLEEP": 0.001,
+          "SLEEP_INTERVAL_PRODUCER_MAX_FORKS": 0.001,
+          "SLEEP_INTERVAL_POLLING_JOBS": 0.001,
+          "SLEEP_INTERVAL_KEEP_FEEDING": 0.001,
+          "SUBMISSION_BATCH": 64,
+          "WRAPPER_SLEEPS": "removed"
+        },
+        "effective": {
+          "SUBMIT_JOB_SLEEP": 0.001,
+          "SUBMIT_JOB_SLEEP_resolved_from": "pipen.scheduler.LocalScheduler (MRO of the instance pipen builds)",
+          "SLEEP_INTERVAL_PRODUCER_MAX_FORKS": 0.001,
+          "SLEEP_INTERVAL_PRODUCER_MAX_FORKS_resolved_from": "xqute.xqute module global",
+          "SLEEP_INTERVAL_POLLING_JOBS": 0.001,
+          "SLEEP_INTERVAL_POLLING_JOBS_resolved_from": "xqute.xqute module global",
+          "SLEEP_INTERVAL_KEEP_FEEDING": 0.001,
+          "SLEEP_INTERVAL_KEEP_FEEDING_resolved_from": "xqute.xqute module global",
+          "submission_batch": 64,
+          "submission_batch_resolved_from": "xqute.scheduler.Scheduler.submission_batch (self.__class__ lookup)",
+          "wrapper_sleeps": "removed (jobcmd_wrapper_init/jobcmd_prep -> base)"
+        },
+        "source_files": {
+          "xqute/schedulers/local_scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/schedulers/local_scheduler.py",
+          "xqute/xqute.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/xqute.py",
+          "xqute/scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/scheduler.py",
+          "pipen/scheduler.py": "/home/pwwang/github/pipen/pipen/scheduler.py"
+        },
+        "source_sha256": {
+          "xqute/schedulers/local_scheduler.py": "70cff3432b26e92a582a17c2ac20409432a75d49e8ae1776795f8fdd9b095539",
+          "xqute/xqute.py": "126eed84bc42fd385ec61ecd1e3a7c7443adc124e9cebd9fefb1a120f2716e6e",
+          "xqute/scheduler.py": "6b810caae3951b894e3abb1557a97afb9b0e762f384766128eac62ffa2ebebca",
+          "pipen/scheduler.py": "da3a22ed2c13a1031fdf80a43b8321bbff6d83665d82b94d9870dfa188d4a16d"
+        }
+      },
+      "sleep_census": null,
+      "job_status_census": {
+        "n_job_dirs": 100,
+        "job_status_histogram": {
+          "6": 99,
+          "7": 1
+        },
+        "job_rc_histogram": {
+          "0": 100
+        },
+        "n_jobs_marked_failed_before_running": 0,
+        "jobs_marked_failed_before_running": [],
+        "note": "job.status: 6=FINISHED 3=SUBMITTED 7=FAILED 4=RUNNING; rc=-3 == 'fail before running'"
+      },
+      "correctness": {
+        "agg_file_found": false,
+        "agg_content_equals_expected_0_to_N_minus_1": false,
+        "n_jobs_marked_failed_before_running": 0,
+        "job_status_histogram": {
+          "6": 99,
+          "7": 1
+        },
+        "all_jobs_finished": false
+      },
+      "agg_outputs": [],
+      "loadavg_before": [
+        "7.39",
+        "5.38",
+        "4.75"
+      ],
+      "loadavg_after": [
+        "7.20",
+        "5.37",
+        "4.75"
+      ],
+      "marker_log": "/home/pwwang/bench_abl/out/markers/marker_E_all_n100_r1.log",
+      "log": "/home/pwwang/bench_abl/out/logs/E_all_n100_r1.log",
+      "workdir": "/home/pwwang/bench_abl/wd/E_all_n100_r1",
+      "overhead_wall_sec": 2.801,
+      "overhead_wall_per_job_sec": 0.028,
+      "overhead_run_sec": 2.147,
+      "overhead_run_per_job_sec": 0.0215
+    },
+    {
+      "tag": "E_all_n100_r2",
+      "arm": "E_all",
+      "arm_label": "all of the above relaxed together",
+      "n": 100,
+      "rep": 2,
+      "forks": 32,
+      "shard_sleep_sec": 0.05,
+      "cache": false,
+      "wall_sec": 3.1,
+      "rc": 0,
+      "pipeline_run_sec": 2.478,
+      "sleep_floor_sec": 0.1562,
+      "jobs_executed_total": 101,
+      "jobs_by_proc_starts": {
+        "shard": 200,
+        "agg": 2
+      },
+      "shard_jobs_started": 100,
+      "agg_jobs": 1,
+      "unmatched_starts": 0,
+      "job_start_span_sec": 1.868,
+      "job_start_rate_per_sec_median_of_start_gaps": null,
+      "job_start_rate_per_sec_span": 52.99,
+      "end_to_end_rate_per_sec": 49.08,
+      "median_shard_job_duration_sec": 0.052,
+      "peak_concurrent_jobs_from_markers": 5,
+      "mean_concurrent_jobs_from_markers": 2.769,
+      "occupancy_sampler": {
+        "sampler_interval_sec": 0.05,
+        "n_samples": 23,
+        "peak_wrapper_processes": 6,
+        "mean_wrapper_processes": 1.565,
+        "peak_descendant_processes_incl_self": 13,
+        "mean_descendant_processes_incl_self": 3.522
+      },
+      "effective": {
+        "arm": "E_all",
+        "requested": {
+          "SUBMIT_JOB_SLEEP": 0.001,
+          "SLEEP_INTERVAL_PRODUCER_MAX_FORKS": 0.001,
+          "SLEEP_INTERVAL_POLLING_JOBS": 0.001,
+          "SLEEP_INTERVAL_KEEP_FEEDING": 0.001,
+          "SUBMISSION_BATCH": 64,
+          "WRAPPER_SLEEPS": "removed"
+        },
+        "effective": {
+          "SUBMIT_JOB_SLEEP": 0.001,
+          "SUBMIT_JOB_SLEEP_resolved_from": "pipen.scheduler.LocalScheduler (MRO of the instance pipen builds)",
+          "SLEEP_INTERVAL_PRODUCER_MAX_FORKS": 0.001,
+          "SLEEP_INTERVAL_PRODUCER_MAX_FORKS_resolved_from": "xqute.xqute module global",
+          "SLEEP_INTERVAL_POLLING_JOBS": 0.001,
+          "SLEEP_INTERVAL_POLLING_JOBS_resolved_from": "xqute.xqute module global",
+          "SLEEP_INTERVAL_KEEP_FEEDING": 0.001,
+          "SLEEP_INTERVAL_KEEP_FEEDING_resolved_from": "xqute.xqute module global",
+          "submission_batch": 64,
+          "submission_batch_resolved_from": "xqute.scheduler.Scheduler.submission_batch (self.__class__ lookup)",
+          "wrapper_sleeps": "removed (jobcmd_wrapper_init/jobcmd_prep -> base)"
+        },
+        "source_files": {
+          "xqute/schedulers/local_scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/schedulers/local_scheduler.py",
+          "xqute/xqute.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/xqute.py",
+          "xqute/scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/scheduler.py",
+          "pipen/scheduler.py": "/home/pwwang/github/pipen/pipen/scheduler.py"
+        },
+        "source_sha256": {
+          "xqute/schedulers/local_scheduler.py": "70cff3432b26e92a582a17c2ac20409432a75d49e8ae1776795f8fdd9b095539",
+          "xqute/xqute.py": "126eed84bc42fd385ec61ecd1e3a7c7443adc124e9cebd9fefb1a120f2716e6e",
+          "xqute/scheduler.py": "6b810caae3951b894e3abb1557a97afb9b0e762f384766128eac62ffa2ebebca",
+          "pipen/scheduler.py": "da3a22ed2c13a1031fdf80a43b8321bbff6d83665d82b94d9870dfa188d4a16d"
+        }
+      },
+      "sleep_census": null,
+      "job_status_census": {
+        "n_job_dirs": 101,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "job_rc_histogram": {
+          "0": 101
+        },
+        "n_jobs_marked_failed_before_running": 0,
+        "jobs_marked_failed_before_running": [],
+        "note": "job.status: 6=FINISHED 3=SUBMITTED 7=FAILED 4=RUNNING; rc=-3 == 'fail before running'"
+      },
+      "correctness": {
+        "agg_file_found": true,
+        "agg_content_equals_expected_0_to_N_minus_1": true,
+        "n_jobs_marked_failed_before_running": 0,
+        "job_status_histogram": {
+          "6": 101
+        },
+        "all_jobs_finished": true
+      },
+      "agg_outputs": [
+        {
+          "path": "/home/pwwang/bench_abl/wd/E_all_n100_r2/AblPipeline-output/Agg/agg.txt",
+          "sha256": "6d506216aa5bad159f167e2535293b4e5ec8e1073b64449d30b66b460ebf6da0",
+          "lines": 100,
+          "bytes": 290
+        }
+      ],
+      "loadavg_before": [
+        "7.20",
+        "5.37",
+        "4.75"
+      ],
+      "loadavg_after": [
+        "7.42",
+        "5.45",
+        "4.78"
+      ],
+      "marker_log": "/home/pwwang/bench_abl/out/markers/marker_E_all_n100_r2.log",
+      "log": "/home/pwwang/bench_abl/out/logs/E_all_n100_r2.log",
+      "workdir": "/home/pwwang/bench_abl/wd/E_all_n100_r2",
+      "overhead_wall_sec": 2.943,
+      "overhead_wall_per_job_sec": 0.0294,
+      "overhead_run_sec": 2.322,
+      "overhead_run_per_job_sec": 0.0232
+    },
+    {
+      "tag": "E_all_n100_r3",
+      "arm": "E_all",
+      "arm_label": "all of the above relaxed together",
+      "n": 100,
+      "rep": 3,
+      "forks": 32,
+      "shard_sleep_sec": 0.05,
+      "cache": false,
+      "wall_sec": 2.945,
+      "rc": 0,
+      "pipeline_run_sec": 2.305,
+      "sleep_floor_sec": 0.1562,
+      "jobs_executed_total": 100,
+      "jobs_by_proc_starts": {
+        "shard": 200
+      },
+      "shard_jobs_started": 100,
+      "agg_jobs": 0,
+      "unmatched_starts": 0,
+      "job_start_span_sec": 1.772,
+      "job_start_rate_per_sec_median_of_start_gaps": null,
+      "job_start_rate_per_sec_span": 55.88,
+      "end_to_end_rate_per_sec": 54.83,
+      "median_shard_job_duration_sec": 0.052,
+      "peak_concurrent_jobs_from_markers": 5,
+      "mean_concurrent_jobs_from_markers": 2.857,
+      "occupancy_sampler": {
+        "sampler_interval_sec": 0.05,
+        "n_samples": 19,
+        "peak_wrapper_processes": 3,
+        "mean_wrapper_processes": 0.368,
+        "peak_descendant_processes_incl_self": 4,
+        "mean_descendant_processes_incl_self": 1.474
+      },
+      "effective": {
+        "arm": "E_all",
+        "requested": {
+          "SUBMIT_JOB_SLEEP": 0.001,
+          "SLEEP_INTERVAL_PRODUCER_MAX_FORKS": 0.001,
+          "SLEEP_INTERVAL_POLLING_JOBS": 0.001,
+          "SLEEP_INTERVAL_KEEP_FEEDING": 0.001,
+          "SUBMISSION_BATCH": 64,
+          "WRAPPER_SLEEPS": "removed"
+        },
+        "effective": {
+          "SUBMIT_JOB_SLEEP": 0.001,
+          "SUBMIT_JOB_SLEEP_resolved_from": "pipen.scheduler.LocalScheduler (MRO of the instance pipen builds)",
+          "SLEEP_INTERVAL_PRODUCER_MAX_FORKS": 0.001,
+          "SLEEP_INTERVAL_PRODUCER_MAX_FORKS_resolved_from": "xqute.xqute module global",
+          "SLEEP_INTERVAL_POLLING_JOBS": 0.001,
+          "SLEEP_INTERVAL_POLLING_JOBS_resolved_from": "xqute.xqute module global",
+          "SLEEP_INTERVAL_KEEP_FEEDING": 0.001,
+          "SLEEP_INTERVAL_KEEP_FEEDING_resolved_from": "xqute.xqute module global",
+          "submission_batch": 64,
+          "submission_batch_resolved_from": "xqute.scheduler.Scheduler.submission_batch (self.__class__ lookup)",
+          "wrapper_sleeps": "removed (jobcmd_wrapper_init/jobcmd_prep -> base)"
+        },
+        "source_files": {
+          "xqute/schedulers/local_scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/schedulers/local_scheduler.py",
+          "xqute/xqute.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/xqute.py",
+          "xqute/scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/scheduler.py",
+          "pipen/scheduler.py": "/home/pwwang/github/pipen/pipen/scheduler.py"
+        },
+        "source_sha256": {
+          "xqute/schedulers/local_scheduler.py": "70cff3432b26e92a582a17c2ac20409432a75d49e8ae1776795f8fdd9b095539",
+          "xqute/xqute.py": "126eed84bc42fd385ec61ecd1e3a7c7443adc124e9cebd9fefb1a120f2716e6e",
+          "xqute/scheduler.py": "6b810caae3951b894e3abb1557a97afb9b0e762f384766128eac62ffa2ebebca",
+          "pipen/scheduler.py": "da3a22ed2c13a1031fdf80a43b8321bbff6d83665d82b94d9870dfa188d4a16d"
+        }
+      },
+      "sleep_census": null,
+      "job_status_census": {
+        "n_job_dirs": 101,
+        "job_status_histogram": {
+          "3": 1,
+          "6": 100
+        },
+        "job_rc_histogram": {
+          "-3": 1,
+          "0": 100
+        },
+        "n_jobs_marked_failed_before_running": 1,
+        "jobs_marked_failed_before_running": [
+          "AblPipeline/Agg/0"
+        ],
+        "note": "job.status: 6=FINISHED 3=SUBMITTED 7=FAILED 4=RUNNING; rc=-3 == 'fail before running'"
+      },
+      "correctness": {
+        "agg_file_found": false,
+        "agg_content_equals_expected_0_to_N_minus_1": false,
+        "n_jobs_marked_failed_before_running": 1,
+        "job_status_histogram": {
+          "3": 1,
+          "6": 100
+        },
+        "all_jobs_finished": false
+      },
+      "agg_outputs": [],
+      "loadavg_before": [
+        "7.42",
+        "5.45",
+        "4.78"
+      ],
+      "loadavg_after": [
+        "7.42",
+        "5.45",
+        "4.78"
+      ],
+      "marker_log": "/home/pwwang/bench_abl/out/markers/marker_E_all_n100_r3.log",
+      "log": "/home/pwwang/bench_abl/out/logs/E_all_n100_r3.log",
+      "workdir": "/home/pwwang/bench_abl/wd/E_all_n100_r3",
+      "overhead_wall_sec": 2.789,
+      "overhead_wall_per_job_sec": 0.0279,
+      "overhead_run_sec": 2.149,
+      "overhead_run_per_job_sec": 0.0215
+    }
+  ]
+}

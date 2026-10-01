@@ -1,0 +1,57 @@
+09-30 16:31:11 I core                      _____________________________________   __
+09-30 16:31:11 I core                      ___  __ \___  _/__  __ \__  ____/__  | / /
+09-30 16:31:11 I core                      __  /_/ /__  / __  /_/ /_  __/  __   |/ /
+09-30 16:31:11 I core                      _  ____/__/ /  _  ____/_  /___  _  /|  /
+09-30 16:31:11 I core                      /_/     /___/  /_/     /_____/  /_/ |_/
+09-30 16:31:11 I core
+09-30 16:31:11 I core                                  version: 1.2.3
+09-30 16:31:11 I core
+09-30 16:31:11 I core    ╔═════════════════════════════════════════════════════════════════════════╗
+09-30 16:31:11 I core    ║                              CACHEPIPELINE                              ║
+09-30 16:31:11 I core    ╚═════════════════════════════════════════════════════════════════════════╝
+09-30 16:31:11 I core    # procs         : 4
+09-30 16:31:11 I core    profile         : default
+09-30 16:31:11 I core    outdir          : CachePipeline-output
+09-30 16:31:11 I core    cache           : True
+09-30 16:31:11 I core    dirsig          : 1
+09-30 16:31:11 I core    error_strategy  : ignore
+09-30 16:31:11 I core    forks           : 32
+09-30 16:31:11 I core    lang            : bash
+09-30 16:31:11 I core    loglevel        : info
+09-30 16:31:11 I core    num_retries     : 3
+09-30 16:31:11 I core    scheduler       : local
+09-30 16:31:11 I core    submission_batch: None
+09-30 16:31:11 I core    template        : liquid
+09-30 16:31:11 I core    workdir         : /home/pwwang/bench/wd_s5_scope/CachePipeline
+09-30 16:31:11 I core    Initializing plugins ...
+09-30 16:31:11 I core
+09-30 16:31:11 I core    ╭───────────────────────────────── Read ──────────────────────────────────╮
+09-30 16:31:11 I core    │ read each input file                                                    │
+09-30 16:31:11 I core    ╰─────────────────────────────────────────────────────────────────────────╯
+09-30 16:31:11 I core    Read: workdir: '/home/pwwang/bench/wd_s5_scope/CachePipeline/Read'
+09-30 16:31:11 I core    Read: <<< [START]
+09-30 16:31:11 I core    Read: >>> ['Mid', 'Side']
+09-30 16:31:11 I core    Read: Cached jobs: 0-7
+09-30 16:31:11 I core
+09-30 16:31:11 I core    ╭────────────────────────────────── Mid ──────────────────────────────────╮
+09-30 16:31:11 I core    │ mid branch                                                              │
+09-30 16:31:11 I core    ╰─────────────────────────────────────────────────────────────────────────╯
+09-30 16:31:11 I core    Mid: workdir: '/home/pwwang/bench/wd_s5_scope/CachePipeline/Mid'
+09-30 16:31:11 I core    Mid: <<< ['Read']
+09-30 16:31:11 I core    Mid: >>> ['Agg']
+09-30 16:31:13 I core
+09-30 16:31:13 I core    ╭───────────────────────────────── Side ──────────────────────────────────╮
+09-30 16:31:13 I core    │ sibling branch (unrelated to Mid)                                       │
+09-30 16:31:13 I core    ╰─────────────────────────────────────────────────────────────────────────╯
+09-30 16:31:13 I core    Side: workdir: '/home/pwwang/bench/wd_s5_scope/CachePipeline/Side'
+09-30 16:31:13 I core    Side: <<< ['Read']
+09-30 16:31:13 I core    Side: >>> ['Agg']
+09-30 16:31:13 I core    Side: Cached jobs: 0-7
+09-30 16:31:13 I core
+09-30 16:31:13 I core    ╭══════════════════════════════════ Agg ══════════════════════════════════╮
+09-30 16:31:13 I core    ║ aggregate both branches                                                 ║
+09-30 16:31:13 I core    ╰═════════════════════════════════════════════════════════════════════════╯
+09-30 16:31:13 I core    Agg: workdir: '/home/pwwang/bench/wd_s5_scope/CachePipeline/Agg'
+09-30 16:31:13 I core    Agg: <<< ['Mid', 'Side']
+09-30 16:31:13 I core    Agg: >>> [END]
+09-30 16:31:15 I core

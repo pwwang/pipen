@@ -1,0 +1,622 @@
+[
+  {
+    "step": "3_scaling",
+    "tag": "s3_n1_r1",
+    "n": 1,
+    "forks": 32,
+    "sleep_per_job": "0.05",
+    "cache": false,
+    "rep": 1,
+    "_script": "bench_pipen_dag.py",
+    "wall_sec": 4.938,
+    "pipeline_run_sec": 4.346,
+    "rc": 0,
+    "pipeline_ok": true,
+    "cached_jobs_log_lines": [],
+    "jobs_executed": 4,
+    "jobs_by_proc": {
+      "shard_start": 1,
+      "shard_end": 1,
+      "agg_start": 1,
+      "agg_end": 1
+    },
+    "peak_tree_rss_mb": 101.7,
+    "rss_samples": 97,
+    "loadavg_before": [
+      "4.91",
+      "5.05",
+      "4.39"
+    ],
+    "loadavg_after": [
+      "4.83",
+      "5.03",
+      "4.39"
+    ],
+    "marker_log": "/home/pwwang/bench/out/marker_s3_n1_r1.log",
+    "log": "/home/pwwang/bench/out/logs/s3_n1_r1.log",
+    "sleep_floor_sec": 0.05,
+    "overhead_vs_sleep_floor_sec": 4.296,
+    "overhead_per_job_sec": 4.296
+  },
+  {
+    "step": "3_scaling",
+    "tag": "s3_n1_r2",
+    "n": 1,
+    "forks": 32,
+    "sleep_per_job": "0.05",
+    "cache": false,
+    "rep": 2,
+    "_script": "bench_pipen_dag.py",
+    "wall_sec": 4.989,
+    "pipeline_run_sec": 4.358,
+    "rc": 0,
+    "pipeline_ok": true,
+    "cached_jobs_log_lines": [],
+    "jobs_executed": 4,
+    "jobs_by_proc": {
+      "shard_start": 1,
+      "shard_end": 1,
+      "agg_start": 1,
+      "agg_end": 1
+    },
+    "peak_tree_rss_mb": 155.0,
+    "rss_samples": 98,
+    "loadavg_before": [
+      "4.83",
+      "5.03",
+      "4.39"
+    ],
+    "loadavg_after": [
+      "4.77",
+      "5.02",
+      "4.39"
+    ],
+    "marker_log": "/home/pwwang/bench/out/marker_s3_n1_r2.log",
+    "log": "/home/pwwang/bench/out/logs/s3_n1_r2.log",
+    "sleep_floor_sec": 0.05,
+    "overhead_vs_sleep_floor_sec": 4.308,
+    "overhead_per_job_sec": 4.308
+  },
+  {
+    "step": "3_scaling",
+    "tag": "s3_n1_r3",
+    "n": 1,
+    "forks": 32,
+    "sleep_per_job": "0.05",
+    "cache": false,
+    "rep": 3,
+    "_script": "bench_pipen_dag.py",
+    "wall_sec": 4.987,
+    "pipeline_run_sec": 4.351,
+    "rc": 0,
+    "pipeline_ok": true,
+    "cached_jobs_log_lines": [],
+    "jobs_executed": 4,
+    "jobs_by_proc": {
+      "shard_start": 1,
+      "shard_end": 1,
+      "agg_start": 1,
+      "agg_end": 1
+    },
+    "peak_tree_rss_mb": 101.4,
+    "rss_samples": 98,
+    "loadavg_before": [
+      "4.77",
+      "5.02",
+      "4.39"
+    ],
+    "loadavg_after": [
+      "4.70",
+      "5.00",
+      "4.39"
+    ],
+    "marker_log": "/home/pwwang/bench/out/marker_s3_n1_r3.log",
+    "log": "/home/pwwang/bench/out/logs/s3_n1_r3.log",
+    "sleep_floor_sec": 0.05,
+    "overhead_vs_sleep_floor_sec": 4.301,
+    "overhead_per_job_sec": 4.301
+  },
+  {
+    "step": "3_scaling",
+    "tag": "s3_n10_r1",
+    "n": 10,
+    "forks": 32,
+    "sleep_per_job": "0.05",
+    "cache": false,
+    "rep": 1,
+    "_script": "bench_pipen_dag.py",
+    "wall_sec": 6.061,
+    "pipeline_run_sec": 5.415,
+    "rc": 0,
+    "pipeline_ok": true,
+    "cached_jobs_log_lines": [],
+    "jobs_executed": 22,
+    "jobs_by_proc": {
+      "shard_start": 10,
+      "shard_end": 10,
+      "agg_start": 1,
+      "agg_end": 1
+    },
+    "peak_tree_rss_mb": 151.9,
+    "rss_samples": 119,
+    "loadavg_before": [
+      "4.70",
+      "5.00",
+      "4.39"
+    ],
+    "loadavg_after": [
+      "4.65",
+      "4.98",
+      "4.38"
+    ],
+    "marker_log": "/home/pwwang/bench/out/marker_s3_n10_r1.log",
+    "log": "/home/pwwang/bench/out/logs/s3_n10_r1.log",
+    "sleep_floor_sec": 0.05,
+    "overhead_vs_sleep_floor_sec": 5.365,
+    "overhead_per_job_sec": 0.5365
+  },
+  {
+    "step": "3_scaling",
+    "tag": "s3_n10_r2",
+    "n": 10,
+    "forks": 32,
+    "sleep_per_job": "0.05",
+    "cache": false,
+    "rep": 2,
+    "_script": "bench_pipen_dag.py",
+    "wall_sec": 6.061,
+    "pipeline_run_sec": 5.4,
+    "rc": 0,
+    "pipeline_ok": true,
+    "cached_jobs_log_lines": [],
+    "jobs_executed": 22,
+    "jobs_by_proc": {
+      "shard_start": 10,
+      "shard_end": 10,
+      "agg_start": 1,
+      "agg_end": 1
+    },
+    "peak_tree_rss_mb": 155.3,
+    "rss_samples": 119,
+    "loadavg_before": [
+      "4.65",
+      "4.98",
+      "4.38"
+    ],
+    "loadavg_after": [
+      "4.60",
+      "4.97",
+      "4.38"
+    ],
+    "marker_log": "/home/pwwang/bench/out/marker_s3_n10_r2.log",
+    "log": "/home/pwwang/bench/out/logs/s3_n10_r2.log",
+    "sleep_floor_sec": 0.05,
+    "overhead_vs_sleep_floor_sec": 5.35,
+    "overhead_per_job_sec": 0.535
+  },
+  {
+    "step": "3_scaling",
+    "tag": "s3_n10_r3",
+    "n": 10,
+    "forks": 32,
+    "sleep_per_job": "0.05",
+    "cache": false,
+    "rep": 3,
+    "_script": "bench_pipen_dag.py",
+    "wall_sec": 6.011,
+    "pipeline_run_sec": 5.404,
+    "rc": 0,
+    "pipeline_ok": true,
+    "cached_jobs_log_lines": [],
+    "jobs_executed": 22,
+    "jobs_by_proc": {
+      "shard_start": 10,
+      "shard_end": 10,
+      "agg_start": 1,
+      "agg_end": 1
+    },
+    "peak_tree_rss_mb": 152.5,
+    "rss_samples": 118,
+    "loadavg_before": [
+      "4.60",
+      "4.97",
+      "4.38"
+    ],
+    "loadavg_after": [
+      "4.65",
+      "4.97",
+      "4.39"
+    ],
+    "marker_log": "/home/pwwang/bench/out/marker_s3_n10_r3.log",
+    "log": "/home/pwwang/bench/out/logs/s3_n10_r3.log",
+    "sleep_floor_sec": 0.05,
+    "overhead_vs_sleep_floor_sec": 5.354,
+    "overhead_per_job_sec": 0.5354
+  },
+  {
+    "step": "3_scaling",
+    "tag": "s3_n100_r1",
+    "n": 100,
+    "forks": 32,
+    "sleep_per_job": "0.05",
+    "cache": false,
+    "rep": 1,
+    "_script": "bench_pipen_dag.py",
+    "wall_sec": 15.018,
+    "pipeline_run_sec": 14.414,
+    "rc": 0,
+    "pipeline_ok": true,
+    "cached_jobs_log_lines": [],
+    "jobs_executed": 202,
+    "jobs_by_proc": {
+      "shard_start": 100,
+      "shard_end": 100,
+      "agg_start": 1,
+      "agg_end": 1
+    },
+    "peak_tree_rss_mb": 266.5,
+    "rss_samples": 294,
+    "loadavg_before": [
+      "4.65",
+      "4.97",
+      "4.39"
+    ],
+    "loadavg_after": [
+      "4.65",
+      "4.95",
+      "4.39"
+    ],
+    "marker_log": "/home/pwwang/bench/out/marker_s3_n100_r1.log",
+    "log": "/home/pwwang/bench/out/logs/s3_n100_r1.log",
+    "sleep_floor_sec": 0.156,
+    "overhead_vs_sleep_floor_sec": 14.258,
+    "overhead_per_job_sec": 0.1426
+  },
+  {
+    "step": "3_scaling",
+    "tag": "s3_n100_r2",
+    "n": 100,
+    "forks": 32,
+    "sleep_per_job": "0.05",
+    "cache": false,
+    "rep": 2,
+    "_script": "bench_pipen_dag.py",
+    "wall_sec": 15.117,
+    "pipeline_run_sec": 14.495,
+    "rc": 0,
+    "pipeline_ok": true,
+    "cached_jobs_log_lines": [],
+    "jobs_executed": 202,
+    "jobs_by_proc": {
+      "shard_start": 100,
+      "shard_end": 100,
+      "agg_start": 1,
+      "agg_end": 1
+    },
+    "peak_tree_rss_mb": 265.6,
+    "rss_samples": 296,
+    "loadavg_before": [
+      "4.65",
+      "4.95",
+      "4.39"
+    ],
+    "loadavg_after": [
+      "4.51",
+      "4.90",
+      "4.38"
+    ],
+    "marker_log": "/home/pwwang/bench/out/marker_s3_n100_r2.log",
+    "log": "/home/pwwang/bench/out/logs/s3_n100_r2.log",
+    "sleep_floor_sec": 0.156,
+    "overhead_vs_sleep_floor_sec": 14.339,
+    "overhead_per_job_sec": 0.1434
+  },
+  {
+    "step": "3_scaling",
+    "tag": "s3_n100_r3",
+    "n": 100,
+    "forks": 32,
+    "sleep_per_job": "0.05",
+    "cache": false,
+    "rep": 3,
+    "_script": "bench_pipen_dag.py",
+    "wall_sec": 15.081,
+    "pipeline_run_sec": 14.429,
+    "rc": 0,
+    "pipeline_ok": true,
+    "cached_jobs_log_lines": [],
+    "jobs_executed": 202,
+    "jobs_by_proc": {
+      "shard_start": 100,
+      "shard_end": 100,
+      "agg_start": 1,
+      "agg_end": 1
+    },
+    "peak_tree_rss_mb": 276.3,
+    "rss_samples": 295,
+    "loadavg_before": [
+      "4.51",
+      "4.90",
+      "4.38"
+    ],
+    "loadavg_after": [
+      "4.47",
+      "4.88",
+      "4.38"
+    ],
+    "marker_log": "/home/pwwang/bench/out/marker_s3_n100_r3.log",
+    "log": "/home/pwwang/bench/out/logs/s3_n100_r3.log",
+    "sleep_floor_sec": 0.156,
+    "overhead_vs_sleep_floor_sec": 14.273,
+    "overhead_per_job_sec": 0.1427
+  },
+  {
+    "step": "3_scaling",
+    "tag": "s3_n500_r1",
+    "n": 500,
+    "forks": 32,
+    "sleep_per_job": "0.05",
+    "cache": false,
+    "rep": 1,
+    "_script": "bench_pipen_dag.py",
+    "wall_sec": 55.036,
+    "pipeline_run_sec": 54.336,
+    "rc": 0,
+    "pipeline_ok": true,
+    "cached_jobs_log_lines": [],
+    "jobs_executed": 1002,
+    "jobs_by_proc": {
+      "shard_start": 500,
+      "shard_end": 500,
+      "agg_start": 1,
+      "agg_end": 1
+    },
+    "peak_tree_rss_mb": 349.4,
+    "rss_samples": 1075,
+    "loadavg_before": [
+      "4.47",
+      "4.88",
+      "4.38"
+    ],
+    "loadavg_after": [
+      "4.61",
+      "4.85",
+      "4.40"
+    ],
+    "marker_log": "/home/pwwang/bench/out/marker_s3_n500_r1.log",
+    "log": "/home/pwwang/bench/out/logs/s3_n500_r1.log",
+    "sleep_floor_sec": 0.781,
+    "overhead_vs_sleep_floor_sec": 53.555,
+    "overhead_per_job_sec": 0.1071
+  },
+  {
+    "step": "3_scaling",
+    "tag": "s3_n500_r2",
+    "n": 500,
+    "forks": 32,
+    "sleep_per_job": "0.05",
+    "cache": false,
+    "rep": 2,
+    "_script": "bench_pipen_dag.py",
+    "wall_sec": 55.438,
+    "pipeline_run_sec": 54.754,
+    "rc": 0,
+    "pipeline_ok": true,
+    "cached_jobs_log_lines": [],
+    "jobs_executed": 1002,
+    "jobs_by_proc": {
+      "shard_start": 500,
+      "shard_end": 500,
+      "agg_start": 1,
+      "agg_end": 1
+    },
+    "peak_tree_rss_mb": 306.8,
+    "rss_samples": 1083,
+    "loadavg_before": [
+      "4.61",
+      "4.85",
+      "4.40"
+    ],
+    "loadavg_after": [
+      "4.51",
+      "4.80",
+      "4.41"
+    ],
+    "marker_log": "/home/pwwang/bench/out/marker_s3_n500_r2.log",
+    "log": "/home/pwwang/bench/out/logs/s3_n500_r2.log",
+    "sleep_floor_sec": 0.781,
+    "overhead_vs_sleep_floor_sec": 53.973,
+    "overhead_per_job_sec": 0.1079
+  },
+  {
+    "step": "3_scaling",
+    "tag": "s3_n500_r3",
+    "n": 500,
+    "forks": 32,
+    "sleep_per_job": "0.05",
+    "cache": false,
+    "rep": 3,
+    "_script": "bench_pipen_dag.py",
+    "wall_sec": 54.666,
+    "pipeline_run_sec": 53.995,
+    "rc": 0,
+    "pipeline_ok": true,
+    "cached_jobs_log_lines": [],
+    "jobs_executed": 1002,
+    "jobs_by_proc": {
+      "shard_start": 500,
+      "shard_end": 500,
+      "agg_start": 1,
+      "agg_end": 1
+    },
+    "peak_tree_rss_mb": 352.9,
+    "rss_samples": 1067,
+    "loadavg_before": [
+      "4.51",
+      "4.80",
+      "4.41"
+    ],
+    "loadavg_after": [
+      "4.44",
+      "4.73",
+      "4.41"
+    ],
+    "marker_log": "/home/pwwang/bench/out/marker_s3_n500_r3.log",
+    "log": "/home/pwwang/bench/out/logs/s3_n500_r3.log",
+    "sleep_floor_sec": 0.781,
+    "overhead_vs_sleep_floor_sec": 53.214,
+    "overhead_per_job_sec": 0.1064
+  },
+  {
+    "step": "4_concurrency",
+    "tag": "s4_n20_f1_r1",
+    "n": 20,
+    "forks": 1,
+    "sleep_per_job": "0.05",
+    "cache": false,
+    "rep": 1,
+    "_script": "bench_pipen_dag.py",
+    "wall_sec": 66.249,
+    "pipeline_run_sec": 65.581,
+    "rc": 0,
+    "pipeline_ok": true,
+    "cached_jobs_log_lines": [],
+    "jobs_executed": 42,
+    "jobs_by_proc": {
+      "shard_start": 20,
+      "shard_end": 20,
+      "agg_start": 1,
+      "agg_end": 1
+    },
+    "peak_tree_rss_mb": 102.2,
+    "rss_samples": 1303,
+    "loadavg_before": [
+      "4.44",
+      "4.73",
+      "4.41"
+    ],
+    "loadavg_after": [
+      "4.20",
+      "4.62",
+      "4.39"
+    ],
+    "marker_log": "/home/pwwang/bench/out/marker_s4_n20_f1_r1.log",
+    "log": "/home/pwwang/bench/out/logs/s4_n20_f1_r1.log",
+    "sleep_floor_sec": 1.0,
+    "overhead_vs_sleep_floor_sec": 64.581
+  },
+  {
+    "step": "4_concurrency",
+    "tag": "s4_n20_f2_r1",
+    "n": 20,
+    "forks": 2,
+    "sleep_per_job": "0.05",
+    "cache": false,
+    "rep": 1,
+    "_script": "bench_pipen_dag.py",
+    "wall_sec": 33.109,
+    "pipeline_run_sec": 32.481,
+    "rc": 0,
+    "pipeline_ok": true,
+    "cached_jobs_log_lines": [],
+    "jobs_executed": 42,
+    "jobs_by_proc": {
+      "shard_start": 20,
+      "shard_end": 20,
+      "agg_start": 1,
+      "agg_end": 1
+    },
+    "peak_tree_rss_mb": 158.8,
+    "rss_samples": 651,
+    "loadavg_before": [
+      "4.20",
+      "4.62",
+      "4.39"
+    ],
+    "loadavg_after": [
+      "4.19",
+      "4.56",
+      "4.38"
+    ],
+    "marker_log": "/home/pwwang/bench/out/marker_s4_n20_f2_r1.log",
+    "log": "/home/pwwang/bench/out/logs/s4_n20_f2_r1.log",
+    "sleep_floor_sec": 0.5,
+    "overhead_vs_sleep_floor_sec": 31.981
+  },
+  {
+    "step": "4_concurrency",
+    "tag": "s4_n20_f4_r1",
+    "n": 20,
+    "forks": 4,
+    "sleep_per_job": "0.05",
+    "cache": false,
+    "rep": 1,
+    "_script": "bench_pipen_dag.py",
+    "wall_sec": 19.075,
+    "pipeline_run_sec": 18.462,
+    "rc": 0,
+    "pipeline_ok": true,
+    "cached_jobs_log_lines": [],
+    "jobs_executed": 42,
+    "jobs_by_proc": {
+      "shard_start": 20,
+      "shard_end": 20,
+      "agg_start": 1,
+      "agg_end": 1
+    },
+    "peak_tree_rss_mb": 126.6,
+    "rss_samples": 375,
+    "loadavg_before": [
+      "4.19",
+      "4.56",
+      "4.38"
+    ],
+    "loadavg_after": [
+      "4.15",
+      "4.53",
+      "4.37"
+    ],
+    "marker_log": "/home/pwwang/bench/out/marker_s4_n20_f4_r1.log",
+    "log": "/home/pwwang/bench/out/logs/s4_n20_f4_r1.log",
+    "sleep_floor_sec": 0.25,
+    "overhead_vs_sleep_floor_sec": 18.212
+  },
+  {
+    "step": "4_concurrency",
+    "tag": "s4_n20_f32_r1",
+    "n": 20,
+    "forks": 32,
+    "sleep_per_job": "0.05",
+    "cache": false,
+    "rep": 1,
+    "_script": "bench_pipen_dag.py",
+    "wall_sec": 6.219,
+    "pipeline_run_sec": 5.566,
+    "rc": 0,
+    "pipeline_ok": true,
+    "cached_jobs_log_lines": [],
+    "jobs_executed": 42,
+    "jobs_by_proc": {
+      "shard_start": 20,
+      "shard_end": 20,
+      "agg_start": 1,
+      "agg_end": 1
+    },
+    "peak_tree_rss_mb": 204.5,
+    "rss_samples": 122,
+    "loadavg_before": [
+      "4.15",
+      "4.53",
+      "4.37"
+    ],
+    "loadavg_after": [
+      "4.13",
+      "4.52",
+      "4.37"
+    ],
+    "marker_log": "/home/pwwang/bench/out/marker_s4_n20_f32_r1.log",
+    "log": "/home/pwwang/bench/out/logs/s4_n20_f32_r1.log",
+    "sleep_floor_sec": 0.05,
+    "overhead_vs_sleep_floor_sec": 5.516
+  }
+]

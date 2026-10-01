@@ -1,0 +1,13 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Available namespaces:\n\n  bam: Tools to process sam/bam/cram files\n  bed: Tools to handle BED files\n  cellranger: Cellranger pipeline module for BioPipen\n  cellranger_pipeline: The cellranger pipelines\n  cnv: CNV/CNA-related processes, mostly tertiary analysis\n  cnvkit: CNVkit commnads\n  cnvkit_pipeline: The CNVkit pipeline.\n  delim: Tools to deal with csv/tsv files\n  gene: Gene related processes\n  gsea: Gene set enrichment analysis\n  misc: Misc processes\n  pipseeker: Pipseeker processes\n  plot: Plotting data\n  protein: Protein-related processes.\n  regulatory: Provides processes for the regulatory related\n  rnaseq: RNA-seq data analysis\n  scrna: Tools to analyze single-cell RNA\n  scrna_metabolic_landscape: Metabolic landscape analysis for scRNA-seq data\n  snp: Plink processes\n  stats: Provides processes for statistics.\n  tcgamaf: Processes for TCGA MAF files.\n  tcr: Tools to analyze single-cell TCR sequencing data\n  vcf: Tools to handle VCF files\n  web: Get data from the web\n\nUse get_processes('<namespace>') to see available processes."
+    }
+  ],
+  "structured_content": {
+    "result": "Available namespaces:\n\n  bam: Tools to process sam/bam/cram files\n  bed: Tools to handle BED files\n  cellranger: Cellranger pipeline module for BioPipen\n  cellranger_pipeline: The cellranger pipelines\n  cnv: CNV/CNA-related processes, mostly tertiary analysis\n  cnvkit: CNVkit commnads\n  cnvkit_pipeline: The CNVkit pipeline.\n  delim: Tools to deal with csv/tsv files\n  gene: Gene related processes\n  gsea: Gene set enrichment analysis\n  misc: Misc processes\n  pipseeker: Pipseeker processes\n  plot: Plotting data\n  protein: Protein-related processes.\n  regulatory: Provides processes for the regulatory related\n  rnaseq: RNA-seq data analysis\n  scrna: Tools to analyze single-cell RNA\n  scrna_metabolic_landscape: Metabolic landscape analysis for scRNA-seq data\n  snp: Plink processes\n  stats: Provides processes for statistics.\n  tcgamaf: Processes for TCGA MAF files.\n  tcr: Tools to analyze single-cell TCR sequencing data\n  vcf: Tools to handle VCF files\n  web: Get data from the web\n\nUse get_processes('<namespace>') to see available processes."
+  },
+  "is_error": false,
+  "result_type": "complete"
+}

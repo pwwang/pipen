@@ -1,0 +1,40 @@
+ABL_EFFECTIVE={"arm": "F", "requested": {"WRAPPER_SLEEPS": "removed"}, "effective": {"wrapper_sleeps": "removed (jobcmd_wrapper_init/jobcmd_prep -> base)"}, "source_files": {"xqute/schedulers/local_scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/schedulers/local_scheduler.py", "xqute/xqute.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/xqute.py", "xqute/scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/scheduler.py", "pipen/scheduler.py": "/home/pwwang/github/pipen/pipen/scheduler.py"}, "source_sha256": {"xqute/schedulers/local_scheduler.py": "70cff3432b26e92a582a17c2ac20409432a75d49e8ae1776795f8fdd9b095539", "xqute/xqute.py": "126eed84bc42fd385ec61ecd1e3a7c7443adc124e9cebd9fefb1a120f2716e6e", "xqute/scheduler.py": "6b810caae3951b894e3abb1557a97afb9b0e762f384766128eac62ffa2ebebca", "pipen/scheduler.py": "da3a22ed2c13a1031fdf80a43b8321bbff6d83665d82b94d9870dfa188d4a16d"}, "sleep_census_enabled": true}
+09-30 17:12:10 I core                      _____________________________________   __
+09-30 17:12:10 I core                      ___  __ \___  _/__  __ \__  ____/__  | / /
+09-30 17:12:10 I core                      __  /_/ /__  / __  /_/ /_  __/  __   |/ /
+09-30 17:12:10 I core                      _  ____/__/ /  _  ____/_  /___  _  /|  /
+09-30 17:12:10 I core                      /_/     /___/  /_/     /_____/  /_/ |_/
+09-30 17:12:10 I core
+09-30 17:12:10 I core                                  version: 1.2.3
+09-30 17:12:10 I core
+09-30 17:12:10 I core    ╔═════════════════════════════════════════════════════════════════════════╗
+09-30 17:12:10 I core    ║                               ABLPIPELINE                               ║
+09-30 17:12:10 I core    ╚═════════════════════════════════════════════════════════════════════════╝
+09-30 17:12:10 I core    # procs         : 2
+09-30 17:12:10 I core    profile         : default
+09-30 17:12:10 I core    outdir          : AblPipeline-output
+09-30 17:12:10 I core    cache           : False
+09-30 17:12:10 I core    dirsig          : 1
+09-30 17:12:10 I core    error_strategy  : ignore
+09-30 17:12:10 I core    forks           : 32
+09-30 17:12:10 I core    lang            : bash
+09-30 17:12:10 I core    loglevel        : info
+09-30 17:12:10 I core    num_retries     : 3
+09-30 17:12:10 I core    scheduler       : local
+09-30 17:12:10 I core    submission_batch: None
+09-30 17:12:10 I core    template        : liquid
+09-30 17:12:10 I core    workdir         : /home/pwwang/bench_abl/wd/verify_F/AblPipeline
+09-30 17:12:10 I core    Initializing plugins ...
+09-30 17:12:10 I core
+09-30 17:12:10 I core    ╭───────────────────────────────── Shard ─────────────────────────────────╮
+09-30 17:12:10 I core    │ fan-out shard                                                           │
+09-30 17:12:10 I core    ╰─────────────────────────────────────────────────────────────────────────╯
+09-30 17:12:10 I core    Shard: workdir: '/home/pwwang/bench_abl/wd/verify_F/AblPipeline/Shard'
+09-30 17:12:10 I core    Shard: <<< [START]
+09-30 17:12:10 I core    Shard: >>> ['Agg']
+09-30 17:12:13 I core
+PIPELINE_RUN_SEC=2.264860
+ABL_AGG=[]
+ABL_SLEEP_CENSUS={"calls": 11, "histogram": {"xqute/schedulers/local_scheduler.py|0.1": 8, "xqute/xqute.py|1": 2, "xqute/xqute.py|0.1": 1}, "consumer_indexes_seen": [0, 1, 2, 3, 4, 5, 6, 7], "n_consumers_seen": 8}
+ABL_STATUS={"n_job_dirs": 8, "job_status_histogram": {"3": 8}, "job_rc_histogram": {"-3": 8}, "n_jobs_marked_failed_before_running": 8, "jobs_marked_failed_before_running": ["AblPipeline/Shard/0", "AblPipeline/Shard/1", "AblPipeline/Shard/2", "AblPipeline/Shard/3", "AblPipeline/Shard/4", "AblPipeline/Shard/5", "AblPipeline/Shard/6", "AblPipeline/Shard/7"], "note": "job.status: 6=FINISHED 3=SUBMITTED 7=FAILED 4=RUNNING; rc=-3 == 'fail before running'"}
+ABL_OCCUPANCY={"sampler_interval_sec": 0.05, "n_samples": 43, "peak_wrapper_processes": 1, "mean_wrapper_processes": 0.023, "peak_descendant_processes_incl_self": 4, "mean_descendant_processes_incl_self": 1.07}

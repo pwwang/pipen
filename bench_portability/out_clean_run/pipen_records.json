@@ -1,0 +1,141 @@
+[
+  {
+    "step": "3_scaling",
+    "tag": "s3_n20_r1",
+    "n": 20,
+    "forks": 8,
+    "sleep_per_job": "0.05",
+    "cache": false,
+    "rep": 1,
+    "_script": "bench_pipen_dag.py",
+    "wall_sec": 12.868,
+    "pipeline_run_sec": 12.418,
+    "rc": 0,
+    "rc_ok": true,
+    "pipeline_ok": true,
+    "cached_jobs_log_lines": [],
+    "jobs_executed": 42,
+    "jobs_by_proc": {
+      "shard_start": 20,
+      "shard_end": 20,
+      "agg_start": 1,
+      "agg_end": 1
+    },
+    "peak_tree_rss_mb": 266.7,
+    "rss_samples": 252,
+    "loadavg_before": [
+      "0.64",
+      "0.82",
+      "1.99"
+    ],
+    "loadavg_after": [
+      "1.13",
+      "0.92",
+      "2.00"
+    ],
+    "runinfo_version": "1.1.5",
+    "runinfo_enabled": true,
+    "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s3_n20_r1.log",
+    "marker_log_local": "/home/pwwang/ws_bench/work/markers/marker_s3_n20_r1.log",
+    "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs/s3_n20_r1.log",
+    "sleep_floor_sec": 0.125,
+    "overhead_vs_sleep_floor_sec": 12.293,
+    "overhead_per_job_sec": 0.6146,
+    "agg_file": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/artefacts/agg_pipen_s3_n20_r1.txt",
+    "agg_sha256": "9cfbaaab688df1c3f9fc1198dcc26b0de5a321a57c60e6ba87c3fc80afbf03bd",
+    "agg_bytes": 50,
+    "agg_note": null
+  },
+  {
+    "step": "4_concurrency",
+    "tag": "s4_n20_f1_r1",
+    "n": 20,
+    "forks": 1,
+    "sleep_per_job": "0.05",
+    "cache": false,
+    "rep": 1,
+    "_script": "bench_pipen_dag.py",
+    "wall_sec": 61.926,
+    "pipeline_run_sec": 61.472,
+    "rc": 0,
+    "rc_ok": true,
+    "pipeline_ok": true,
+    "cached_jobs_log_lines": [],
+    "jobs_executed": 42,
+    "jobs_by_proc": {
+      "shard_start": 20,
+      "shard_end": 20,
+      "agg_start": 1,
+      "agg_end": 1
+    },
+    "peak_tree_rss_mb": 118.0,
+    "rss_samples": 1218,
+    "loadavg_before": [
+      "1.13",
+      "0.92",
+      "2.00"
+    ],
+    "loadavg_after": [
+      "0.41",
+      "0.75",
+      "1.87"
+    ],
+    "runinfo_version": "1.1.5",
+    "runinfo_enabled": true,
+    "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s4_n20_f1_r1.log",
+    "marker_log_local": "/home/pwwang/ws_bench/work/markers/marker_s4_n20_f1_r1.log",
+    "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs/s4_n20_f1_r1.log",
+    "sleep_floor_sec": 1.0,
+    "overhead_vs_sleep_floor_sec": 60.472,
+    "agg_file": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/artefacts/agg_pipen_s4_n20_f1_r1.txt",
+    "agg_sha256": "9cfbaaab688df1c3f9fc1198dcc26b0de5a321a57c60e6ba87c3fc80afbf03bd",
+    "agg_bytes": 50,
+    "agg_note": null
+  },
+  {
+    "step": "4_concurrency",
+    "tag": "s4_n20_f2_r1",
+    "n": 20,
+    "forks": 2,
+    "sleep_per_job": "0.05",
+    "cache": false,
+    "rep": 1,
+    "_script": "bench_pipen_dag.py",
+    "wall_sec": 31.806,
+    "pipeline_run_sec": 31.415,
+    "rc": 0,
+    "rc_ok": true,
+    "pipeline_ok": true,
+    "cached_jobs_log_lines": [],
+    "jobs_executed": 42,
+    "jobs_by_proc": {
+      "shard_start": 20,
+      "shard_end": 20,
+      "agg_start": 1,
+      "agg_end": 1
+    },
+    "peak_tree_rss_mb": 141.3,
+    "rss_samples": 626,
+    "loadavg_before": [
+      "0.41",
+      "0.75",
+      "1.87"
+    ],
+    "loadavg_after": [
+      "0.42",
+      "0.73",
+      "1.83"
+    ],
+    "runinfo_version": "1.1.5",
+    "runinfo_enabled": true,
+    "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s4_n20_f2_r1.log",
+    "marker_log_local": "/home/pwwang/ws_bench/work/markers/marker_s4_n20_f2_r1.log",
+    "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs/s4_n20_f2_r1.log",
+    "sleep_floor_sec": 0.5,
+    "overhead_vs_sleep_floor_sec": 30.915,
+    "agg_file": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/artefacts/agg_pipen_s4_n20_f2_r1.txt",
+    "agg_sha256": "9cfbaaab688df1c3f9fc1198dcc26b0de5a321a57c60e6ba87c3fc80afbf03bd",
+    "agg_bytes": 50,
+    "agg_note": null
+  }
+]

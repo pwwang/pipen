@@ -1,0 +1,302 @@
+############ STAGE: pip install -e of the two namespace packages
+Obtaining file:///home/pwwang/aidemo/demo_ns
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Checking if build backend supports build_editable: started
+  Checking if build backend supports build_editable: finished with status 'done'
+  Getting requirements to build editable: started
+  Getting requirements to build editable: finished with status 'done'
+  Installing backend dependencies: started
+  Installing backend dependencies: finished with status 'done'
+  Preparing editable metadata (pyproject.toml): started
+  Preparing editable metadata (pyproject.toml): finished with status 'done'
+Obtaining file:///home/pwwang/aidemo/demo_extra_ns
+  Installing build dependencies: started
+  Installing build dependencies: finished with status 'done'
+  Checking if build backend supports build_editable: started
+  Checking if build backend supports build_editable: finished with status 'done'
+  Getting requirements to build editable: started
+  Getting requirements to build editable: finished with status 'done'
+  Installing backend dependencies: started
+  Installing backend dependencies: finished with status 'done'
+  Preparing editable metadata (pyproject.toml): started
+  Preparing editable metadata (pyproject.toml): finished with status 'done'
+Requirement already satisfied: pipen>=1.2 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from demo-ns==0.1.0) (1.2.3)
+Requirement already satisfied: argx<0.5,>=0.4 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from pipen>=1.2->demo-ns==0.1.0) (0.4.4)
+Requirement already satisfied: enlighten<2,>=1 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from pipen>=1.2->demo-ns==0.1.0) (1.14.1)
+Requirement already satisfied: liquidpy<1,>=0.8 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from pipen>=1.2->demo-ns==0.1.0) (0.10.0)
+Requirement already satisfied: pandas<4,>=2.0 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from pipen>=1.2->demo-ns==0.1.0) (3.0.6)
+Requirement already satisfied: pipda<1,>=0.13 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from pipen>=1.2->demo-ns==0.1.0) (0.14.1)
+Requirement already satisfied: python-simpleconf<1,>=0.9 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from python-simpleconf[toml]<1,>=0.9->pipen>=1.2->demo-ns==0.1.0) (0.9.6)
+Requirement already satisfied: varname>=1.0 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from pipen>=1.2->demo-ns==0.1.0) (1.0.0)
+Requirement already satisfied: xqute<3,>=2.0 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from pipen>=1.2->demo-ns==0.1.0) (2.2.0)
+Requirement already satisfied: blessed>=1.17.7 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from enlighten<2,>=1->pipen>=1.2->demo-ns==0.1.0) (1.50.0)
+Requirement already satisfied: prefixed>=0.3.2 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from enlighten<2,>=1->pipen>=1.2->demo-ns==0.1.0) (0.9.0)
+Requirement already satisfied: jinja2<4,>=3 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from liquidpy<1,>=0.8->pipen>=1.2->demo-ns==0.1.0) (3.1.6)
+Requirement already satisfied: MarkupSafe>=2.0 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from jinja2<4,>=3->liquidpy<1,>=0.8->pipen>=1.2->demo-ns==0.1.0) (3.0.3)
+Requirement already satisfied: numpy>=1.26.0 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from pandas<4,>=2.0->pipen>=1.2->demo-ns==0.1.0) (2.5.3)
+Requirement already satisfied: python-dateutil>=2.8.2 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from pandas<4,>=2.0->pipen>=1.2->demo-ns==0.1.0) (2.9.0.post0)
+Requirement already satisfied: executing>=2.0 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from pipda<1,>=0.13->pipen>=1.2->demo-ns==0.1.0) (2.2.1)
+Requirement already satisfied: diot<0.4,>=0.3.3 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from python-simpleconf<1,>=0.9->python-simpleconf[toml]<1,>=0.9->pipen>=1.2->demo-ns==0.1.0) (0.3.4)
+Requirement already satisfied: panpath<0.5,>=0.4.8 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from python-simpleconf<1,>=0.9->python-simpleconf[toml]<1,>=0.9->pipen>=1.2->demo-ns==0.1.0) (0.4.12)
+Requirement already satisfied: inflection>=0.5 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from diot<0.4,>=0.3.3->python-simpleconf<1,>=0.9->python-simpleconf[toml]<1,>=0.9->pipen>=1.2->demo-ns==0.1.0) (0.5.1)
+Requirement already satisfied: typing-extensions>=4.0.0 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from panpath<0.5,>=0.4.8->python-simpleconf<1,>=0.9->python-simpleconf[toml]<1,>=0.9->pipen>=1.2->demo-ns==0.1.0) (4.16.0)
+Requirement already satisfied: rtoml<1,>=0.12 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from python-simpleconf[toml]<1,>=0.9->pipen>=1.2->demo-ns==0.1.0) (0.13.0)
+Requirement already satisfied: aiofiles>=23.0.0 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from xqute<3,>=2.0->pipen>=1.2->demo-ns==0.1.0) (25.1.0)
+Requirement already satisfied: rich>=14 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from xqute<3,>=2.0->pipen>=1.2->demo-ns==0.1.0) (15.0.0)
+Requirement already satisfied: simplug>=0.5 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from xqute<3,>=2.0->pipen>=1.2->demo-ns==0.1.0) (0.5.7)
+Requirement already satisfied: uvloop>=0 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from xqute<3,>=2.0->pipen>=1.2->demo-ns==0.1.0) (0.23.0)
+Requirement already satisfied: wcwidth>=0.8.3 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from blessed>=1.17.7->enlighten<2,>=1->pipen>=1.2->demo-ns==0.1.0) (0.9.1)
+Requirement already satisfied: jinxed<3,>=2.1 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from blessed>=1.17.7->enlighten<2,>=1->pipen>=1.2->demo-ns==0.1.0) (2.1.0)
+Requirement already satisfied: six>=1.5 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from python-dateutil>=2.8.2->pandas<4,>=2.0->pipen>=1.2->demo-ns==0.1.0) (1.17.0)
+Requirement already satisfied: markdown-it-py>=2.2.0 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from rich>=14->xqute<3,>=2.0->pipen>=1.2->demo-ns==0.1.0) (4.2.0)
+Requirement already satisfied: pygments<3.0.0,>=2.13.0 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from rich>=14->xqute<3,>=2.0->pipen>=1.2->demo-ns==0.1.0) (2.21.0)
+Requirement already satisfied: mdurl~=0.1 in /home/pwwang/aidemo/.venv/lib/python3.12/site-packages (from markdown-it-py>=2.2.0->rich>=14->xqute<3,>=2.0->pipen>=1.2->demo-ns==0.1.0) (0.1.2)
+Building wheels for collected packages: demo-ns, demo-extra-ns
+  Building editable for demo-ns (pyproject.toml): started
+  Building editable for demo-ns (pyproject.toml): finished with status 'done'
+  Created wheel for demo-ns: filename=demo_ns-0.1.0-py3-none-any.whl size=1573 sha256=2716a7bd719079c8e3d53fc5722963575464d8eb9405b53ae1e0549fd335196f
+  Stored in directory: /tmp/pip-ephem-wheel-cache-d8cwpzn8/wheels/5d/73/c2/e971fcb5652e1d8ca3684190dec685a89e6b7f643cabaa0bc3
+  Building editable for demo-extra-ns (pyproject.toml): started
+  Building editable for demo-extra-ns (pyproject.toml): finished with status 'done'
+  Created wheel for demo-extra-ns: filename=demo_extra_ns-0.1.0-py3-none-any.whl size=1337 sha256=302923e89316458e6b0087e71b26d8506db4bfbf3c1a6de4f2b8723df573980e
+  Stored in directory: /tmp/pip-ephem-wheel-cache-d8cwpzn8/wheels/44/1a/8d/db9e547f24f7cd29831262d9477714091bbf9b59763c687048
+Successfully built demo-ns demo-extra-ns
+Installing collected packages: demo-ns, demo-extra-ns
+
+Successfully installed demo-extra-ns-0.1.0 demo-ns-0.1.0
+PIP_INSTALL_RC=0
+
+############ registered entry points in group 'pipen_cli_run'
+demo-extra-ns__demo_extra_ns -> demo_extra_ns
+demo-ns__demo_ns -> demo_ns
+wrote test FASTQ files to /home/pwwang/aidemo/testdata
+total 8
+-rw-r--r-- 1 pwwang pwwang 1167 Sep 30 21:34 s1_R1.fastq.gz
+-rw-r--r-- 1 pwwang pwwang 1171 Sep 30 21:34 s1_R2.fastq.gz
+
+############ STEP 3a: pipen --help
+[1m[4mUsage[0m[0m: pipen [-h] {mcp,run,profile,plugins,version,help} ...
+
+CLI Tool for pipen v1.2.3
+
+[1m[4mOptions[0m[0m:
+  -h, --help            show this help message and exit
+
+[1m[4mSubcommands[0m[0m:
+    mcp                 Expose pipen processes/pipelines as MCP tools
+    run                 Run a process or a pipeline
+    profile             List available profiles.
+    plugins             List installed plugins
+    version             Print versions of pipen and its dependencies
+    help                Print help for commands
+RC=0
+
+############ STEP 3b: pipen run --help
+[1m[4mUsage[0m[0m: pipen run [-h] {demo_extra_ns,demo_ns} ...
+
+Run a process or a pipeline
+
+[1m[4mOptions[0m[0m:
+  -h, --help            show this help message and exit
+
+[1m[4mProcess Namespaces[0m[0m:
+    demo_extra_ns       A second, independent pipen namespace package
+                        (generalisation check).
+    demo_ns             Toy scientific namespace used to demonstrate pipen's
+                        agent-facing surface.
+RC=0
+
+############ STEP 3c: pipen run demo_ns --help
+[1m[4mUsage[0m[0m: pipen run demo_ns [-h] {CountReads,FastqStats} ...
+
+[1m[4mOptions[0m[0m:
+  -h, --help            show this help message and exit
+
+[1m[4mProcesses / Pipelines[0m[0m:
+    CountReads          Count the reads in a single FASTQ file
+    FastqStats          Read-length statistics of a paired-end FASTQ sample
+RC=0
+
+############ STEP 3d: pipen run demo_ns FastqStats --help
+[1m[4mUsage[0m[0m: pipen [-h | -h+] [options]
+
+Read-length statistics of a paired-end FASTQ sample
+Use `@configfile` to load default values for the options.
+
+[1m[4mPipeline Options[0m[0m:
+  --name NAME           The name for the pipeline, will affect the default
+                        workdir and outdir. [default: FastqStats]
+  --profile PROFILE     The default profile from the configuration to run the
+                        pipeline. This profile will be used unless a profile
+                        is specified in the process or in the .run method of
+                        pipen. You can check the available profiles by running
+                        `pipen profile`
+  --outdir OUTDIR       The output directory of the pipeline [default:
+                        ./<name>-output]
+  --forks FORKS         How many jobs to run simultaneously by the scheduler
+  --scheduler SCHEDULER
+                        The scheduler to run the jobs
+  --output_flatten, --output-flatten
+                        Whether to flatten the output from jobs of the process
+                        (without creating subdirectories with job indexes).
+
+[1m[4mNamespace <envs>[0m[0m:
+  --envs ENVS           Environment variables for the process [default:
+                        {'min_length': 0, 'sample_id': 'sample'}]
+  --envs.min_length MIN_LENGTH, --envs.min-length MIN_LENGTH
+                        Reads shorter than this many bases are not counted
+                        [default: 0]
+  --envs.sample_id SAMPLE_ID, --envs.sample-id SAMPLE_ID
+                        Label written into the first column of the output
+                        table [default: sample]
+
+[1m[4mNamespace <in>[0m[0m:
+  --in.r1 R1 [R1 ...]   gzipped R1 FASTQ file of the sample
+  --in.r2 R2 [R2 ...]   gzipped R2 FASTQ file of the sample
+
+[1m[4mNamespace <out>[0m[0m:
+  --out.stats STATS     TSV table of per-sample read-length statistics
+                        [default: read_stats.tsv]
+
+[1m[4mOptions[0m[0m:
+  -h, --help, -h+, --help+
+                        show this help message and exit (with + for more
+                        options)
+RC=0
+
+############ STEP 3e: pipen run demo_ns CountReads --help
+[1m[4mUsage[0m[0m: pipen [-h | -h+] [options]
+
+Count the reads in a single FASTQ file
+Use `@configfile` to load default values for the options.
+
+[1m[4mPipeline Options[0m[0m:
+  --name NAME           The name for the pipeline, will affect the default
+                        workdir and outdir. [default: CountReads]
+  --profile PROFILE     The default profile from the configuration to run the
+                        pipeline. This profile will be used unless a profile
+                        is specified in the process or in the .run method of
+                        pipen. You can check the available profiles by running
+                        `pipen profile`
+  --outdir OUTDIR       The output directory of the pipeline [default:
+                        ./<name>-output]
+  --forks FORKS         How many jobs to run simultaneously by the scheduler
+  --scheduler SCHEDULER
+                        The scheduler to run the jobs
+  --output_flatten, --output-flatten
+                        Whether to flatten the output from jobs of the process
+                        (without creating subdirectories with job indexes).
+
+[1m[4mNamespace <envs>[0m[0m:
+  --envs ENVS           Environment variables for the process [default:
+                        {'sample_id': 'sample'}]
+  --envs.sample_id SAMPLE_ID, --envs.sample-id SAMPLE_ID
+                        Label written into the output table [default: sample]
+
+[1m[4mNamespace <in>[0m[0m:
+  --in.fastq FASTQ [FASTQ ...]
+                        gzipped FASTQ file to count
+
+[1m[4mNamespace <out>[0m[0m:
+  --out.counts COUNTS   TSV table holding the read count [default:
+                        read_counts.tsv]
+
+[1m[4mOptions[0m[0m:
+  -h, --help, -h+, --help+
+                        show this help message and exit (with + for more
+                        options)
+RC=0
+
+############ STEP 4a: pipen run demo_ns FastqStats ...
+09-30 21:35:03 I core                      _____________________________________   __
+09-30 21:35:03 I core                      ___  __ \___  _/__  __ \__  ____/__  | / /
+09-30 21:35:03 I core                      __  /_/ /__  / __  /_/ /_  __/  __   |/ /
+09-30 21:35:03 I core                      _  ____/__/ /  _  ____/_  /___  _  /|  /
+09-30 21:35:03 I core                      /_/     /___/  /_/     /_____/  /_/ |_/
+09-30 21:35:03 I core
+09-30 21:35:03 I core                                  version: 1.2.3
+09-30 21:35:03 I core
+09-30 21:35:03 I core    ╔══════════════════════════════ FASTQSTATS ═══════════════════════════════╗
+09-30 21:35:03 I core    ║ The Pipen class provides interface to assemble and run the pipeline     ║
+09-30 21:35:03 I core    ╚═════════════════════════════════════════════════════════════════════════╝
+09-30 21:35:03 I core    plugins         : args v1.3.0
+09-30 21:35:03 I core    # procs         : 1
+09-30 21:35:03 I core    profile         : default
+09-30 21:35:03 I core    outdir          : /home/pwwang/aidemo/out_fastqstats
+09-30 21:35:03 I core    cache           : True
+09-30 21:35:03 I core    dirsig          : 1
+09-30 21:35:03 I core    error_strategy  : ignore
+09-30 21:35:03 I core    forks           : 1
+09-30 21:35:03 I core    lang            : bash
+09-30 21:35:03 I core    loglevel        : info
+09-30 21:35:03 I core    num_retries     : 3
+09-30 21:35:03 I core    scheduler       : local
+09-30 21:35:03 I core    submission_batch: None
+09-30 21:35:03 I core    template        : liquid
+09-30 21:35:03 I core    workdir         : .pipen/FastqStats
+09-30 21:35:03 I core    plugin_opts     : args_hide=False
+09-30 21:35:03 I core    Initializing plugins ...
+09-30 21:35:03 I core
+09-30 21:35:03 I core    ╭══════════════════════════════ FastqStats ═══════════════════════════════╮
+09-30 21:35:03 I core    ║ Read-length statistics of a paired-end FASTQ sample                     ║
+09-30 21:35:03 I core    ╰═════════════════════════════════════════════════════════════════════════╯
+09-30 21:35:03 I core    FastqStats: workdir: '.pipen/FastqStats/FastqStats'
+09-30 21:35:03 I core    FastqStats: <<< [START]
+09-30 21:35:03 I core    FastqStats: >>> [END]
+09-30 21:35:06 I core
+RC=0
+
+############ STEP 4b: tree of the produced outdir
+/home/pwwang/aidemo/out_fastqstats/FastqStats/read_stats.tsv
+
+############ STEP 4c: ls -l of the process output directory
+total 4
+-rw-r--r-- 1 pwwang pwwang 17 Sep 30 21:35 read_stats.tsv
+
+############ STEP 4d: cat of the produced output file
+s1	80	57	80	59.9
+--- end of produced file ---
+
+############ STEP 4e: the auto-generated job script (proof of the class->shell path)
+cat: /home/pwwang/aidemo/out_fastqstats/FastqStats/0/job.script: No such file or directory
+
+############ STEP 4f: second namespace, run through the same CLI path
+09-30 21:35:07 I core                      _____________________________________   __
+09-30 21:35:07 I core                      ___  __ \___  _/__  __ \__  ____/__  | / /
+09-30 21:35:07 I core                      __  /_/ /__  / __  /_/ /_  __/  __   |/ /
+09-30 21:35:07 I core                      _  ____/__/ /  _  ____/_  /___  _  /|  /
+09-30 21:35:07 I core                      /_/     /___/  /_/     /_____/  /_/ |_/
+09-30 21:35:07 I core
+09-30 21:35:07 I core                                  version: 1.2.3
+09-30 21:35:07 I core
+09-30 21:35:07 I core    ╔════════════════════════════════ FASTAGC ════════════════════════════════╗
+09-30 21:35:07 I core    ║ The Pipen class provides interface to assemble and run the pipeline     ║
+09-30 21:35:07 I core    ╚═════════════════════════════════════════════════════════════════════════╝
+09-30 21:35:07 I core    plugins         : args v1.3.0
+09-30 21:35:07 I core    # procs         : 1
+09-30 21:35:07 I core    profile         : default
+09-30 21:35:07 I core    outdir          : /home/pwwang/aidemo/out_gc
+09-30 21:35:07 I core    cache           : True
+09-30 21:35:07 I core    dirsig          : 1
+09-30 21:35:07 I core    error_strategy  : ignore
+09-30 21:35:07 I core    forks           : 1
+09-30 21:35:07 I core    lang            : bash
+09-30 21:35:07 I core    loglevel        : info
+09-30 21:35:07 I core    num_retries     : 3
+09-30 21:35:07 I core    scheduler       : local
+09-30 21:35:07 I core    submission_batch: None
+09-30 21:35:07 I core    template        : liquid
+09-30 21:35:07 I core    workdir         : .pipen/FastaGc
+09-30 21:35:07 I core    plugin_opts     : args_hide=False
+09-30 21:35:07 I core    Initializing plugins ...
+09-30 21:35:07 I core
+09-30 21:35:07 I core    ╭════════════════════════════════ FastaGc ════════════════════════════════╮
+09-30 21:35:07 I core    ║ Compute the GC fraction of a FASTA file                                 ║
+09-30 21:35:07 I core    ╰═════════════════════════════════════════════════════════════════════════╯
+09-30 21:35:07 I core    FastaGc: workdir: '.pipen/FastaGc/FastaGc'
+09-30 21:35:07 I core    FastaGc: <<< [START]
+09-30 21:35:07 I core    FastaGc: >>> [END]
+09-30 21:35:10 I core
+RC=0
+34	0.5294

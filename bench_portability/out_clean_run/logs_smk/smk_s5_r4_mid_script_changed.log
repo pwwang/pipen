@@ -1,0 +1,149 @@
+Assuming unrestricted shared filesystem usage.
+
+SNAKEMAKE
+=========
+  Date: 2026-10-01 09:23:24
+  Workflow ID: f3802914-8b0b-44b1-bbdc-d71be6290e86
+  Platform: Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.39
+  Host: R5440549
+  User: pwwang
+  Snakemake version: 9.27.0
+  Python version: 3.12.2 | packaged by conda-forge | (main, Feb 16 2024, 20:50:58) [GCC 12.3.0]
+  Command: /home/pwwang/ws_bench/smk-venv/bin/snakemake --cores 8 -s /mnt/f/E/hermes-workspace/pipen/bench/smk_cache/Snakefile
+  Snakefile: /mnt/f/E/hermes-workspace/pipen/bench/smk_cache/Snakefile
+  Base directory: /mnt/f/E/hermes-workspace/pipen/bench/smk_cache
+  Run directory: /home/pwwang/ws_bench/work/smkw_s5_scope
+  Working directory: /home/pwwang/ws_bench/work/smkw_s5_scope
+  Config file(s): []
+  Config MD5: 99914b932bd37a50b983c5e7c90ae93b
+
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 8
+Rules claiming more threads will be scaled down.
+Job stats:
+job      count
+-----  -------
+mid          8
+agg          1
+all          1
+total       10
+
+Select jobs to execute...
+Execute 8 jobs...
+
+[Thu Oct  1 09:23:24 2026]
+localrule mid:
+    input: work/r-in6.txt
+    output: work/m-r-in6.txt
+    jobid: 14
+    reason: Code has changed since last execution
+    wildcards: i=6
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:24 2026]
+localrule mid:
+    input: work/r-in1.txt
+    output: work/m-r-in1.txt
+    jobid: 4
+    reason: Code has changed since last execution
+    wildcards: i=1
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:24 2026]
+localrule mid:
+    input: work/r-in3.txt
+    output: work/m-r-in3.txt
+    jobid: 8
+    reason: Code has changed since last execution
+    wildcards: i=3
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:24 2026]
+localrule mid:
+    input: work/r-in4.txt
+    output: work/m-r-in4.txt
+    jobid: 10
+    reason: Code has changed since last execution
+    wildcards: i=4
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:24 2026]
+localrule mid:
+    input: work/r-in5.txt
+    output: work/m-r-in5.txt
+    jobid: 12
+    reason: Code has changed since last execution
+    wildcards: i=5
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:24 2026]
+localrule mid:
+    input: work/r-in0.txt
+    output: work/m-r-in0.txt
+    jobid: 2
+    reason: Code has changed since last execution
+    wildcards: i=0
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:24 2026]
+localrule mid:
+    input: work/r-in7.txt
+    output: work/m-r-in7.txt
+    jobid: 16
+    reason: Code has changed since last execution
+    wildcards: i=7
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:24 2026]
+localrule mid:
+    input: work/r-in2.txt
+    output: work/m-r-in2.txt
+    jobid: 6
+    reason: Code has changed since last execution
+    wildcards: i=2
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:24 2026]
+Finished jobid: 14 (Rule: mid)
+1 of 10 steps (10%) done
+[Thu Oct  1 09:23:24 2026]
+Finished jobid: 4 (Rule: mid)
+2 of 10 steps (20%) done
+[Thu Oct  1 09:23:24 2026]
+Finished jobid: 8 (Rule: mid)
+3 of 10 steps (30%) done
+[Thu Oct  1 09:23:24 2026]
+Finished jobid: 10 (Rule: mid)
+4 of 10 steps (40%) done
+[Thu Oct  1 09:23:24 2026]
+Finished jobid: 12 (Rule: mid)
+5 of 10 steps (50%) done
+[Thu Oct  1 09:23:24 2026]
+Finished jobid: 2 (Rule: mid)
+6 of 10 steps (60%) done
+[Thu Oct  1 09:23:24 2026]
+Finished jobid: 6 (Rule: mid)
+7 of 10 steps (70%) done
+[Thu Oct  1 09:23:24 2026]
+Finished jobid: 16 (Rule: mid)
+8 of 10 steps (80%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Oct  1 09:23:24 2026]
+localrule agg:
+    input: work/m-r-in0.txt, work/m-r-in1.txt, work/m-r-in2.txt, work/m-r-in3.txt, work/m-r-in4.txt, work/m-r-in5.txt, work/m-r-in6.txt, work/m-r-in7.txt, work/s-r-in0.txt, work/s-r-in1.txt, work/s-r-in2.txt, work/s-r-in3.txt, work/s-r-in4.txt, work/s-r-in5.txt, work/s-r-in6.txt, work/s-r-in7.txt
+    output: agg.txt
+    jobid: 1
+    reason: Input files updated by another job: work/m-r-in1.txt, work/m-r-in6.txt, work/m-r-in0.txt, work/m-r-in2.txt, work/m-r-in4.txt, work/m-r-in5.txt, work/m-r-in3.txt, work/m-r-in7.txt
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:24 2026]
+Finished jobid: 1 (Rule: agg)
+9 of 10 steps (90%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Thu Oct  1 09:23:24 2026]
+localrule all:
+    input: agg.txt
+    jobid: 0
+    reason: Input files updated by another job: agg.txt
+    resources: tmpdir=/tmp
+[Thu Oct  1 09:23:24 2026]
+Finished jobid: 0 (Rule: all)
+10 of 10 steps (100%) done
+Complete log(s): /home/pwwang/ws_bench/work/smkw_s5_scope/.snakemake/log/2026-10-01T092324.844552.snakemake.log
+Elapsed time: 0:00:00.090555

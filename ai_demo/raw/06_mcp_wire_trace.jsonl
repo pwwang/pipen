@@ -1,0 +1,136 @@
+{"seq": 0, "dir": "->", "payload": "{\"jsonrpc\": \"2.0\", \"id\": 1, \"method\": \"initialize\", \"params\": {\"protocolVersion\": \"2025-06-18\", \"capabilities\": {}, \"clientInfo\": {\"name\": \"raw-jsonrpc-probe\", \"version\": \"0.1.0\"}}}"}
+{"seq": 1, "dir": "<-", "payload": "[OUT] {\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"capabilities\":{\"experimental\":{},\"prompts\":{\"listChanged\":false},\"resources\":{\"listChanged\":false,\"subscribe\":false},\"tools\":{\"listChanged\":false}},\"protocolVersion\":\"2025-06-18\",\"serverInfo\":{\"name\":\"pipen-mcp\",\"version\":\"\"}}}"}
+{"seq": 2, "dir": "->", "payload": "{\"jsonrpc\": \"2.0\", \"method\": \"notifications/initialized\"}"}
+{"seq": 3, "dir": "->", "payload": "{\"jsonrpc\": \"2.0\", \"id\": 2, \"method\": \"tools/list\", \"params\": {}}"}
+{"seq": 4, "dir": "<-", "payload": "[OUT] {\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"description\":\"List all available namespaces registered with pipen. Start here to discover what is available.\",\"inputSchema\":{\"properties\":{},\"type\":\"object\",\"title\":\"get_namespacesArguments\"},\"name\":\"get_namespaces\",\"outputSchema\":{\"properties\":{\"result\":{\"title\":\"Result\",\"type\":\"string\"}},\"required\":[\"result\"],\"type\":\"object\",\"title\":\"get_namespacesOutput\"}},{\"description\":\"List all processes/pipelines available in a namespace.\",\"inputSchema\":{\"properties\":{\"ns\":{\"description\":\"The namespace name\",\"title\":\"Ns\",\"type\":\"string\"}},\"required\":[\"ns\"],\"type\":\"object\",\"title\":\"get_processesArguments\"},\"name\":\"get_processes\",\"outputSchema\":{\"properties\":{\"result\":{\"title\":\"Result\",\"type\":\"string\"}},\"required\":[\"result\"],\"type\":\"object\",\"title\":\"get_processesOutput\"}},{\"description\":\"Get the detailed argument schema for a specific process or pipeline, including required and optional CLI arguments.\",\"inputSchema\":{\"properties\":{\"ns\":{\"description\":\"The namespace name\",\"title\":\"Ns\",\"type\":\"string\"},\"proc\":{\"description\":\"The process or pipeline name\",\"title\":\"Proc\",\"type\":\"string\"}},\"required\":[\"ns\",\"proc\"],\"type\":\"object\",\"title\":\"get_processArguments\"},\"name\":\"get_process\",\"outputSchema\":{\"properties\":{\"result\":{\"title\":\"Result\",\"type\":\"string\"}},\"required\":[\"result\"],\"type\":\"object\",\"title\":\"get_processOutput\"}},{\"description\":\"Run a pipen process or pipeline. Build the arguments list from the schema returned by get_process.\",\"inputSchema\":{\"properties\":{\"ns\":{\"description\":\"The namespace containing the process\",\"title\":\"Ns\",\"type\":\"string\"},\"proc\":{\"description\":\"The process or pipeline name to run\",\"title\":\"Proc\",\"type\":\"string\"},\"arguments\":{\"description\":\"CLI arguments as a flat list, e.g. [\\\"--in.infile\\\", \\\"/path/to/file\\\", \\\"--outdir\\\", \\\"./out\\\"]\",\"items\":{\"type\":\"string\"},\"title\":\"Arguments\",\"type\":\"array\"}},\"required\":[\"ns\",\"proc\",\"arguments\"],\"type\":\"object\",\"title\":\"run_processArguments\"},\"name\":\"run_process\",\"outputSchema\":{\"properties\":{\"result\":{\"title\":\"Result\",\"type\":\"string\"}},\"required\":[\"result\"],\"type\":\"object\",\"title\":\"run_processOutput\"}}]}}"}
+{"seq": 5, "dir": "->", "payload": "{\"jsonrpc\": \"2.0\", \"id\": 3, \"method\": \"tools/call\", \"params\": {\"name\": \"get_namespaces\", \"arguments\": {}}}"}
+{"seq": 6, "dir": "<-", "payload": "[OUT] {\"jsonrpc\":\"2.0\",\"id\":3,\"result\":{\"content\":[{\"text\":\"Available namespaces:\\n\\n  demo_extra_ns: A second, independent pipen namespace package (generalisation check).\\n  demo_ns: Toy scientific namespace used to demonstrate pipen's agent-facing surface.\\n\\nUse get_processes('<namespace>') to see available processes.\",\"type\":\"text\"}],\"isError\":false,\"structuredContent\":{\"result\":\"Available namespaces:\\n\\n  demo_extra_ns: A second, independent pipen namespace package (generalisation check).\\n  demo_ns: Toy scientific namespace used to demonstrate pipen's agent-facing surface.\\n\\nUse get_processes('<namespace>') to see available processes.\"}}}"}
+{"seq": 7, "dir": "->", "payload": "{\"jsonrpc\": \"2.0\", \"id\": 4, \"method\": \"tools/call\", \"params\": {\"name\": \"get_processes\", \"arguments\": {\"ns\": \"demo_ns\"}}}"}
+{"seq": 8, "dir": "<-", "payload": "[OUT] {\"jsonrpc\":\"2.0\",\"id\":4,\"result\":{\"content\":[{\"text\":\"Namespace: demo_ns\\nDescription: Toy scientific namespace used to demonstrate pipen's agent-facing surface.\\n\\nAvailable processes:\\n  CountReads (proc): Count the reads in a single FASTQ file\\n  FastqStats (proc): Read-length statistics of a paired-end FASTQ sample\\n\\nUse get_process('demo_ns', '<process_name>') to see detailed arguments.\",\"type\":\"text\"}],\"isError\":false,\"structuredContent\":{\"result\":\"Namespace: demo_ns\\nDescription: Toy scientific namespace used to demonstrate pipen's agent-facing surface.\\n\\nAvailable processes:\\n  CountReads (proc): Count the reads in a single FASTQ file\\n  FastqStats (proc): Read-length statistics of a paired-end FASTQ sample\\n\\nUse get_process('demo_ns', '<process_name>') to see detailed arguments.\"}}}"}
+{"seq": 9, "dir": "->", "payload": "{\"jsonrpc\": \"2.0\", \"id\": 5, \"method\": \"tools/call\", \"params\": {\"name\": \"get_process\", \"arguments\": {\"ns\": \"demo_ns\", \"proc\": \"FastqStats\"}}}"}
+{"seq": 10, "dir": "<-", "payload": "[OUT] {\"jsonrpc\":\"2.0\",\"id\":5,\"result\":{\"content\":[{\"text\":\"Process: FastqStats  (namespace: demo_ns)\\nDescription: Read-length statistics of a paired-end FASTQ sample\\n\\nArguments:\\n  Required:\\n    --in.r1 <str>  gzipped R1 FASTQ file of the sample\\n    --in.r2 <str>  gzipped R2 FASTQ file of the sample\\n  Optional:\\n    --envs.min_length <int> (default: 0)  Reads shorter than this many bases are not counted\\n    --envs.sample_id <str> (default: 'sample')  Label written into the first column of the output table\\n    --outdir <str>  Output directory of the pipeline\\n    --forks <int>  Number of jobs to run simultaneously\\n    --scheduler <str>  Scheduler to run the jobs\\n    --profile <str>  Configuration profile to use\\n    --cache <str>  Cache strategy: true/false/force\\n\\nExample:\\n  run_process(\\\"demo_ns\\\", \\\"FastqStats\\\", [\\\"--in.r1\\\", \\\"<value>\\\"])\",\"type\":\"text\"}],\"isError\":false,\"structuredContent\":{\"result\":\"Process: FastqStats  (namespace: demo_ns)\\nDescription: Read-length statistics of a paired-end FASTQ sample\\n\\nArguments:\\n  Required:\\n    --in.r1 <str>  gzipped R1 FASTQ file of the sample\\n    --in.r2 <str>  gzipped R2 FASTQ file of the sample\\n  Optional:\\n    --envs.min_length <int> (default: 0)  Reads shorter than this many bases are not counted\\n    --envs.sample_id <str> (default: 'sample')  Label written into the first column of the output table\\n    --outdir <str>  Output directory of the pipeline\\n    --forks <int>  Number of jobs to run simultaneously\\n    --scheduler <str>  Scheduler to run the jobs\\n    --profile <str>  Configuration profile to use\\n    --cache <str>  Cache strategy: true/false/force\\n\\nExample:\\n  run_process(\\\"demo_ns\\\", \\\"FastqStats\\\", [\\\"--in.r1\\\", \\\"<value>\\\"])\"}}}"}
+{"seq": 11, "dir": "->", "payload": "{\"jsonrpc\": \"2.0\", \"id\": 6, \"method\": \"tools/call\", \"params\": {\"name\": \"run_process\", \"arguments\": {\"ns\": \"demo_ns\", \"proc\": \"FastqStats\", \"arguments\": [\"--in.r1\", \"/home/pwwang/aidemo/testdata/s1_R1.fastq.gz\", \"--in.r2\", \"/home/pwwang/aidemo/testdata/s1_R2.fastq.gz\", \"--envs.sample_id\", \"wire_s1\", \"--outdir\", \"/home/pwwang/aidemo/out_mcp_nopath\"]}}}"}
+{"seq": 12, "dir": "<-", "payload": "[SERVER-STDERR] [09/30/26 21:37:53] ERROR    Tool 'run_process' raised an          server.py:446"}
+{"seq": 13, "dir": "<-", "payload": "[SERVER-STDERR]                              unexpected exception                               "}
+{"seq": 14, "dir": "<-", "payload": "[SERVER-STDERR]                              \u256d\u2500 Traceback (most recent call last\u2500\u256e              "}
+{"seq": 15, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 /home/pwwang/aidemo/.venv/lib/pyt \u2502              "}
+{"seq": 16, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 hon3.12/site-packages/mcp/server/ \u2502              "}
+{"seq": 17, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 mcpserver/tools/base.py:176 in    \u2502              "}
+{"seq": 18, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 run                               \u2502              "}
+{"seq": 19, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502                                   \u2502              "}
+{"seq": 20, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502   173 \u2502   \u2502   \u2502   \u2502   \u2502   return  \u2502              "}
+{"seq": 21, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502       else resolved               \u2502              "}
+{"seq": 22, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502   174 \u2502   \u2502   \u2502   \u2502   pass_direct \u2502              "}
+{"seq": 23, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502   175 \u2502   \u2502   \u2502                   \u2502              "}
+{"seq": 24, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 \u2771 176 \u2502   \u2502   \u2502   result = await  \u2502              "}
+{"seq": 25, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502       pass_directly)              \u2502              "}
+{"seq": 26, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502   177 \u2502   \u2502   \u2502                   \u2502              "}
+{"seq": 27, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502   178 \u2502   \u2502   \u2502   # Registration  \u2502              "}
+{"seq": 28, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502   179 \u2502   \u2502   \u2502   # a body that r \u2502              "}
+{"seq": 29, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502                                   \u2502              "}
+{"seq": 30, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 /home/pwwang/aidemo/.venv/lib/pyt \u2502              "}
+{"seq": 31, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 hon3.12/site-packages/mcp/server/ \u2502              "}
+{"seq": 32, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 mcpserver/utilities/func_metadata \u2502              "}
+{"seq": 33, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 .py:163 in call_fn                \u2502              "}
+{"seq": 34, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502                                   \u2502              "}
+{"seq": 35, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502   160 \u2502   \u2502   \"\"\"                 \u2502              "}
+{"seq": 36, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502   161 \u2502   \u2502   kwargs = arguments  \u2502              "}
+{"seq": 37, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502   162 \u2502   \u2502   if fn_is_async:     \u2502              "}
+{"seq": 38, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 \u2771 163 \u2502   \u2502   \u2502   return await fn \u2502              "}
+{"seq": 39, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502   164 \u2502   \u2502   return await anyio. \u2502              "}
+{"seq": 40, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502   165 \u2502                           \u2502              "}
+{"seq": 41, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502   166 \u2502   @deprecated(            \u2502              "}
+{"seq": 42, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502                                   \u2502              "}
+{"seq": 43, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 /home/pwwang/aidemo/.venv/lib/pyt \u2502              "}
+{"seq": 44, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 hon3.12/site-packages/pipen_mcp/s \u2502              "}
+{"seq": 45, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 erver.py:131 in run_process       \u2502              "}
+{"seq": 46, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502                                   \u2502              "}
+{"seq": 47, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502   128 \u2502   \u2502   stdout, stderr = aw \u2502              "}
+{"seq": 48, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502   129 \u2502   \u2502   output = stdout.dec \u2502              "}
+{"seq": 49, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502   130 \u2502   \u2502   if child.returncode \u2502              "}
+{"seq": 50, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 \u2771 131 \u2502   \u2502   \u2502   raise RuntimeEr \u2502              "}
+{"seq": 51, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502   132 \u2502   \u2502   \u2502   \u2502   f\"pipen run \u2502              "}
+{"seq": 52, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502   133 \u2502   \u2502   \u2502   )               \u2502              "}
+{"seq": 53, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502   134 \u2502   \u2502   return output       \u2502              "}
+{"seq": 54, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256f              "}
+{"seq": 55, "dir": "<-", "payload": "[SERVER-STDERR]                              RuntimeError: pipen run demo_ns                    "}
+{"seq": 56, "dir": "<-", "payload": "[SERVER-STDERR]                              FastqStats exited 2:                               "}
+{"seq": 57, "dir": "<-", "payload": "[SERVER-STDERR]                              \u001b[1m\u001b[4mUsage\u001b[0m\u001b[0m: pipen run [-h]                  "}
+{"seq": 58, "dir": "<-", "payload": "[SERVER-STDERR]                                               {bam,bed,cellranger,              "}
+{"seq": 59, "dir": "<-", "payload": "[SERVER-STDERR]                              cellranger_pipeline,cnv,cnvkit,cnvkit              "}
+{"seq": 60, "dir": "<-", "payload": "[SERVER-STDERR]                              _pipeline,delim,gene,gsea,misc,pipsee              "}
+{"seq": 61, "dir": "<-", "payload": "[SERVER-STDERR]                              ker,plot,protein,regulatory,rnaseq,sc              "}
+{"seq": 62, "dir": "<-", "payload": "[SERVER-STDERR]                              rna,scrna_metabolic_landscape,snp,sta              "}
+{"seq": 63, "dir": "<-", "payload": "[SERVER-STDERR]                              ts,tcgamaf,tcr,vcf,web}                            "}
+{"seq": 64, "dir": "<-", "payload": "[SERVER-STDERR]                                               ...                               "}
+{"seq": 65, "dir": "<-", "payload": "[SERVER-STDERR]                              pipen run: error: argument                         "}
+{"seq": 66, "dir": "<-", "payload": "[SERVER-STDERR]                              PROC_NAMESPACE: invalid choice:                    "}
+{"seq": 67, "dir": "<-", "payload": "[SERVER-STDERR]                              'demo_ns' (choose from 'bam', 'bed',               "}
+{"seq": 68, "dir": "<-", "payload": "[SERVER-STDERR]                              'cellranger', 'cellranger_pipeline',               "}
+{"seq": 69, "dir": "<-", "payload": "[SERVER-STDERR]                              'cnv', 'cnvkit', 'cnvkit_pipeline',                "}
+{"seq": 70, "dir": "<-", "payload": "[SERVER-STDERR]                              'delim', 'gene', 'gsea', 'misc',                   "}
+{"seq": 71, "dir": "<-", "payload": "[SERVER-STDERR]                              'pipseeker', 'plot', 'protein',                    "}
+{"seq": 72, "dir": "<-", "payload": "[SERVER-STDERR]                              'regulatory', 'rnaseq', 'scrna',                   "}
+{"seq": 73, "dir": "<-", "payload": "[SERVER-STDERR]                              'scrna_metabolic_landscape', 'snp',                "}
+{"seq": 74, "dir": "<-", "payload": "[SERVER-STDERR]                              'stats', 'tcgamaf', 'tcr', 'vcf',                  "}
+{"seq": 75, "dir": "<-", "payload": "[SERVER-STDERR]                              'web')                                             "}
+{"seq": 76, "dir": "<-", "payload": "[SERVER-STDERR]                                                                                 "}
+{"seq": 77, "dir": "<-", "payload": "[SERVER-STDERR]                                                                                 "}
+{"seq": 78, "dir": "<-", "payload": "[SERVER-STDERR]                              The above exception was the direct                 "}
+{"seq": 79, "dir": "<-", "payload": "[SERVER-STDERR]                              cause of the following exception:                  "}
+{"seq": 80, "dir": "<-", "payload": "[SERVER-STDERR]                                                                                 "}
+{"seq": 81, "dir": "<-", "payload": "[SERVER-STDERR]                              \u256d\u2500 Traceback (most recent call last\u2500\u256e              "}
+{"seq": 82, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 /home/pwwang/aidemo/.venv/lib/pyt \u2502              "}
+{"seq": 83, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 hon3.12/site-packages/mcp/server/ \u2502              "}
+{"seq": 84, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 mcpserver/server.py:433 in        \u2502              "}
+{"seq": 85, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 _handle_call_tool                 \u2502              "}
+{"seq": 86, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502                                   \u2502              "}
+{"seq": 87, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502    430 \u2502   ) -> CallToolResult |  \u2502              "}
+{"seq": 88, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502    431 \u2502   \u2502   context = Context( \u2502              "}
+{"seq": 89, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502        subscriptions=self._subscr \u2502              "}
+{"seq": 90, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502    432 \u2502   \u2502   try:               \u2502              "}
+{"seq": 91, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 \u2771  433 \u2502   \u2502   \u2502   return await s \u2502              "}
+{"seq": 92, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502    434 \u2502   \u2502   except MCPError:   \u2502              "}
+{"seq": 93, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502    435 \u2502   \u2502   \u2502   raise          \u2502              "}
+{"seq": 94, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502    436 \u2502   \u2502   except Exception a \u2502              "}
+{"seq": 95, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502                                   \u2502              "}
+{"seq": 96, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 /home/pwwang/aidemo/.venv/lib/pyt \u2502              "}
+{"seq": 97, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 hon3.12/site-packages/mcp/server/ \u2502              "}
+{"seq": 98, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 mcpserver/server.py:539 in        \u2502              "}
+{"seq": 99, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 call_tool                         \u2502              "}
+{"seq": 100, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502                                   \u2502              "}
+{"seq": 101, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502    536 \u2502   \u2502   \"\"\"                \u2502              "}
+{"seq": 102, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502    537 \u2502   \u2502   if context is None \u2502              "}
+{"seq": 103, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502    538 \u2502   \u2502   \u2502   context = Cont \u2502              "}
+{"seq": 104, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 \u2771  539 \u2502   \u2502   return await self. \u2502              "}
+{"seq": 105, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502        convert_result=True)       \u2502              "}
+{"seq": 106, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502    540 \u2502                          \u2502              "}
+{"seq": 107, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502    541 \u2502   async def list_resourc \u2502              "}
+{"seq": 108, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502    542 \u2502   \u2502   \"\"\"List all availa \u2502              "}
+{"seq": 109, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502                                   \u2502              "}
+{"seq": 110, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 /home/pwwang/aidemo/.venv/lib/pyt \u2502              "}
+{"seq": 111, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 hon3.12/site-packages/mcp/server/ \u2502              "}
+{"seq": 112, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 mcpserver/tools/tool_manager.py:8 \u2502              "}
+{"seq": 113, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 7 in call_tool                    \u2502              "}
+{"seq": 114, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502                                   \u2502              "}
+{"seq": 115, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502   84 \u2502   \u2502   if not tool:         \u2502              "}
+{"seq": 116, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502   85 \u2502   \u2502   \u2502   raise ToolError( \u2502              "}
+{"seq": 117, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502   86 \u2502   \u2502                        \u2502              "}
+{"seq": 118, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 \u2771 87 \u2502   \u2502   return await tool.ru \u2502              "}
+{"seq": 119, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502   88                              \u2502              "}
+{"seq": 120, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502                                   \u2502              "}
+{"seq": 121, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 /home/pwwang/aidemo/.venv/lib/pyt \u2502              "}
+{"seq": 122, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 hon3.12/site-packages/mcp/server/ \u2502              "}
+{"seq": 123, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 mcpserver/tools/base.py:210 in    \u2502              "}
+{"seq": 124, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 run                               \u2502              "}
+{"seq": 125, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502                                   \u2502              "}
+{"seq": 126, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502   207 \u2502   \u2502   \u2502   raise ToolError \u2502              "}
+{"seq": 127, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502   208 \u2502   \u2502   except Exception as \u2502              "}
+{"seq": 128, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502   209 \u2502   \u2502   \u2502   # A crash: the  \u2502              "}
+{"seq": 129, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502 \u2771 210 \u2502   \u2502   \u2502   raise Unexpecte \u2502              "}
+{"seq": 130, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2502   211                             \u2502              "}
+{"seq": 131, "dir": "<-", "payload": "[SERVER-STDERR]                              \u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256f              "}
+{"seq": 132, "dir": "<-", "payload": "[SERVER-STDERR]                              UnexpectedToolError: Error executing               "}
+{"seq": 133, "dir": "<-", "payload": "[SERVER-STDERR]                              tool run_process                                   "}
+{"seq": 134, "dir": "<-", "payload": "[OUT] {\"jsonrpc\":\"2.0\",\"id\":6,\"result\":{\"content\":[{\"text\":\"Error executing tool run_process\",\"type\":\"text\"}],\"isError\":true}}"}
+{"seq": 135, "dir": "--", "payload": "server exit code: 0"}

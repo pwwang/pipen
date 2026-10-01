@@ -1,0 +1,461 @@
+{
+  "config": {
+    "root": "/mnt/f/E/hermes-workspace/pipen/bench",
+    "py": "/home/pwwang/ws_bench/.venv/bin/python",
+    "smk": "/home/pwwang/ws_bench/smk-venv/bin/snakemake",
+    "out_root": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_archive_replay",
+    "work_root": "/home/pwwang/bench",
+    "nproc": "32",
+    "reps": "3",
+    "scaling_ns": "1,10,100,500",
+    "conc_n": "20",
+    "conc_forks": "1,2,4,MAX",
+    "cache_scope_n": "8",
+    "cache_timing_n": "100",
+    "cache_timing_reps": "1",
+    "sleep": "0.05",
+    "runinfo": "1",
+    "runinfo_install": "1",
+    "base_python": "python3",
+    "pipen_install": "pipen==1.2.3",
+    "pipen_runinfo_pkg": "pipen-runinfo",
+    "smk_install": "snakemake==9.27.0",
+    "pipen_repo": "",
+    "archive": "",
+    "loglevel": "info",
+    "source": "/mnt/f/E/hermes-workspace/pipen/bench/bench.local.env"
+  },
+  "pipen_scaling": {
+    "wall_sec_by_n": {
+      "1": {
+        "median": 4.987,
+        "min": 4.938,
+        "max": 4.989,
+        "n_reps": 3,
+        "all": [
+          4.938,
+          4.989,
+          4.987
+        ]
+      },
+      "10": {
+        "median": 6.061,
+        "min": 6.011,
+        "max": 6.061,
+        "n_reps": 3,
+        "all": [
+          6.061,
+          6.061,
+          6.011
+        ]
+      },
+      "100": {
+        "median": 15.081,
+        "min": 15.018,
+        "max": 15.117,
+        "n_reps": 3,
+        "all": [
+          15.018,
+          15.117,
+          15.081
+        ]
+      },
+      "500": {
+        "median": 55.036,
+        "min": 54.666,
+        "max": 55.438,
+        "n_reps": 3,
+        "all": [
+          55.036,
+          55.438,
+          54.666
+        ]
+      }
+    },
+    "pipeline_run_sec_by_n": {
+      "1": {
+        "median": 4.351,
+        "min": 4.346,
+        "max": 4.358,
+        "n_reps": 3,
+        "all": [
+          4.346,
+          4.358,
+          4.351
+        ]
+      },
+      "10": {
+        "median": 5.404,
+        "min": 5.4,
+        "max": 5.415,
+        "n_reps": 3,
+        "all": [
+          5.415,
+          5.4,
+          5.404
+        ]
+      },
+      "100": {
+        "median": 14.429,
+        "min": 14.414,
+        "max": 14.495,
+        "n_reps": 3,
+        "all": [
+          14.414,
+          14.495,
+          14.429
+        ]
+      },
+      "500": {
+        "median": 54.336,
+        "min": 53.995,
+        "max": 54.754,
+        "n_reps": 3,
+        "all": [
+          54.336,
+          54.754,
+          53.995
+        ]
+      }
+    },
+    "sleep_floor_by_n": {
+      "1": 0.05,
+      "10": 0.05,
+      "100": 0.156,
+      "500": 0.781
+    },
+    "overhead_by_n": {
+      "1": {
+        "median": 4.301,
+        "min": 4.296,
+        "max": 4.308,
+        "n_reps": 3,
+        "all": [
+          4.296,
+          4.308,
+          4.301
+        ]
+      },
+      "10": {
+        "median": 5.354,
+        "min": 5.35,
+        "max": 5.365,
+        "n_reps": 3,
+        "all": [
+          5.365,
+          5.35,
+          5.354
+        ]
+      },
+      "100": {
+        "median": 14.273,
+        "min": 14.258,
+        "max": 14.339,
+        "n_reps": 3,
+        "all": [
+          14.258,
+          14.339,
+          14.273
+        ]
+      },
+      "500": {
+        "median": 53.555,
+        "min": 53.214,
+        "max": 53.973,
+        "n_reps": 3,
+        "all": [
+          53.555,
+          53.973,
+          53.214
+        ]
+      }
+    },
+    "overhead_per_job_by_n": {
+      "1": {
+        "median": 4.301,
+        "min": 4.296,
+        "max": 4.308,
+        "n_reps": 3,
+        "all": [
+          4.296,
+          4.308,
+          4.301
+        ]
+      },
+      "10": {
+        "median": 0.535,
+        "min": 0.535,
+        "max": 0.536,
+        "n_reps": 3,
+        "all": [
+          0.536,
+          0.535,
+          0.535
+        ]
+      },
+      "100": {
+        "median": 0.143,
+        "min": 0.143,
+        "max": 0.143,
+        "n_reps": 3,
+        "all": [
+          0.143,
+          0.143,
+          0.143
+        ]
+      },
+      "500": {
+        "median": 0.107,
+        "min": 0.106,
+        "max": 0.108,
+        "n_reps": 3,
+        "all": [
+          0.107,
+          0.108,
+          0.106
+        ]
+      }
+    },
+    "peak_tree_rss_mb_by_n": {
+      "1": {
+        "median": 101.7,
+        "min": 101.4,
+        "max": 155.0,
+        "n_reps": 3,
+        "all": [
+          101.7,
+          155.0,
+          101.4
+        ]
+      },
+      "10": {
+        "median": 152.5,
+        "min": 151.9,
+        "max": 155.3,
+        "n_reps": 3,
+        "all": [
+          151.9,
+          155.3,
+          152.5
+        ]
+      },
+      "100": {
+        "median": 266.5,
+        "min": 265.6,
+        "max": 276.3,
+        "n_reps": 3,
+        "all": [
+          266.5,
+          265.6,
+          276.3
+        ]
+      },
+      "500": {
+        "median": 349.4,
+        "min": 306.8,
+        "max": 352.9,
+        "n_reps": 3,
+        "all": [
+          349.4,
+          306.8,
+          352.9
+        ]
+      }
+    },
+    "records": [
+      {
+        "step": "3_scaling",
+        "tag": "s3_n1_r1",
+        "n": 1,
+        "forks": 32,
+        "sleep_per_job": "0.05",
+        "cache": false,
+        "rep": 1,
+        "_script": "bench_pipen_dag.py",
+        "wall_sec": 4.938,
+        "pipeline_run_sec": 4.346,
+        "rc": 0,
+        "pipeline_ok": true,
+        "cached_jobs_log_lines": [],
+        "jobs_executed": 4,
+        "jobs_by_proc": {
+          "shard_start": 1,
+          "shard_end": 1,
+          "agg_start": 1,
+          "agg_end": 1
+        },
+        "peak_tree_rss_mb": 101.7,
+        "rss_samples": 97,
+        "loadavg_before": [
+          "4.91",
+          "5.05",
+          "4.39"
+        ],
+        "loadavg_after": [
+          "4.83",
+          "5.03",
+          "4.39"
+        ],
+        "marker_log": "/home/pwwang/bench/out/marker_s3_n1_r1.log",
+        "log": "/home/pwwang/bench/out/logs/s3_n1_r1.log",
+        "sleep_floor_sec": 0.05,
+        "overhead_vs_sleep_floor_sec": 4.296,
+
+=== CACHING ===
+{
+  "pipen_scope_phases": [
+    {
+      "step": "5_caching_scope",
+      "tag": "s5_r1_cold",
+      "n": 8,
+      "forks": 32,
+      "cache": true,
+      "rep": 1,
+      "_script": "bench_cache_dag.py",
+      "note": "fresh workdir, cache on: everything must execute",
+      "wall_sec": 9.431,
+      "pipeline_run_sec": null,
+      "rc": 0,
+      "pipeline_ok": false,
+      "cached_jobs_log_lines": [],
+      "jobs_executed": 25,
+      "jobs_by_proc": {
+        "Read": 8,
+        "Mid": 8,
+        "Side": 8,
+        "Agg": 1
+      },
+      "peak_tree_rss_mb": 134.5,
+      "rss_samples": 185,
+      "loadavg_before": [
+        "6.96",
+        "5.27",
+        "4.38"
+      ],
+      "loadavg_after": [
+        "6.72",
+        "5.24",
+        "4.38"
+      ],
+      "marker_log": "/home/pwwang/bench/out/marker_s5_r1_cold.log",
+      "log": "/home/pwwang/bench/out/logs/s5_r1_cold.log",
+      "executed_detail": [
+        "Read in0.txt",
+        "Read in4.txt",
+        "Read in3.txt",
+        "Read in5.txt",
+        "Read in2.txt",
+        "Read in1.txt",
+        "Read in7.txt",
+        "Read in6.txt",
+        "Mid r-in2.txt",
+        "Mid r-in1.txt",
+        "Mid r-in4.txt",
+        "Mid r-in5.txt",
+        "Mid r-in7.txt",
+        "Mid r-in6.txt",
+        "Mid r-in0.txt",
+        "Mid r-in3.txt",
+        "Side r-in7.txt",
+        "Side r-in0.txt",
+        "Side r-in3.txt",
+        "Side r-in6.txt",
+        "Side r-in4.txt",
+        "Side r-in5.txt",
+        "Side r-in2.txt",
+        "Side r-in1.txt",
+        "Agg agg"
+      ]
+    },
+    {
+      "step": "5_caching_scope",
+      "tag": "s5_r2_rerun",
+      "n": 8,
+      "forks": 32,
+      "cache": true,
+      "rep": 2,
+      "_script": "bench_cache_dag.py",
+      "note": "immediate re-run, nothing changed",
+      "wall_sec": 1.172,
+      "pipeline_run_sec": null,
+      "rc": 0,
+      "pipeline_ok": false,
+      "cached_jobs_log_lines": [
+        "09-30 16:30:59 I core    Read: Cached jobs: 0-7",
+        "09-30 16:30:59 I core    Mid: Cached jobs: 0-7",
+        "09-30 16:30:59 I core    Side: Cached jobs: 0-7",
+        "09-30 16:31:00 I core    Agg: Cached jobs: 0"
+      ],
+      "jobs_executed": 0,
+      "jobs_by_proc": {},
+      "peak_tree_rss_mb": 94.3,
+      "rss_samples": 23,
+      "loadavg_before": [
+        "6.72",
+        "5.24",
+        "4.38"
+      ],
+      "loadavg_after": [
+        "6.66",
+        "5.26",
+        "4.39"
+      ],
+      "marker_log": "/home/pwwang/bench/out/marker_s5_r2_rerun.log",
+      "log": "/home/pwwang/bench/out/logs/s5_r2_rerun.log",
+      "executed_detail": []
+    },
+    {
+      "step": "5_caching_scope",
+      "tag": "s5_r3_input3_changed",
+      "n": 8,
+      "forks": 32,
+      "cache": true,
+      "rep": 3,
+      "_script": "bench_cache_dag.py",
+      "note": "content of in4.txt rewritten",
+      "wall_sec": 10.265,
+      "pipeline_run_sec": null,
+      "rc": 0,
+      "pipeline_ok": false,
+      "cached_jobs_log_lines": [
+        "09-30 16:31:00 I core    Read: Cached jobs: 0-3, 5-7",
+        "09-30 16:31:04 I core    Mid: Cached jobs: 0-3, 5-7",
+        "09-30 16:31:06 I core    Side: Cached jobs: 0-3, 5-7"
+      ],
+      "jobs_executed": 4,
+      "jobs_by_proc": {
+        "Read": 1,
+        "Mid": 1,
+        "Side": 1,
+        "Agg": 1
+      },
+      "peak_tree_rss_mb": 99.1,
+      "rss_samples": 202,
+      "loadavg_before": [
+        "6.66",
+        "5.26",
+        "4.39"
+      ],
+      "loadavg_after": [
+        "6.49",
+        "5.27",
+        "4.40"
+      ],
+      "marker_log": "/home/pwwang/bench/out/marker_s5_r3_input3_changed.log",
+      "log": "/home/pwwang/bench/out/logs/s5_r3_input3_changed.log",
+      "executed_detail": [
+        "Read in4.txt",
+        "Mid r-in4.txt",
+        "Side r-in4.txt",
+        "Agg agg"
+      ]
+    },
+    {
+      "step": "5_caching_scope",
+      "tag": "s5_r4_mid_script_changed",
+      "n": 8,
+      "forks": 32,
+      "cache": true,
+      "rep": 4,
+      "_script": "bench_cache_dag.py",
+      "note": "Mid process scr

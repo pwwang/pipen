@@ -1,0 +1,48 @@
+### pipen report update
+
+added 107 packages, and audited 108 packages in 9s
+
+14 packages are looking for funding
+  run `npm fund` for details
+
+4 vulnerabilities (1 low, 2 moderate, 1 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+npm notice
+npm notice New major version of npm available! 10.8.2 -> 12.2.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.0
+npm notice To update run: npm install -g npm@12.2.0
+npm notice
+REPORT_UPDATE_RC=0
+
+### retry: CLI run of the third-party process
+09-30 21:48:13 I core    ║ Run a shell command                                                     ║
+09-30 21:48:13 I core    ╰═════════════════════════════════════════════════════════════════════════╯
+09-30 21:48:13 I core    Shell: workdir: '.pipen/Shell/Shell'
+09-30 21:48:13 I core    Shell: <<< [START]
+09-30 21:48:13 I core    Shell: >>> [END]
+09-30 21:48:13 I verbose Shell: output_flatten: True
+09-30 21:48:13 I verbose Shell: envs.cmd   : cp $infile $outfile
+09-30 21:48:13 I verbose Shell: envs.outdir: False
+09-30 21:48:13 I verbose Shell: in.infile: /home/pwwang/aidemo_bio/work/input.txt
+09-30 21:48:13 I verbose Shell: out.outfile: /home/pwwang/aidemo_bio/work/out_cli/Shell/input.txt
+09-30 21:48:16 I verbose Shell: Time elapsed: 00:00:03.128s
+09-30 21:48:16 I core
+CLI_RC=0
+/home/pwwang/aidemo_bio/work/out_cli/REPORTS/assets/favicon.png
+/home/pwwang/aidemo_bio/work/out_cli/REPORTS/assets/global.css
+/home/pwwang/aidemo_bio/work/out_cli/REPORTS/assets/system.min.js
+/home/pwwang/aidemo_bio/work/out_cli/REPORTS/data/.keep
+/home/pwwang/aidemo_bio/work/out_cli/REPORTS/index.html
+/home/pwwang/aidemo_bio/work/out_cli/Shell/cmd.sh
+/home/pwwang/aidemo_bio/work/out_cli/Shell/input.txt
+--- produced file ---
+cat: /home/pwwang/aidemo_bio/work/out_cli/Shell/shell_out_cli.txt: No such file or directory
+
+### job script of the third-party run

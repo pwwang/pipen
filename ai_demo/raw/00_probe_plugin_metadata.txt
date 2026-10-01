@@ -1,0 +1,309 @@
+########## pipen-cli-run ##########
+--- pyproject.toml ---
+[project]
+name = "pipen-cli-run"
+dynamic = ["version"]
+description = "A pipen cli plugin to run a process or a pipeline"
+authors = [{name = "pwwang", email = "pwwang@pwwang.com"}]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "pipen-args>=1.2",
+]
+
+[tool.hatch.version]
+path = "pipen_cli_run/version.py"
+
+[project.urls]
+Homepage = "https://github.com/pwwang/pipen-cli-run"
+Repository = "https://github.com/pwwang/pipen-cli-run"
+
+[project.entry-points."pipen_cli"]
+cli-run = "pipen_cli_run:PipenCliRunPlugin"
+
+[dependency-groups]
+dev = [
+    "flake8>=7",
+    "pytest>=8",
+    "pytest-cov>=6",
+    "pytest-xdist>=3",
+    "pytest-forked>=1",
+]
+
+[tool.uv]
+prerelease = "allow"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.black]
+line-length = 88
+target-version = ['py39', 'py310', 'py311', 'py312']
+include = '\.pyi?$'
+
+[tool.mypy]
+ignore_missing_imports = true
+allow_redefinition = true
+disable_error_code = ["attr-defined", "no-redef"]
+show_error_codes = true
+strict_optional = false
+
+[tool.pytest.ini_options]
+# addopts = "-vv --cov-config=.coveragerc --cov=pipen_cli_run --cov-report xml:.coverage.xml --cov-report term-missing"
+addopts = "-vv -n auto -p no:asyncio --cov-config=.coveragerc --cov=pipen_cli_run --cov-report xml:.coverage.xml --cov-report term-missing"
+filterwarnings = [
+    #"error"
+    "ignore:.*use of fork\\(\\) may lead to deadlocks in the child.*"
+]
+console_output_style = "progress"
+junit_family = "xunit1"
+--- version.py ---
+"""Provides version"""
+
+__version__ = "1.0.6"
+--- module files ---
+/home/pwwang/github/pipen-cli-run/pipen_cli_run/entry.py
+/home/pwwang/github/pipen-cli-run/pipen_cli_run/version.py
+/home/pwwang/github/pipen-cli-run/pipen_cli_run/__init__.py
+/home/pwwang/github/pipen-cli-run/tests/test_cli_run.py
+/home/pwwang/github/pipen-cli-run/tests/utils.py
+/home/pwwang/github/pipen-cli-run/tests/example_pipeline_process.py
+/home/pwwang/github/pipen-cli-run/tests/example_pipeline.py
+/home/pwwang/github/pipen-cli-run/tests/example_extra_args.py
+/home/pwwang/github/pipen-cli-run/tests/__init__.py
+/home/pwwang/github/pipen-cli-run/tests/example_procs.py
+
+########## pipen-mcp ##########
+--- pyproject.toml ---
+[project]
+name = "pipen-mcp"
+dynamic = ["version"]
+description = "A pipen CLI plugin to expose processes/pipelines as MCP tools"
+authors = [{name = "pwwang", email = "pwwang@pwwang.com"}]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pipen-cli-run>=1.0.1",
+    "pipen-annotate>=1.0",
+    "mcp[cli]>=2.0",
+]
+
+[tool.hatch.version]
+path = "pipen_mcp/version.py"
+
+[project.urls]
+Homepage = "https://github.com/pwwang/pipen-mcp"
+Repository = "https://github.com/pwwang/pipen-mcp"
+
+[project.entry-points."pipen_cli"]
+mcp = "pipen_mcp:PipenMcpPlugin"
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "pytest-cov>=6",
+    "pytest-xdist>=3",
+    "pytest-forked>=1",
+]
+
+[tool.uv]
+prerelease = "allow"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.black]
+line-length = 88
+target-version = ['py310', 'py311', 'py312']
+
+[tool.pytest.ini_options]
+addopts = "-vv -n auto -p no:asyncio --cov=pipen_mcp --cov-report xml:.coverage.xml --cov-report term-missing"
+filterwarnings = ["ignore:.*use of fork\\(\\) may lead to deadlocks in the child.*"]
+console_output_style = "progress"
+
+[tool.coverage.run]
+branch = true
+parallel = true
+concurrency = ["multiprocessing", "thread"]
+source = ["pipen_mcp"]
+
+[tool.coverage.report]
+exclude_lines = ["pragma: no cover"]
+
+[tool.pyright]
+ignore = [ "tests/**" ]
+--- version.py ---
+"""Provides version"""
+__version__ = "0.1.0"
+--- module files ---
+/home/pwwang/github/pipen-mcp/conftest.py
+/home/pwwang/github/pipen-mcp/tests/test_mcp.py
+/home/pwwang/github/pipen-mcp/tests/utils.py
+/home/pwwang/github/pipen-mcp/tests/example_pipeline.py
+/home/pwwang/github/pipen-mcp/tests/__init__.py
+/home/pwwang/github/pipen-mcp/tests/example_procs.py
+/home/pwwang/github/pipen-mcp/pipen_mcp/entry.py
+/home/pwwang/github/pipen-mcp/pipen_mcp/version.py
+/home/pwwang/github/pipen-mcp/pipen_mcp/__init__.py
+/home/pwwang/github/pipen-mcp/pipen_mcp/server.py
+/home/pwwang/github/pipen-mcp/pipen_mcp/introspect.py
+
+########## pipen-annotate ##########
+--- pyproject.toml ---
+[project]
+name = "pipen-annotate"
+dynamic = ["version"]
+description = "Use docstring to annotate pipen processes"
+authors = [{name = "pwwang", email = "pwwang@pwwang.com"}]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "pipen>=1.0",
+]
+
+[tool.hatch.version]
+path = "pipen_annotate/__init__.py"
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "pytest-cov>=6",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+prerelease = "allow"
+
+[tool.pytest.ini_options]
+addopts = "-vv -p no:asyncio --cov-config=.coveragerc --cov=pipen_annotate --cov-report xml:.coverage.xml --cov-report term-missing"
+# addopts = "-vv -p no:asyncio"
+console_output_style = "progress"
+junit_family = "xunit1"
+filterwarnings = [
+    "error"
+]
+
+[tool.mypy]
+ignore_missing_imports = true
+allow_redefinition = true
+disable_error_code = ["attr-defined", "no-redef", "union-attr"]
+show_error_codes = true
+strict_optional = false
+
+[tool.pyright]
+ignore = ["tests/**"]
+--- version.py ---
+(no version.py)
+--- module files ---
+/home/pwwang/github/pipen-annotate/pipen_annotate/annotate.py
+/home/pwwang/github/pipen-annotate/pipen_annotate/utils.py
+/home/pwwang/github/pipen-annotate/pipen_annotate/__init__.py
+/home/pwwang/github/pipen-annotate/pipen_annotate/sections.py
+/home/pwwang/github/pipen-annotate/setup.py
+/home/pwwang/github/pipen-annotate/tests/test_format_doc.py
+/home/pwwang/github/pipen-annotate/tests/__init__.py
+/home/pwwang/github/pipen-annotate/tests/test_sections.py
+/home/pwwang/github/pipen-annotate/tests/test_annotate.py
+/home/pwwang/github/pipen-annotate/tests/test_utils.py
+
+########## pipen-args ##########
+--- pyproject.toml ---
+[project]
+name = "pipen-args"
+dynamic = ["version"]
+description = "Command-line argument parser for pipen."
+authors = [{ name = "pwwang", email = "pwwang@pwwang.com" }]
+license = "MIT"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "pipen-annotate>=1.0",
+]
+
+[tool.hatch.version]
+path = "pipen_args/version.py"
+
+[project.urls]
+Homepage = "https://github.com/pwwang/pipen-args"
+Repository = "https://github.com/pwwang/pipen-args"
+
+[project.entry-points.pipen]
+args = "pipen_args.plugin:ArgsPlugin"
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "pytest-cov>=6",
+    "pytest-asyncio>=1",
+    "pytest-xdist>=3",
+    "pytest-forked>=1",
+    "pipen-verbose>=1.1",
+    "backports-asyncio-runner>=1.1.0; python_version < '3.11'",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+addopts = "-v -n auto --cov pipen_args --cov-report xml:.coverage.xml --cov-report term-missing"
+filterwarnings = [
+    "error"
+]
+# console_output_style = "progress"
+# junit_family = "xunit1"
+asyncio_mode = "auto"
+
+[tool.black]
+line-length = 88
+target-version = ['py39', 'py310', 'py311', 'py312']
+include = '\.pyi?$'
+
+[tool.mypy]
+ignore_missing_imports = true
+allow_redefinition = true
+disable_error_code = ["attr-defined", "no-redef", "union-attr", "import"]
+show_error_codes = true
+strict_optional = false
+
+[tool.uv]
+prerelease = "allow"
+
+[tool.pyright]
+ignore = ["tests/"]
+reportOptionalSubscript = false
+reportOptionalMemberAccess = false
+reportOptionalIterable = false
+reportOptionalOperand = false
+reportIncompatibleVariableOverride = false
+reportAttributeAccessIssue = false
+--- version.py ---
+__version__ = "1.3.0"
+--- module files ---
+/home/pwwang/github/pipen-args/pipen_args/defaults.py
+/home/pwwang/github/pipen-args/pipen_args/utils.py
+/home/pwwang/github/pipen-args/pipen_args/plugin.py
+/home/pwwang/github/pipen-args/pipen_args/version.py
+/home/pwwang/github/pipen-args/pipen_args/parser_.py
+/home/pwwang/github/pipen-args/pipen_args/__init__.py
+/home/pwwang/github/pipen-args/pipen_args/procgroup.py
+/home/pwwang/github/pipen-args/tests/run_pipeline.py
+/home/pwwang/github/pipen-args/tests/test_multi_proc.py
+/home/pwwang/github/pipen-args/tests/conftest.py
+/home/pwwang/github/pipen-args/tests/test_plugin.py
+/home/pwwang/github/pipen-args/tests/test_parser.py
+/home/pwwang/github/pipen-args/tests/test_single_proc.py
+/home/pwwang/github/pipen-args/tests/__init__.py
+/home/pwwang/github/pipen-args/tests/test_import_config.py
+/home/pwwang/github/pipen-args/tests/test_proc_group.py
+/home/pwwang/github/pipen-args/tests/test_utils.py
+/home/pwwang/github/pipen-args/test.py
+

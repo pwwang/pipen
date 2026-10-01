@@ -1,0 +1,377 @@
+[
+  {
+    "step": "5_caching_scope",
+    "tag": "s5_r1_cold",
+    "n": 8,
+    "forks": 8,
+    "cache": true,
+    "rep": 1,
+    "_script": "bench_cache_dag.py",
+    "note": "fresh workdir, cache on: everything must execute",
+    "wall_sec": 9.066,
+    "pipeline_run_sec": null,
+    "rc": 0,
+    "rc_ok": true,
+    "pipeline_ok": false,
+    "cached_jobs_log_lines": [],
+    "jobs_executed": 25,
+    "jobs_by_proc": {
+      "Read": 8,
+      "Mid": 8,
+      "Side": 8,
+      "Agg": 1
+    },
+    "peak_tree_rss_mb": 329.9,
+    "rss_samples": 178,
+    "loadavg_before": [
+      "0.15",
+      "0.73",
+      "2.03"
+    ],
+    "loadavg_after": [
+      "1.01",
+      "0.90",
+      "2.07"
+    ],
+    "runinfo_version": "1.1.5",
+    "runinfo_enabled": true,
+    "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s5_r1_cold.log",
+    "marker_log_local": "/home/pwwang/ws_bench/work/markers/marker_s5_r1_cold.log",
+    "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs/s5_r1_cold.log",
+    "executed_detail": [
+      "Read in3.txt",
+      "Read in1.txt",
+      "Read in4.txt",
+      "Read in0.txt",
+      "Read in2.txt",
+      "Read in6.txt",
+      "Read in5.txt",
+      "Read in7.txt",
+      "Mid r-in2.txt",
+      "Mid r-in4.txt",
+      "Mid r-in0.txt",
+      "Mid r-in7.txt",
+      "Mid r-in1.txt",
+      "Mid r-in5.txt",
+      "Mid r-in3.txt",
+      "Mid r-in6.txt",
+      "Side r-in5.txt",
+      "Side r-in4.txt",
+      "Side r-in7.txt",
+      "Side r-in6.txt",
+      "Side r-in3.txt",
+      "Side r-in1.txt",
+      "Side r-in0.txt",
+      "Side r-in2.txt",
+      "Agg agg"
+    ]
+  },
+  {
+    "step": "5_caching_scope",
+    "tag": "s5_r2_rerun",
+    "n": 8,
+    "forks": 8,
+    "cache": true,
+    "rep": 2,
+    "_script": "bench_cache_dag.py",
+    "note": "immediate re-run, nothing changed",
+    "wall_sec": 0.963,
+    "pipeline_run_sec": null,
+    "rc": 0,
+    "rc_ok": true,
+    "pipeline_ok": false,
+    "cached_jobs_log_lines": [
+      "10-01 09:20:27 I core    Read: Cached jobs: 0-7",
+      "10-01 09:20:27 I core    Mid: Cached jobs: 0-7",
+      "10-01 09:20:27 I core    Side: Cached jobs: 0-7",
+      "10-01 09:20:27 I core    Agg: Cached jobs: 0"
+    ],
+    "jobs_executed": 0,
+    "jobs_by_proc": {},
+    "peak_tree_rss_mb": 89.6,
+    "rss_samples": 18,
+    "loadavg_before": [
+      "1.01",
+      "0.90",
+      "2.07"
+    ],
+    "loadavg_after": [
+      "1.01",
+      "0.90",
+      "2.07"
+    ],
+    "runinfo_version": "1.1.5",
+    "runinfo_enabled": true,
+    "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s5_r2_rerun.log",
+    "marker_log_local": "/home/pwwang/ws_bench/work/markers/marker_s5_r2_rerun.log",
+    "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs/s5_r2_rerun.log",
+    "executed_detail": []
+  },
+  {
+    "step": "5_caching_scope",
+    "tag": "s5_r3_input3_changed",
+    "n": 8,
+    "forks": 8,
+    "cache": true,
+    "rep": 3,
+    "_script": "bench_cache_dag.py",
+    "note": "content of in4.txt rewritten",
+    "wall_sec": 8.947,
+    "pipeline_run_sec": null,
+    "rc": 0,
+    "rc_ok": true,
+    "pipeline_ok": false,
+    "cached_jobs_log_lines": [
+      "10-01 09:20:28 I core    Read: Cached jobs: 0-3, 5-7",
+      "10-01 09:20:30 I core    Mid: Cached jobs: 0-3, 5-7",
+      "10-01 09:20:32 I core    Side: Cached jobs: 0-3, 5-7"
+    ],
+    "jobs_executed": 4,
+    "jobs_by_proc": {
+      "Read": 1,
+      "Mid": 1,
+      "Side": 1,
+      "Agg": 1
+    },
+    "peak_tree_rss_mb": 120.4,
+    "rss_samples": 176,
+    "loadavg_before": [
+      "1.01",
+      "0.90",
+      "2.07"
+    ],
+    "loadavg_after": [
+      "1.00",
+      "0.90",
+      "2.06"
+    ],
+    "runinfo_version": "1.1.5",
+    "runinfo_enabled": true,
+    "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s5_r3_input3_changed.log",
+    "marker_log_local": "/home/pwwang/ws_bench/work/markers/marker_s5_r3_input3_changed.log",
+    "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs/s5_r3_input3_changed.log",
+    "executed_detail": [
+      "Read in4.txt",
+      "Mid r-in4.txt",
+      "Side r-in4.txt",
+      "Agg agg"
+    ]
+  },
+  {
+    "step": "5_caching_scope",
+    "tag": "s5_r4_mid_script_changed",
+    "n": 8,
+    "forks": 8,
+    "cache": true,
+    "rep": 4,
+    "_script": "bench_cache_dag.py",
+    "note": "Mid process script variant A -> B",
+    "wall_sec": 5.092,
+    "pipeline_run_sec": null,
+    "rc": 0,
+    "rc_ok": true,
+    "pipeline_ok": false,
+    "cached_jobs_log_lines": [
+      "10-01 09:20:37 I core    Read: Cached jobs: 0-7",
+      "10-01 09:20:39 I core    Side: Cached jobs: 0-7"
+    ],
+    "jobs_executed": 9,
+    "jobs_by_proc": {
+      "Mid": 8,
+      "Agg": 1
+    },
+    "peak_tree_rss_mb": 292.6,
+    "rss_samples": 100,
+    "loadavg_before": [
+      "1.00",
+      "0.90",
+      "2.06"
+    ],
+    "loadavg_after": [
+      "0.92",
+      "0.89",
+      "2.05"
+    ],
+    "runinfo_version": "1.1.5",
+    "runinfo_enabled": true,
+    "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s5_r4_mid_script_changed.log",
+    "marker_log_local": "/home/pwwang/ws_bench/work/markers/marker_s5_r4_mid_script_changed.log",
+    "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs/s5_r4_mid_script_changed.log",
+    "executed_detail": [
+      "Mid r-in3.txt",
+      "Mid r-in4.txt",
+      "Mid r-in0.txt",
+      "Mid r-in1.txt",
+      "Mid r-in7.txt",
+      "Mid r-in6.txt",
+      "Mid r-in2.txt",
+      "Mid r-in5.txt",
+      "Agg agg"
+    ]
+  },
+  {
+    "step": "5_caching_scope",
+    "tag": "s5_r5_rerun",
+    "n": 8,
+    "forks": 8,
+    "cache": true,
+    "rep": 5,
+    "_script": "bench_cache_dag.py",
+    "note": "re-run immediately after r4, nothing else changed (variant stays B)",
+    "wall_sec": 1.063,
+    "pipeline_run_sec": null,
+    "rc": 0,
+    "rc_ok": true,
+    "pipeline_ok": false,
+    "cached_jobs_log_lines": [
+      "10-01 09:20:42 I core    Read: Cached jobs: 0-7",
+      "10-01 09:20:42 I core    Mid: Cached jobs: 0-7",
+      "10-01 09:20:42 I core    Side: Cached jobs: 0-7",
+      "10-01 09:20:42 I core    Agg: Cached jobs: 0"
+    ],
+    "jobs_executed": 0,
+    "jobs_by_proc": {},
+    "peak_tree_rss_mb": 89.4,
+    "rss_samples": 20,
+    "loadavg_before": [
+      "0.92",
+      "0.89",
+      "2.05"
+    ],
+    "loadavg_after": [
+      "0.92",
+      "0.89",
+      "2.05"
+    ],
+    "runinfo_version": "1.1.5",
+    "runinfo_enabled": true,
+    "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s5_r5_rerun.log",
+    "marker_log_local": "/home/pwwang/ws_bench/work/markers/marker_s5_r5_rerun.log",
+    "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs/s5_r5_rerun.log",
+    "executed_detail": []
+  },
+  {
+    "step": "5_caching_timing",
+    "tag": "s5_time_n20_cold_r1",
+    "n": 20,
+    "forks": 8,
+    "cache": true,
+    "rep": 1,
+    "_script": "bench_cache_dag.py",
+    "note": "cold",
+    "wall_sec": 27.392,
+    "pipeline_run_sec": null,
+    "rc": 0,
+    "rc_ok": true,
+    "pipeline_ok": false,
+    "cached_jobs_log_lines": [],
+    "jobs_executed": 61,
+    "jobs_by_proc": {
+      "Read": 20,
+      "Mid": 20,
+      "Side": 20,
+      "Agg": 1
+    },
+    "peak_tree_rss_mb": 290.0,
+    "rss_samples": 538,
+    "loadavg_before": [
+      "0.92",
+      "0.89",
+      "2.05"
+    ],
+    "loadavg_after": [
+      "0.61",
+      "0.81",
+      "1.99"
+    ],
+    "runinfo_version": "1.1.5",
+    "runinfo_enabled": true,
+    "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s5_time_n20_cold_r1.log",
+    "marker_log_local": "/home/pwwang/ws_bench/work/markers/marker_s5_time_n20_cold_r1.log",
+    "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs/s5_time_n20_cold_r1.log",
+    "agg_file": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/artefacts/agg_pipen_s5time_cold_n20_r1.txt",
+    "agg_sha256": "098f9c505c95f959d3633a87dec4378046c60f3844eba72f26de88e2cadd6a94",
+    "agg_bytes": 473,
+    "agg_note": null
+  },
+  {
+    "step": "5_caching_timing",
+    "tag": "s5_time_n20_warm1_r1",
+    "n": 20,
+    "forks": 8,
+    "cache": true,
+    "rep": 1,
+    "_script": "bench_cache_dag.py",
+    "note": "warm1",
+    "wall_sec": 0.917,
+    "pipeline_run_sec": null,
+    "rc": 0,
+    "rc_ok": true,
+    "pipeline_ok": false,
+    "cached_jobs_log_lines": [
+      "10-01 09:21:13 I core    Read: Cached jobs: 0-19",
+      "10-01 09:21:13 I core    Mid: Cached jobs: 0-19",
+      "10-01 09:21:14 I core    Side: Cached jobs: 0-19",
+      "10-01 09:21:14 I core    Agg: Cached jobs: 0"
+    ],
+    "jobs_executed": 0,
+    "jobs_by_proc": {},
+    "peak_tree_rss_mb": 89.6,
+    "rss_samples": 18,
+    "loadavg_before": [
+      "0.61",
+      "0.81",
+      "1.99"
+    ],
+    "loadavg_after": [
+      "0.64",
+      "0.82",
+      "1.99"
+    ],
+    "runinfo_version": "1.1.5",
+    "runinfo_enabled": true,
+    "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s5_time_n20_warm1_r1.log",
+    "marker_log_local": "/home/pwwang/ws_bench/work/markers/marker_s5_time_n20_warm1_r1.log",
+    "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs/s5_time_n20_warm1_r1.log"
+  },
+  {
+    "step": "5_caching_timing",
+    "tag": "s5_time_n20_warm2_r1",
+    "n": 20,
+    "forks": 8,
+    "cache": true,
+    "rep": 1,
+    "_script": "bench_cache_dag.py",
+    "note": "warm2",
+    "wall_sec": 0.969,
+    "pipeline_run_sec": null,
+    "rc": 0,
+    "rc_ok": true,
+    "pipeline_ok": false,
+    "cached_jobs_log_lines": [
+      "10-01 09:21:14 I core    Read: Cached jobs: 0-19",
+      "10-01 09:21:14 I core    Mid: Cached jobs: 0-19",
+      "10-01 09:21:15 I core    Side: Cached jobs: 0-19",
+      "10-01 09:21:15 I core    Agg: Cached jobs: 0"
+    ],
+    "jobs_executed": 0,
+    "jobs_by_proc": {},
+    "peak_tree_rss_mb": 89.6,
+    "rss_samples": 19,
+    "loadavg_before": [
+      "0.64",
+      "0.82",
+      "1.99"
+    ],
+    "loadavg_after": [
+      "0.64",
+      "0.82",
+      "1.99"
+    ],
+    "runinfo_version": "1.1.5",
+    "runinfo_enabled": true,
+    "marker_log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/markers/marker_s5_time_n20_warm2_r1.log",
+    "marker_log_local": "/home/pwwang/ws_bench/work/markers/marker_s5_time_n20_warm2_r1.log",
+    "log": "/mnt/f/E/hermes-workspace/pipen/bench_portability/out_clean_run/logs/s5_time_n20_warm2_r1.log"
+  }
+]

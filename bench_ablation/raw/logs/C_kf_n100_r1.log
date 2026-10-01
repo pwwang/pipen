@@ -1,0 +1,46 @@
+ABL_EFFECTIVE={"arm": "C_kf", "requested": {"SLEEP_INTERVAL_KEEP_FEEDING": 0.001}, "effective": {"SLEEP_INTERVAL_KEEP_FEEDING": 0.001, "SLEEP_INTERVAL_KEEP_FEEDING_resolved_from": "xqute.xqute module global"}, "source_files": {"xqute/schedulers/local_scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/schedulers/local_scheduler.py", "xqute/xqute.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/xqute.py", "xqute/scheduler.py": "/home/pwwang/bench/.venv/lib/python3.12/site-packages/xqute/scheduler.py", "pipen/scheduler.py": "/home/pwwang/github/pipen/pipen/scheduler.py"}, "source_sha256": {"xqute/schedulers/local_scheduler.py": "70cff3432b26e92a582a17c2ac20409432a75d49e8ae1776795f8fdd9b095539", "xqute/xqute.py": "126eed84bc42fd385ec61ecd1e3a7c7443adc124e9cebd9fefb1a120f2716e6e", "xqute/scheduler.py": "6b810caae3951b894e3abb1557a97afb9b0e762f384766128eac62ffa2ebebca", "pipen/scheduler.py": "da3a22ed2c13a1031fdf80a43b8321bbff6d83665d82b94d9870dfa188d4a16d"}}
+09-30 17:22:23 I core                      _____________________________________   __
+09-30 17:22:23 I core                      ___  __ \___  _/__  __ \__  ____/__  | / /
+09-30 17:22:23 I core                      __  /_/ /__  / __  /_/ /_  __/  __   |/ /
+09-30 17:22:23 I core                      _  ____/__/ /  _  ____/_  /___  _  /|  /
+09-30 17:22:23 I core                      /_/     /___/  /_/     /_____/  /_/ |_/
+09-30 17:22:23 I core
+09-30 17:22:23 I core                                  version: 1.2.3
+09-30 17:22:23 I core
+09-30 17:22:23 I core    ╔═════════════════════════════════════════════════════════════════════════╗
+09-30 17:22:23 I core    ║                               ABLPIPELINE                               ║
+09-30 17:22:23 I core    ╚═════════════════════════════════════════════════════════════════════════╝
+09-30 17:22:23 I core    # procs         : 2
+09-30 17:22:23 I core    profile         : default
+09-30 17:22:23 I core    outdir          : AblPipeline-output
+09-30 17:22:23 I core    cache           : False
+09-30 17:22:23 I core    dirsig          : 1
+09-30 17:22:23 I core    error_strategy  : ignore
+09-30 17:22:23 I core    forks           : 32
+09-30 17:22:23 I core    lang            : bash
+09-30 17:22:23 I core    loglevel        : info
+09-30 17:22:23 I core    num_retries     : 3
+09-30 17:22:23 I core    scheduler       : local
+09-30 17:22:23 I core    submission_batch: None
+09-30 17:22:23 I core    template        : liquid
+09-30 17:22:23 I core    workdir         : /home/pwwang/bench_abl/wd/C_kf_n100_r1/AblPipeline
+09-30 17:22:23 I core    Initializing plugins ...
+09-30 17:22:23 I core
+09-30 17:22:23 I core    ╭───────────────────────────────── Shard ─────────────────────────────────╮
+09-30 17:22:23 I core    │ fan-out shard                                                           │
+09-30 17:22:23 I core    ╰─────────────────────────────────────────────────────────────────────────╯
+09-30 17:22:23 I core    Shard: workdir: '/home/pwwang/bench_abl/wd/C_kf_n100_r1/AblPipeline/Shard'
+09-30 17:22:23 I core    Shard: <<< [START]
+09-30 17:22:23 I core    Shard: >>> ['Agg']
+09-30 17:22:36 I core
+09-30 17:22:36 I core    ╭══════════════════════════════════ Agg ══════════════════════════════════╮
+09-30 17:22:36 I core    ║ aggregate all shard outputs into one file                               ║
+09-30 17:22:36 I core    ╰═════════════════════════════════════════════════════════════════════════╯
+09-30 17:22:36 I core    Agg: workdir: '/home/pwwang/bench_abl/wd/C_kf_n100_r1/AblPipeline/Agg'
+09-30 17:22:36 I core    Agg: <<< ['Shard']
+09-30 17:22:36 I core    Agg: >>> [END]
+09-30 17:22:42 I core
+PIPELINE_RUN_SEC=15.638495
+ABL_AGG=[{"path": "/home/pwwang/bench_abl/wd/C_kf_n100_r1/AblPipeline-output/Agg/agg.txt", "sha256": "6d506216aa5bad159f167e2535293b4e5ec8e1073b64449d30b66b460ebf6da0", "lines": 100, "bytes": 290}]
+ABL_STATUS={"n_job_dirs": 101, "job_status_histogram": {"6": 101}, "job_rc_histogram": {"0": 101}, "n_jobs_marked_failed_before_running": 0, "jobs_marked_failed_before_running": [], "note": "job.status: 6=FINISHED 3=SUBMITTED 7=FAILED 4=RUNNING; rc=-3 == 'fail before running'"}
+ABL_OCCUPANCY={"sampler_interval_sec": 0.05, "n_samples": 281, "peak_wrapper_processes": 32, "mean_wrapper_processes": 13.167, "peak_descendant_processes_incl_self": 69, "mean_descendant_processes_incl_self": 27.569}

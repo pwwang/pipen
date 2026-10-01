@@ -1,0 +1,18 @@
+# MID
+A:line0-v1
+A:line1-v1
+A:line2-v1
+A:line3-v1
+A:line4-v2
+A:line5-v1
+A:line6-v1
+A:line7-v1
+# SIDE
+A:line0-v1
+A:line1-v1
+A:line2-v1
+A:line3-v1
+A:line4-v2
+A:line5-v1
+A:line6-v1
+A:line7-v1

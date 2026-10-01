@@ -1,0 +1,38 @@
+# replayed 9 archived inputs into /mnt/f/E/hermes-workspace/pipen/bench_portability/out_archive_replay
+# markers: 54 files
+
+=== analyse_all.py (archive replay) ===
+rc=0  (log: /mnt/f/E/hermes-workspace/pipen/bench_portability/out_archive_replay/analysis.log)
+      "rep": 4,
+      "_script": "bench_cache_dag.py",
+      "note": "Mid process scr
+
+=== make_report.py (archive replay) ===
+rc=0  (log: /mnt/f/E/hermes-workspace/pipen/bench_portability/out_archive_replay/derived.log)
+
+=== published vs replayed (key numbers) ===
+  same pipen scaling N=500 wall median    n                          published=         500  replayed=500
+  same pipen scaling N=500 wall median    wall_median                published=      55.036  replayed=55.036
+  same pipen scaling N=500 wall median    overhead_per_job_median    published=      0.1085  replayed=0.1085
+  same pipen scaling N=500 wall median    rss_median_mb              published=       349.4  replayed=349.4
+  same pipen scaling N=500 wall median    jobs                       published=         501  replayed=501
+  same smk   scaling N=500 wall median    n                          published=         500  replayed=500
+  same smk   scaling N=500 wall median    wall_median                published=       7.284  replayed=7.284
+  same smk   scaling N=500 wall median    overhead_per_job_median    published=       0.013  replayed=0.013
+  same smk   scaling N=500 wall median    rss_median_mb              published=       244.1  replayed=244.1
+  same smk   scaling N=500 wall median    jobs                       published=         501  replayed=501
+  same pipen caching                      n                          published=         100  replayed=100
+  same pipen caching                      total_jobs                 published=         301  replayed=301
+  same pipen caching                      cold_run_jobs              published=         301  replayed=301
+  same pipen caching                      cold_wall_sec              published=      40.287  replayed=40.287
+  same pipen caching                      warm1_wall_sec             published=       3.107  replayed=3.107
+  same pipen caching                      speedup_cold_over_warm1    published=       12.97  replayed=12.97
+  same head-to-head N=500                 ratio_pipen_over_smk       published=        7.56  replayed=7.56
+  same head-to-head N=500                 pipen_overhead_per_job     published=      0.1085  replayed=0.1085
+  same head-to-head N=500                 smk_overhead_per_job       published=       0.013  replayed=0.013
+  same pipen_s3_n500_r1                   jobs                       published=         500  replayed=500
+  same pipen_s3_n500_r1                   peak_concurrent_jobs       published=          32  replayed=32
+  same pipen_s3_n500_r1                   job_start_rate_per_sec     published=         9.1  replayed=9.1
+  same smk_s3_n500_r1                     jobs                       published=         500  replayed=500
+  same smk_s3_n500_r1                     peak_concurrent_jobs       published=          32  replayed=32
+  same smk_s3_n500_r1                     job_start_rate_per_sec     published=       108.6  replayed=108.6

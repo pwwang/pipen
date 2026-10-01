@@ -1,0 +1,20 @@
+[project]
+name = "demo-ns"
+version = "0.1.0"
+description = "Toy scientific pipen namespace: processes become CLI + MCP tools"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = ["pipen>=1.2"]
+
+# The whole integration surface: register the module under the group that
+# pipen-cli-run (and pipen-mcp) discover. The entry-point NAME is the
+# namespace used on the command line / in MCP tool calls.
+[project.entry-points.pipen_cli_run]
+demo_ns = "demo_ns"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["demo_ns"]

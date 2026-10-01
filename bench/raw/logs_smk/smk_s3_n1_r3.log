@@ -1,0 +1,71 @@
+Assuming unrestricted shared filesystem usage.
+
+SNAKEMAKE
+=========
+  Date: 2026-09-30 16:42:25
+  Workflow ID: a6f651c7-cabb-4846-a848-0ad4f5ceb4ec
+  Platform: Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.39
+  Host: R5440549
+  User: pwwang
+  Snakemake version: 9.27.0
+  Python version: 3.12.2 | packaged by conda-forge | (main, Feb 16 2024, 20:50:58) [GCC 12.3.0]
+  Command: /home/pwwang/bench/smk/bin/snakemake --cores 32 -s /mnt/f/E/hermes-workspace/pipen/bench/smk_dag/Snakefile
+  Snakefile: /mnt/f/E/hermes-workspace/pipen/bench/smk_dag/Snakefile
+  Base directory: /mnt/f/E/hermes-workspace/pipen/bench/smk_dag
+  Run directory: /home/pwwang/bench/smkw_smk_s3_n1_r3
+  Working directory: /home/pwwang/bench/smkw_smk_s3_n1_r3
+  Config file(s): []
+  Config MD5: 99914b932bd37a50b983c5e7c90ae93b
+
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 32
+Rules claiming more threads will be scaled down.
+Job stats:
+job      count
+-----  -------
+shard        1
+agg          1
+all          1
+total        3
+
+Select jobs to execute...
+Execute 1 jobs...
+
+[Wed Sep 30 16:42:25 2026]
+localrule shard:
+    output: shards/shard-0.txt
+    jobid: 2
+    reason: Missing output files: shards/shard-0.txt
+    wildcards: i=0
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:25 2026]
+Finished jobid: 2 (Rule: shard)
+1 of 3 steps (33%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Wed Sep 30 16:42:25 2026]
+localrule agg:
+    input: shards/shard-0.txt
+    output: agg.txt
+    jobid: 1
+    reason: Missing output files: agg.txt; Input files updated by another job: shards/shard-0.txt
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:25 2026]
+Finished jobid: 1 (Rule: agg)
+2 of 3 steps (67%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Wed Sep 30 16:42:25 2026]
+localrule all:
+    input: agg.txt
+    jobid: 0
+    reason: Input files updated by another job: agg.txt
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:42:25 2026]
+Finished jobid: 0 (Rule: all)
+3 of 3 steps (100%) done
+Complete log(s): /home/pwwang/bench/smkw_smk_s3_n1_r3/.snakemake/log/2026-09-30T164225.493056.snakemake.log
+Elapsed time: 0:00:00.152482

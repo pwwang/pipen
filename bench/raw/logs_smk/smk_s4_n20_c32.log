@@ -1,0 +1,261 @@
+Assuming unrestricted shared filesystem usage.
+
+SNAKEMAKE
+=========
+  Date: 2026-09-30 16:43:16
+  Workflow ID: f5eccde8-1cb9-4952-b5df-f13b2c9f59a8
+  Platform: Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.39
+  Host: R5440549
+  User: pwwang
+  Snakemake version: 9.27.0
+  Python version: 3.12.2 | packaged by conda-forge | (main, Feb 16 2024, 20:50:58) [GCC 12.3.0]
+  Command: /home/pwwang/bench/smk/bin/snakemake --cores 32 -s /mnt/f/E/hermes-workspace/pipen/bench/smk_dag/Snakefile
+  Snakefile: /mnt/f/E/hermes-workspace/pipen/bench/smk_dag/Snakefile
+  Base directory: /mnt/f/E/hermes-workspace/pipen/bench/smk_dag
+  Run directory: /home/pwwang/bench/smkw_smk_s4_n20_c32
+  Working directory: /home/pwwang/bench/smkw_smk_s4_n20_c32
+  Config file(s): []
+  Config MD5: 99914b932bd37a50b983c5e7c90ae93b
+
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cores: 32
+Rules claiming more threads will be scaled down.
+Job stats:
+job      count
+-----  -------
+shard       20
+agg          1
+all          1
+total       22
+
+Select jobs to execute...
+Execute 20 jobs...
+
+[Wed Sep 30 16:43:16 2026]
+localrule shard:
+    output: shards/shard-9.txt
+    jobid: 11
+    reason: Missing output files: shards/shard-9.txt
+    wildcards: i=9
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:43:16 2026]
+localrule shard:
+    output: shards/shard-19.txt
+    jobid: 21
+    reason: Missing output files: shards/shard-19.txt
+    wildcards: i=19
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:43:16 2026]
+localrule shard:
+    output: shards/shard-12.txt
+    jobid: 14
+    reason: Missing output files: shards/shard-12.txt
+    wildcards: i=12
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:43:16 2026]
+localrule shard:
+    output: shards/shard-4.txt
+    jobid: 6
+    reason: Missing output files: shards/shard-4.txt
+    wildcards: i=4
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:43:16 2026]
+localrule shard:
+    output: shards/shard-13.txt
+    jobid: 15
+    reason: Missing output files: shards/shard-13.txt
+    wildcards: i=13
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:43:16 2026]
+localrule shard:
+    output: shards/shard-10.txt
+    jobid: 12
+    reason: Missing output files: shards/shard-10.txt
+    wildcards: i=10
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:43:16 2026]
+localrule shard:
+    output: shards/shard-14.txt
+    jobid: 16
+    reason: Missing output files: shards/shard-14.txt
+    wildcards: i=14
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:43:16 2026]
+localrule shard:
+    output: shards/shard-5.txt
+    jobid: 7
+    reason: Missing output files: shards/shard-5.txt
+    wildcards: i=5
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:43:16 2026]
+localrule shard:
+    output: shards/shard-0.txt
+    jobid: 2
+    reason: Missing output files: shards/shard-0.txt
+    wildcards: i=0
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:43:16 2026]
+localrule shard:
+    output: shards/shard-15.txt
+    jobid: 17
+    reason: Missing output files: shards/shard-15.txt
+    wildcards: i=15
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:43:16 2026]
+localrule shard:
+    output: shards/shard-6.txt
+    jobid: 8
+    reason: Missing output files: shards/shard-6.txt
+    wildcards: i=6
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:43:16 2026]
+localrule shard:
+    output: shards/shard-1.txt
+    jobid: 3
+    reason: Missing output files: shards/shard-1.txt
+    wildcards: i=1
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:43:16 2026]
+localrule shard:
+    output: shards/shard-16.txt
+    jobid: 18
+    reason: Missing output files: shards/shard-16.txt
+    wildcards: i=16
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:43:16 2026]
+localrule shard:
+    output: shards/shard-7.txt
+    jobid: 9
+    reason: Missing output files: shards/shard-7.txt
+    wildcards: i=7
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:43:16 2026]
+localrule shard:
+    output: shards/shard-2.txt
+    jobid: 4
+    reason: Missing output files: shards/shard-2.txt
+    wildcards: i=2
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:43:16 2026]
+localrule shard:
+    output: shards/shard-17.txt
+    jobid: 19
+    reason: Missing output files: shards/shard-17.txt
+    wildcards: i=17
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:43:16 2026]
+localrule shard:
+    output: shards/shard-8.txt
+    jobid: 10
+    reason: Missing output files: shards/shard-8.txt
+    wildcards: i=8
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:43:16 2026]
+localrule shard:
+    output: shards/shard-3.txt
+    jobid: 5
+    reason: Missing output files: shards/shard-3.txt
+    wildcards: i=3
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:43:16 2026]
+localrule shard:
+    output: shards/shard-18.txt
+    jobid: 20
+    reason: Missing output files: shards/shard-18.txt
+    wildcards: i=18
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:43:16 2026]
+localrule shard:
+    output: shards/shard-11.txt
+    jobid: 13
+    reason: Missing output files: shards/shard-11.txt
+    wildcards: i=11
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:43:16 2026]
+Finished jobid: 11 (Rule: shard)
+1 of 22 steps (5%) done
+[Wed Sep 30 16:43:16 2026]
+Finished jobid: 14 (Rule: shard)
+2 of 22 steps (9%) done
+[Wed Sep 30 16:43:16 2026]
+Finished jobid: 21 (Rule: shard)
+3 of 22 steps (14%) done
+[Wed Sep 30 16:43:16 2026]
+Finished jobid: 6 (Rule: shard)
+4 of 22 steps (18%) done
+[Wed Sep 30 16:43:16 2026]
+Finished jobid: 15 (Rule: shard)
+5 of 22 steps (23%) done
+[Wed Sep 30 16:43:16 2026]
+Finished jobid: 12 (Rule: shard)
+6 of 22 steps (27%) done
+[Wed Sep 30 16:43:16 2026]
+Finished jobid: 16 (Rule: shard)
+7 of 22 steps (32%) done
+[Wed Sep 30 16:43:16 2026]
+Finished jobid: 2 (Rule: shard)
+8 of 22 steps (36%) done
+[Wed Sep 30 16:43:16 2026]
+Finished jobid: 7 (Rule: shard)
+9 of 22 steps (41%) done
+[Wed Sep 30 16:43:16 2026]
+Finished jobid: 17 (Rule: shard)
+10 of 22 steps (45%) done
+[Wed Sep 30 16:43:16 2026]
+Finished jobid: 8 (Rule: shard)
+11 of 22 steps (50%) done
+[Wed Sep 30 16:43:16 2026]
+Finished jobid: 3 (Rule: shard)
+12 of 22 steps (55%) done
+[Wed Sep 30 16:43:16 2026]
+Finished jobid: 18 (Rule: shard)
+13 of 22 steps (59%) done
+[Wed Sep 30 16:43:16 2026]
+Finished jobid: 9 (Rule: shard)
+14 of 22 steps (64%) done
+[Wed Sep 30 16:43:16 2026]
+Finished jobid: 4 (Rule: shard)
+15 of 22 steps (68%) done
+[Wed Sep 30 16:43:16 2026]
+Finished jobid: 19 (Rule: shard)
+16 of 22 steps (73%) done
+[Wed Sep 30 16:43:16 2026]
+Finished jobid: 10 (Rule: shard)
+17 of 22 steps (77%) done
+[Wed Sep 30 16:43:16 2026]
+Finished jobid: 5 (Rule: shard)
+18 of 22 steps (82%) done
+[Wed Sep 30 16:43:16 2026]
+Finished jobid: 20 (Rule: shard)
+19 of 22 steps (86%) done
+[Wed Sep 30 16:43:16 2026]
+Finished jobid: 13 (Rule: shard)
+20 of 22 steps (91%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Wed Sep 30 16:43:16 2026]
+localrule agg:
+    input: shards/shard-0.txt, shards/shard-1.txt, shards/shard-2.txt, shards/shard-3.txt, shards/shard-4.txt, shards/shard-5.txt, shards/shard-6.txt, shards/shard-7.txt, shards/shard-8.txt, shards/shard-9.txt, shards/shard-10.txt, shards/shard-11.txt, shards/shard-12.txt, shards/shard-13.txt, shards/shard-14.txt, shards/shard-15.txt, shards/shard-16.txt, shards/shard-17.txt, shards/shard-18.txt, shards/shard-19.txt
+    output: agg.txt
+    jobid: 1
+    reason: Missing output files: agg.txt; Input files updated by another job: shards/shard-2.txt, shards/shard-10.txt, shards/shard-7.txt, shards/shard-4.txt, shards/shard-17.txt, shards/shard-14.txt, shards/shard-12.txt, shards/shard-6.txt, shards/shard-1.txt, shards/shard-13.txt, shards/shard-11.txt, shards/shard-16.txt, shards/shard-8.txt, shards/shard-18.txt, shards/shard-9.txt, shards/shard-19.txt, shards/shard-0.txt, shards/shard-5.txt, shards/shard-3.txt, shards/shard-15.txt
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:43:16 2026]
+Finished jobid: 1 (Rule: agg)
+21 of 22 steps (95%) done
+Select jobs to execute...
+Execute 1 jobs...
+
+[Wed Sep 30 16:43:16 2026]
+localrule all:
+    input: agg.txt
+    jobid: 0
+    reason: Input files updated by another job: agg.txt
+    resources: tmpdir=/tmp
+[Wed Sep 30 16:43:16 2026]
+Finished jobid: 0 (Rule: all)
+22 of 22 steps (100%) done
+Complete log(s): /home/pwwang/bench/smkw_smk_s4_n20_c32/.snakemake/log/2026-09-30T164316.444151.snakemake.log
+Elapsed time: 0:00:00.223240

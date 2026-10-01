@@ -1,0 +1,346 @@
+==================================================================
+ STEP 5a: official mcp SDK client over stdio
+==================================================================
+$ /home/pwwang/aidemo/.venv/bin/pipen mcp            # transport default = stdio
+
+===== 05a_initialize.json =====
+{
+  "protocol_version": "2025-11-25",
+  "capabilities": {
+    "experimental": {},
+    "prompts": {
+      "list_changed": false
+    },
+    "resources": {
+      "subscribe": false,
+      "list_changed": false
+    },
+    "tools": {
+      "list_changed": false
+    }
+  },
+  "server_info": {
+    "name": "pipen-mcp",
+    "version": ""
+  }
+}
+
+===== 05b_list_tools.json =====
+{
+  "ttl_ms": 0,
+  "cache_scope": "private",
+  "tools": [
+    {
+      "name": "get_namespaces",
+      "description": "List all available namespaces registered with pipen. Start here to discover what is available.",
+      "input_schema": {
+        "properties": {},
+        "type": "object",
+        "title": "get_namespacesArguments"
+      },
+      "output_schema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "type": "object",
+        "title": "get_namespacesOutput"
+      }
+    },
+    {
+      "name": "get_processes",
+      "description": "List all processes/pipelines available in a namespace.",
+      "input_schema": {
+        "properties": {
+          "ns": {
+            "description": "The namespace name",
+            "title": "Ns",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ns"
+        ],
+        "type": "object",
+        "title": "get_processesArguments"
+      },
+      "output_schema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "type": "object",
+        "title": "get_processesOutput"
+      }
+    },
+    {
+      "name": "get_process",
+      "description": "Get the detailed argument schema for a specific process or pipeline, including required and optional CLI arguments.",
+      "input_schema": {
+        "properties": {
+          "ns": {
+            "description": "The namespace name",
+            "title": "Ns",
+            "type": "string"
+          },
+          "proc": {
+            "description": "The process or pipeline name",
+            "title": "Proc",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ns",
+          "proc"
+        ],
+        "type": "object",
+        "title": "get_processArguments"
+      },
+      "output_schema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "type": "object",
+        "title": "get_processOutput"
+      }
+    },
+    {
+      "name": "run_process",
+      "description": "Run a pipen process or pipeline. Build the arguments list from the schema returned by get_process.",
+      "input_schema": {
+        "properties": {
+          "ns": {
+            "description": "The namespace containing the process",
+            "title": "Ns",
+            "type": "string"
+          },
+          "proc": {
+            "description": "The process or pipeline name to run",
+            "title": "Proc",
+            "type": "string"
+          },
+          "arguments": {
+            "description": "CLI arguments as a flat list, e.g. [\"--in.infile\", \"/path/to/file\", \"--outdir\", \"./out\"]",
+            "items": {
+              "type": "string"
+            },
+            "title": "Arguments",
+            "type": "array"
+          }
+        },
+        "required": [
+          "ns",
+          "proc",
+          "arguments"
+        ],
+        "type": "object",
+        "title": "run_processArguments"
+      },
+      "output_schema": {
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "type": "object",
+        "title": "run_processOutput"
+      }
+    }
+  ],
+  "result_type": "complete"
+}
+
+===== 05c_call_get_namespaces.json =====
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Available namespaces:\n\n  demo_extra_ns: A second, independent pipen namespace package (generalisation check).\n  demo_ns: Toy scientific namespace used to demonstrate pipen's agent-facing surface.\n\nUse get_processes('<namespace>') to see available processes."
+    }
+  ],
+  "structured_content": {
+    "result": "Available namespaces:\n\n  demo_extra_ns: A second, independent pipen namespace package (generalisation check).\n  demo_ns: Toy scientific namespace used to demonstrate pipen's agent-facing surface.\n\nUse get_processes('<namespace>') to see available processes."
+  },
+  "is_error": false,
+  "result_type": "complete"
+}
+
+===== 05d_call_get_processes.json =====
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Namespace: demo_ns\nDescription: Toy scientific namespace used to demonstrate pipen's agent-facing surface.\n\nAvailable processes:\n  CountReads (proc): Count the reads in a single FASTQ file\n  FastqStats (proc): Read-length statistics of a paired-end FASTQ sample\n\nUse get_process('demo_ns', '<process_name>') to see detailed arguments."
+    }
+  ],
+  "structured_content": {
+    "result": "Namespace: demo_ns\nDescription: Toy scientific namespace used to demonstrate pipen's agent-facing surface.\n\nAvailable processes:\n  CountReads (proc): Count the reads in a single FASTQ file\n  FastqStats (proc): Read-length statistics of a paired-end FASTQ sample\n\nUse get_process('demo_ns', '<process_name>') to see detailed arguments."
+  },
+  "is_error": false,
+  "result_type": "complete"
+}
+
+===== 05e_call_get_process.json =====
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Process: FastqStats  (namespace: demo_ns)\nDescription: Read-length statistics of a paired-end FASTQ sample\n\nArguments:\n  Required:\n    --in.r1 <str>  gzipped R1 FASTQ file of the sample\n    --in.r2 <str>  gzipped R2 FASTQ file of the sample\n  Optional:\n    --envs.min_length <int> (default: 0)  Reads shorter than this many bases are not counted\n    --envs.sample_id <str> (default: 'sample')  Label written into the first column of the output table\n    --outdir <str>  Output directory of the pipeline\n    --forks <int>  Number of jobs to run simultaneously\n    --scheduler <str>  Scheduler to run the jobs\n    --profile <str>  Configuration profile to use\n    --cache <str>  Cache strategy: true/false/force\n\nExample:\n  run_process(\"demo_ns\", \"FastqStats\", [\"--in.r1\", \"<value>\"])"
+    }
+  ],
+  "structured_content": {
+    "result": "Process: FastqStats  (namespace: demo_ns)\nDescription: Read-length statistics of a paired-end FASTQ sample\n\nArguments:\n  Required:\n    --in.r1 <str>  gzipped R1 FASTQ file of the sample\n    --in.r2 <str>  gzipped R2 FASTQ file of the sample\n  Optional:\n    --envs.min_length <int> (default: 0)  Reads shorter than this many bases are not counted\n    --envs.sample_id <str> (default: 'sample')  Label written into the first column of the output table\n    --outdir <str>  Output directory of the pipeline\n    --forks <int>  Number of jobs to run simultaneously\n    --scheduler <str>  Scheduler to run the jobs\n    --profile <str>  Configuration profile to use\n    --cache <str>  Cache strategy: true/false/force\n\nExample:\n  run_process(\"demo_ns\", \"FastqStats\", [\"--in.r1\", \"<value>\"])"
+  },
+  "is_error": false,
+  "result_type": "complete"
+}
+
+===== 05f_call_get_processes_extra_ns.json =====
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Namespace: demo_extra_ns\nDescription: A second, independent pipen namespace package (generalisation check).\n\nAvailable processes:\n  FastaGc (proc): Compute the GC fraction of a FASTA file\n\nUse get_process('demo_extra_ns', '<process_name>') to see detailed arguments."
+    }
+  ],
+  "structured_content": {
+    "result": "Namespace: demo_extra_ns\nDescription: A second, independent pipen namespace package (generalisation check).\n\nAvailable processes:\n  FastaGc (proc): Compute the GC fraction of a FASTA file\n\nUse get_process('demo_extra_ns', '<process_name>') to see detailed arguments."
+  },
+  "is_error": false,
+  "result_type": "complete"
+}
+
+===== 05g_call_get_processes_unknown.json =====
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Unknown namespace 'no_such_ns'. Known namespaces: demo_extra_ns, demo_ns"
+    }
+  ],
+  "structured_content": {
+    "result": "Unknown namespace 'no_such_ns'. Known namespaces: demo_extra_ns, demo_ns"
+  },
+  "is_error": false,
+  "result_type": "complete"
+}
+
+$ run_process(ns='demo_ns', proc='FastqStats', arguments=['--in.r1', '/home/pwwang/aidemo/testdata/s1_R1.fastq.gz', '--in.r2', '/home/pwwang/aidemo/testdata/s1_R2.fastq.gz', '--envs.min_length', '50', '--envs.sample_id', 'mcp_s1', '--outdir', '/home/pwwang/aidemo/out_mcp'])
+
+===== 05h_call_run_process.json =====
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "09-30 21:36:31 I core                      _____________________________________   __\n09-30 21:36:31 I core                      ___  __ \\___  _/__  __ \\__  ____/__  | / /\n09-30 21:36:31 I core                      __  /_/ /__  / __  /_/ /_  __/  __   |/ /\n09-30 21:36:31 I core                      _  ____/__/ /  _  ____/_  /___  _  /|  /\n09-30 21:36:31 I core                      /_/     /___/  /_/     /_____/  /_/ |_/\n09-30 21:36:31 I core\n09-30 21:36:31 I core                                  version: 1.2.3\n09-30 21:36:31 I core\n09-30 21:36:31 I core    ╔══════════════════════════════ FASTQSTATS ═══════════════════════════════╗\n09-30 21:36:31 I core    ║ The Pipen class provides interface to assemble and run the pipeline     ║\n09-30 21:36:31 I core    ╚═════════════════════════════════════════════════════════════════════════╝\n09-30 21:36:31 I core    plugins         : args v1.3.0\n09-30 21:36:31 I core    # procs         : 1\n09-30 21:36:31 I core    profile         : default\n09-30 21:36:31 I core    outdir          : /home/pwwang/aidemo/out_mcp\n09-30 21:36:31 I core    cache           : True\n09-30 21:36:31 I core    dirsig          : 1\n09-30 21:36:31 I core    error_strategy  : ignore\n09-30 21:36:31 I core    forks           : 1\n09-30 21:36:31 I core    lang            : bash\n09-30 21:36:31 I core    loglevel        : info\n09-30 21:36:31 I core    num_retries     : 3\n09-30 21:36:31 I core    scheduler       : local\n09-30 21:36:31 I core    submission_batch: None\n09-30 21:36:31 I core    template        : liquid\n09-30 21:36:31 I core    workdir         : .pipen/FastqStats\n09-30 21:36:31 I core    plugin_opts     : args_hide=False\n09-30 21:36:31 I core    Initializing plugins ...\n09-30 21:36:31 I core\n09-30 21:36:31 I core    ╭══════════════════════════════ FastqStats ═══════════════════════════════╮\n09-30 21:36:31 I core    ║ Read-length statistics of a paired-end FASTQ sample                     ║\n09-30 21:36:31 I core    ╰═════════════════════════════════════════════════════════════════════════╯\n09-30 21:36:31 I core    FastqStats: workdir: '.pipen/FastqStats/FastqStats'\n09-30 21:36:31 I core    FastqStats: <<< [START]\n09-30 21:36:31 I core    FastqStats: >>> [END]\n09-30 21:36:37 I core\n"
+    }
+  ],
+  "structured_content": {
+    "result": "09-30 21:36:31 I core                      _____________________________________   __\n09-30 21:36:31 I core                      ___  __ \\___  _/__  __ \\__  ____/__  | / /\n09-30 21:36:31 I core                      __  /_/ /__  / __  /_/ /_  __/  __   |/ /\n09-30 21:36:31 I core                      _  ____/__/ /  _  ____/_  /___  _  /|  /\n09-30 21:36:31 I core                      /_/     /___/  /_/     /_____/  /_/ |_/\n09-30 21:36:31 I core\n09-30 21:36:31 I core                                  version: 1.2.3\n09-30 21:36:31 I core\n09-30 21:36:31 I core    ╔══════════════════════════════ FASTQSTATS ═══════════════════════════════╗\n09-30 21:36:31 I core    ║ The Pipen class provides interface to assemble and run the pipeline     ║\n09-30 21:36:31 I core    ╚═════════════════════════════════════════════════════════════════════════╝\n09-30 21:36:31 I core    plugins         : args v1.3.0\n09-30 21:36:31 I core    # procs         : 1\n09-30 21:36:31 I core    profile         : default\n09-30 21:36:31 I core    outdir          : /home/pwwang/aidemo/out_mcp\n09-30 21:36:31 I core    cache           : True\n09-30 21:36:31 I core    dirsig          : 1\n09-30 21:36:31 I core    error_strategy  : ignore\n09-30 21:36:31 I core    forks           : 1\n09-30 21:36:31 I core    lang            : bash\n09-30 21:36:31 I core    loglevel        : info\n09-30 21:36:31 I core    num_retries     : 3\n09-30 21:36:31 I core    scheduler       : local\n09-30 21:36:31 I core    submission_batch: None\n09-30 21:36:31 I core    template        : liquid\n09-30 21:36:31 I core    workdir         : .pipen/FastqStats\n09-30 21:36:31 I core    plugin_opts     : args_hide=False\n09-30 21:36:31 I core    Initializing plugins ...\n09-30 21:36:31 I core\n09-30 21:36:31 I core    ╭══════════════════════════════ FastqStats ═══════════════════════════════╮\n09-30 21:36:31 I core    ║ Read-length statistics of a paired-end FASTQ sample                     ║\n09-30 21:36:31 I core    ╰═════════════════════════════════════════════════════════════════════════╯\n09-30 21:36:31 I core    FastqStats: workdir: '.pipen/FastqStats/FastqStats'\n09-30 21:36:31 I core    FastqStats: <<< [START]\n09-30 21:36:31 I core    FastqStats: >>> [END]\n09-30 21:36:37 I core\n"
+  },
+  "is_error": false,
+  "result_type": "complete"
+}
+
+===== 05i_list_resources.json =====
+{
+  "ttl_ms": 0,
+  "cache_scope": "private",
+  "resources": [],
+  "result_type": "complete"
+}
+
+===== 05j_list_prompts.json =====
+{
+  "ttl_ms": 0,
+  "cache_scope": "private",
+  "prompts": [],
+  "result_type": "complete"
+}
+
+produced file: /home/pwwang/aidemo/out_mcp/FastqStats/read_stats.tsv exists=True
+contents: 'mcp_s1\t80\t57\t80\t59.9\n'
+SDK_CLIENT_RC=0
+
+==================================================================
+ STEP 5b: raw JSON-RPC over stdio (wire-level trace)
+==================================================================
+
+########## attempting initialize with protocolVersion=2025-06-18
+-> {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2025-06-18", "capabilities": {}, "clientInfo": {"name": "raw-jsonrpc-probe", "version": "0.1.0"}}}
+<- [OUT] {"jsonrpc":"2.0","id":1,"result":{"capabilities":{"experimental":{},"prompts":{"listChanged":false},"resources":{"listChanged":false,"subscribe":false},"tools":{"listChanged":false}},"protocolVersion":"2025-06-18","serverInfo":{"name":"pipen-mcp","version":""}}}
+########## handshake OK, server negotiated: 2025-06-18
+-> {"jsonrpc": "2.0", "method": "notifications/initialized"}
+-> {"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}}
+<- [OUT] {"jsonrpc":"2.0","id":2,"result":{"tools":[{"description":"List all available namespaces registered with pipen. Start here to discover what is available.","inputSchema":{"properties":{},"type":"object","title":"get_namespacesArguments"},"name":"get_namespaces","outputSchema":{"properties":{"result":{"title":"Result","type":"string"}},"required":["result"],"type":"object","title":"get_namespacesOutput"}},{"description":"List all processes/pipelines available in a namespace.","inputSchema":{"properties":{"ns":{"description":"The namespace name","title":"Ns","type":"string"}},"required":["ns"],"type":"object","title":"get_processesArguments"},"name":"get_processes","outputSchema":{"properties":{"result":{"title":"Result","type":"string"}},"required":["result"],"type":"object","title":"get_processesOutput"}},{"description":"Get the detailed argument schema for a specific process or pipeline, including required and optional CLI arguments.","inputSchema":{"properties":{"ns":{"description":"The namespace name","title":"Ns","type":"string"},"proc":{"description":"The process or pipeline name","title":"Proc","type":"string"}},"required":["ns","proc"],"type":"object","title":"get_processArguments"},"name":"get_process","outputSchema":{"properties":{"result":{"title":"Result","type":"string"}},"required":["result"],"type":"object","title":"get_processOutput"}},{"description":"Run a pipen process or pipeline. Build the arguments list from the schema returned by get_process.","inputSchema":{"properties":{"ns":{"description":"The namespace containing the process","title":"Ns","type":"string"},"proc":{"description":"The process or pipeline name to run","title":"Proc","type":"string"},"arguments":{"description":"CLI arguments as a flat list, e.g. [\"--in.infile\", \"/path/to/file\", \"--outdir\", \"./out\"]","items":{"type":"string"},"title":"Arguments","type":"array"}},"required":["ns","proc","arguments"],"type":"object","title":"run_processArguments"},"name":"run_process","outputSchema":{"properties":{"result":{"title":"Result","type":"string"}},"required":["result"],"type":"object","title":"run_processOutput"}}]}}
+-> {"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": {"name": "get_namespaces", "arguments": {}}}
+<- [OUT] {"jsonrpc":"2.0","id":3,"result":{"content":[{"text":"Available namespaces:\n\n  demo_extra_ns: A second, independent pipen namespace package (generalisation check).\n  demo_ns: Toy scientific namespace used to demonstrate pipen's agent-facing surface.\n\nUse get_processes('<namespace>') to see available processes.","type":"text"}],"isError":false,"structuredContent":{"result":"Available namespaces:\n\n  demo_extra_ns: A second, independent pipen namespace package (generalisation check).\n  demo_ns: Toy scientific namespace used to demonstrate pipen's agent-facing surface.\n\nUse get_processes('<namespace>') to see available processes."}}}
+-> {"jsonrpc": "2.0", "id": 4, "method": "tools/call", "params": {"name": "get_processes", "arguments": {"ns": "demo_ns"}}}
+<- [OUT] {"jsonrpc":"2.0","id":4,"result":{"content":[{"text":"Namespace: demo_ns\nDescription: Toy scientific namespace used to demonstrate pipen's agent-facing surface.\n\nAvailable processes:\n  CountReads (proc): Count the reads in a single FASTQ file\n  FastqStats (proc): Read-length statistics of a paired-end FASTQ sample\n\nUse get_process('demo_ns', '<process_name>') to see detailed arguments.","type":"text"}],"isError":false,"structuredContent":{"result":"Namespace: demo_ns\nDescription: Toy scientific namespace used to demonstrate pipen's agent-facing surface.\n\nAvailable processes:\n  CountReads (proc): Count the reads in a single FASTQ file\n  FastqStats (proc): Read-length statistics of a paired-end FASTQ sample\n\nUse get_process('demo_ns', '<process_name>') to see detailed arguments."}}}
+-> {"jsonrpc": "2.0", "id": 5, "method": "tools/call", "params": {"name": "get_process", "arguments": {"ns": "demo_ns", "proc": "FastqStats"}}}
+<- [OUT] {"jsonrpc":"2.0","id":5,"result":{"content":[{"text":"Process: FastqStats  (namespace: demo_ns)\nDescription: Read-length statistics of a paired-end FASTQ sample\n\nArguments:\n  Required:\n    --in.r1 <str>  gzipped R1 FASTQ file of the sample\n    --in.r2 <str>  gzipped R2 FASTQ file of the sample\n  Optional:\n    --envs.min_length <int> (default: 0)  Reads shorter than this many bases are not counted\n    --envs.sample_id <str> (default: 'sample')  Label written into the first column of the output table\n    --outdir <str>  Output directory of the pipeline\n    --forks <int>  Number of jobs to run simultaneously\n    --scheduler <str>  Scheduler to run the jobs\n    --profile <str>  Configuration profile to use\n    --cache <str>  Cache strategy: true/false/force\n\nExample:\n  run_process(\"demo_ns\", \"FastqStats\", [\"--in.r1\", \"<value>\"])","type":"text"}],"isError":false,"structuredContent":{"result":"Process: FastqStats  (namespace: demo_ns)\nDescription: Read-length statistics of a paired-end FASTQ sample\n\nArguments:\n  Required:\n    --in.r1 <str>  gzipped R1 FASTQ file of the sample\n    --in.r2 <str>  gzipped R2 FASTQ file of the sample\n  Optional:\n    --envs.min_length <int> (default: 0)  Reads shorter than this many bases are not counted\n    --envs.sample_id <str> (default: 'sample')  Label written into the first column of the output table\n    --outdir <str>  Output directory of the pipeline\n    --forks <int>  Number of jobs to run simultaneously\n    --scheduler <str>  Scheduler to run the jobs\n    --profile <str>  Configuration profile to use\n    --cache <str>  Cache strategy: true/false/force\n\nExample:\n  run_process(\"demo_ns\", \"FastqStats\", [\"--in.r1\", \"<value>\"])"}}}
+-> {"jsonrpc": "2.0", "id": 6, "method": "tools/call", "params": {"name": "run_process", "arguments": {"ns": "demo_ns", "proc": "FastqStats", "arguments": ["--in.r1", "/home/pwwang/aidemo/testdata/s1_R1.fastq.gz", "--in.r2", "/home/pwwang/aidemo/testdata/s1_R2.fastq.gz", "--envs.sample_id", "wire_s1", "--outdir", "/home/pwwang/aidemo/out_mcp"]}}}
+<- [OUT] {"jsonrpc":"2.0","id":6,"result":{"content":[{"text":"09-30 21:36:38 I core                      _____________________________________   __\n09-30 21:36:38 I core                      ___  __ \\___  _/__  __ \\__  ____/__  | / /\n09-30 21:36:38 I core                      __  /_/ /__  / __  /_/ /_  __/  __   |/ /\n09-30 21:36:38 I core                      _  ____/__/ /  _  ____/_  /___  _  /|  /\n09-30 21:36:38 I core                      /_/     /___/  /_/     /_____/  /_/ |_/\n09-30 21:36:38 I core\n09-30 21:36:38 I core                                  version: 1.2.3\n09-30 21:36:38 I core\n09-30 21:36:38 I core    ╔══════════════════════════════ FASTQSTATS ═══════════════════════════════╗\n09-30 21:36:38 I core    ║ The Pipen class provides interface to assemble and run the pipeline     ║\n09-30 21:36:38 I core    ╚═════════════════════════════════════════════════════════════════════════╝\n09-30 21:36:38 I core    plugins         : args v1.3.0\n09-30 21:36:38 I core    # procs         : 1\n09-30 21:36:38 I core    profile         : default\n09-30 21:36:38 I core    outdir          : /home/pwwang/aidemo/out_mcp\n09-30 21:36:38 I core    cache           : True\n09-30 21:36:38 I core    dirsig          : 1\n09-30 21:36:38 I core    error_strategy  : ignore\n09-30 21:36:38 I core    forks           : 1\n09-30 21:36:38 I core    lang            : bash\n09-30 21:36:38 I core    loglevel        : info\n09-30 21:36:38 I core    num_retries     : 3\n09-30 21:36:38 I core    scheduler       : local\n09-30 21:36:38 I core    submission_batch: None\n09-30 21:36:38 I core    template        : liquid\n09-30 21:36:38 I core    workdir         : .pipen/FastqStats\n09-30 21:36:38 I core    plugin_opts     : args_hide=False\n09-30 21:36:38 I core    Initializing plugins ...\n09-30 21:36:38 I core\n09-30 21:36:38 I core    ╭══════════════════════════════ FastqStats ═══════════════════════════════╮\n09-30 21:36:38 I core    ║ Read-length statistics of a paired-end FASTQ sample                     ║\n09-30 21:36:38 I core    ╰═════════════════════════════════════════════════════════════════════════╯\n09-30 21:36:38 I core    FastqStats: workdir: '.pipen/FastqStats/FastqStats'\n09-30 21:36:38 I core    FastqStats: <<< [START]\n09-30 21:36:38 I core    FastqStats: >>> [END]\n09-30 21:36:41 I core\n/home/pwwang/aidemo/.venv/lib/python3.12/site-packages/simpleconf/loaders/osenv.py:62: UserWarning: PIPEN.osenv: No profile name found in key: BIN\n  warnings.warn(f\"{conf}: No profile name found in key: {key}\")\n","type":"text"}],"isError":false,"structuredContent":{"result":"09-30 21:36:38 I core                      _____________________________________   __\n09-30 21:36:38 I core                      ___  __ \\___  _/__  __ \\__  ____/__  | / /\n09-30 21:36:38 I core                      __  /_/ /__  / __  /_/ /_  __/  __   |/ /\n09-30 21:36:38 I core                      _  ____/__/ /  _  ____/_  /___  _  /|  /\n09-30 21:36:38 I core                      /_/     /___/  /_/     /_____/  /_/ |_/\n09-30 21:36:38 I core\n09-30 21:36:38 I core                                  version: 1.2.3\n09-30 21:36:38 I core\n09-30 21:36:38 I core    ╔══════════════════════════════ FASTQSTATS ═══════════════════════════════╗\n09-30 21:36:38 I core    ║ The Pipen class provides interface to assemble and run the pipeline     ║\n09-30 21:36:38 I core    ╚═════════════════════════════════════════════════════════════════════════╝\n09-30 21:36:38 I core    plugins         : args v1.3.0\n09-30 21:36:38 I core    # procs         : 1\n09-30 21:36:38 I core    profile         : default\n09-30 21:36:38 I core    outdir          : /home/pwwang/aidemo/out_mcp\n09-30 21:36:38 I core    cache           : True\n09-30 21:36:38 I core    dirsig          : 1\n09-30 21:36:38 I core    error_strategy  : ignore\n09-30 21:36:38 I core    forks           : 1\n09-30 21:36:38 I core    lang            : bash\n09-30 21:36:38 I core    loglevel        : info\n09-30 21:36:38 I core    num_retries     : 3\n09-30 21:36:38 I core    scheduler       : local\n09-30 21:36:38 I core    submission_batch: None\n09-30 21:36:38 I core    template        : liquid\n09-30 21:36:38 I core    workdir         : .pipen/FastqStats\n09-30 21:36:38 I core    plugin_opts     : args_hide=False\n09-30 21:36:38 I core    Initializing plugins ...\n09-30 21:36:38 I core\n09-30 21:36:38 I core    ╭══════════════════════════════ FastqStats ═══════════════════════════════╮\n09-30 21:36:38 I core    ║ Read-length statistics of a paired-end FASTQ sample                     ║\n09-30 21:36:38 I core    ╰═════════════════════════════════════════════════════════════════════════╯\n09-30 21:36:38 I core    FastqStats: workdir: '.pipen/FastqStats/FastqStats'\n09-30 21:36:38 I core    FastqStats: <<< [START]\n09-30 21:36:38 I core    FastqStats: >>> [END]\n09-30 21:36:41 I core\n/home/pwwang/aidemo/.venv/lib/python3.12/site-packages/simpleconf/loaders/osenv.py:62: UserWarning: PIPEN.osenv: No profile name found in key: BIN\n  warnings.warn(f\"{conf}: No profile name found in key: {key}\")\n"}}}
+-- server exit code: 0
+
+produced file: /home/pwwang/aidemo/out_mcp/FastqStats/read_stats.tsv exists=True
+contents: 'wire_s1\t80\t80\t80\t59.9\n'
+RAW_CLIENT_RC=0
+
+==================================================================
+ STEP 5c: produced output file from the MCP-driven run
+==================================================================
+total 4
+-rw-r--r-- 1 pwwang pwwang 22 Sep 30 21:36 read_stats.tsv
+wire_s1	80	80	80	59.9
+
+==================================================================
+ STEP 5d: CAVEAT - run_process shells out to the 'pipen' console script.
+          Here we launch the client WITHOUT the venv on PATH.
+==================================================================
+<- [SERVER-STDERR]                              │ 7 in call_tool                    │              
+<- [SERVER-STDERR]                              │                                   │              
+<- [SERVER-STDERR]                              │   84 │   │   if not tool:         │              
+<- [SERVER-STDERR]                              │   85 │   │   │   raise ToolError( │              
+<- [SERVER-STDERR]                              │   86 │   │                        │              
+<- [SERVER-STDERR]                              │ ❱ 87 │   │   return await tool.ru │              
+<- [SERVER-STDERR]                              │   88                              │              
+<- [SERVER-STDERR]                              │                                   │              
+<- [SERVER-STDERR]                              │ /home/pwwang/aidemo/.venv/lib/pyt │              
+<- [SERVER-STDERR]                              │ hon3.12/site-packages/mcp/server/ │              
+<- [SERVER-STDERR]                              │ mcpserver/tools/base.py:210 in    │              
+<- [SERVER-STDERR]                              │ run                               │              
+<- [SERVER-STDERR]                              │                                   │              
+<- [SERVER-STDERR]                              │   207 │   │   │   raise ToolError │              
+<- [SERVER-STDERR]                              │   208 │   │   except Exception as │              
+<- [SERVER-STDERR]                              │   209 │   │   │   # A crash: the  │              
+<- [SERVER-STDERR]                              │ ❱ 210 │   │   │   raise Unexpecte │              
+<- [SERVER-STDERR]                              │   211                             │              
+<- [SERVER-STDERR]                              ╰───────────────────────────────────╯              
+<- [SERVER-STDERR]                              UnexpectedToolError: Error executing               
+<- [SERVER-STDERR]                              tool run_process                                   
+<- [OUT] {"jsonrpc":"2.0","id":6,"result":{"content":[{"text":"Error executing tool run_process","type":"text"}],"isError":true}}
+-- server exit code: 0
+
+produced file: /home/pwwang/aidemo/out_mcp_nopath/FastqStats/read_stats.tsv exists=False
+(see the run_process error above)

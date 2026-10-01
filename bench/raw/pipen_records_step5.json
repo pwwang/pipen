@@ -1,0 +1,341 @@
+[
+  {
+    "step": "5_caching_scope",
+    "tag": "s5_r1_cold",
+    "n": 8,
+    "forks": 32,
+    "cache": true,
+    "rep": 1,
+    "_script": "bench_cache_dag.py",
+    "note": "fresh workdir, cache on: everything must execute",
+    "wall_sec": 9.431,
+    "pipeline_run_sec": null,
+    "rc": 0,
+    "pipeline_ok": false,
+    "cached_jobs_log_lines": [],
+    "jobs_executed": 25,
+    "jobs_by_proc": {
+      "Read": 8,
+      "Mid": 8,
+      "Side": 8,
+      "Agg": 1
+    },
+    "peak_tree_rss_mb": 134.5,
+    "rss_samples": 185,
+    "loadavg_before": [
+      "6.96",
+      "5.27",
+      "4.38"
+    ],
+    "loadavg_after": [
+      "6.72",
+      "5.24",
+      "4.38"
+    ],
+    "marker_log": "/home/pwwang/bench/out/marker_s5_r1_cold.log",
+    "log": "/home/pwwang/bench/out/logs/s5_r1_cold.log",
+    "executed_detail": [
+      "Read in0.txt",
+      "Read in4.txt",
+      "Read in3.txt",
+      "Read in5.txt",
+      "Read in2.txt",
+      "Read in1.txt",
+      "Read in7.txt",
+      "Read in6.txt",
+      "Mid r-in2.txt",
+      "Mid r-in1.txt",
+      "Mid r-in4.txt",
+      "Mid r-in5.txt",
+      "Mid r-in7.txt",
+      "Mid r-in6.txt",
+      "Mid r-in0.txt",
+      "Mid r-in3.txt",
+      "Side r-in7.txt",
+      "Side r-in0.txt",
+      "Side r-in3.txt",
+      "Side r-in6.txt",
+      "Side r-in4.txt",
+      "Side r-in5.txt",
+      "Side r-in2.txt",
+      "Side r-in1.txt",
+      "Agg agg"
+    ]
+  },
+  {
+    "step": "5_caching_scope",
+    "tag": "s5_r2_rerun",
+    "n": 8,
+    "forks": 32,
+    "cache": true,
+    "rep": 2,
+    "_script": "bench_cache_dag.py",
+    "note": "immediate re-run, nothing changed",
+    "wall_sec": 1.172,
+    "pipeline_run_sec": null,
+    "rc": 0,
+    "pipeline_ok": false,
+    "cached_jobs_log_lines": [
+      "09-30 16:30:59 I core    Read: Cached jobs: 0-7",
+      "09-30 16:30:59 I core    Mid: Cached jobs: 0-7",
+      "09-30 16:30:59 I core    Side: Cached jobs: 0-7",
+      "09-30 16:31:00 I core    Agg: Cached jobs: 0"
+    ],
+    "jobs_executed": 0,
+    "jobs_by_proc": {},
+    "peak_tree_rss_mb": 94.3,
+    "rss_samples": 23,
+    "loadavg_before": [
+      "6.72",
+      "5.24",
+      "4.38"
+    ],
+    "loadavg_after": [
+      "6.66",
+      "5.26",
+      "4.39"
+    ],
+    "marker_log": "/home/pwwang/bench/out/marker_s5_r2_rerun.log",
+    "log": "/home/pwwang/bench/out/logs/s5_r2_rerun.log",
+    "executed_detail": []
+  },
+  {
+    "step": "5_caching_scope",
+    "tag": "s5_r3_input3_changed",
+    "n": 8,
+    "forks": 32,
+    "cache": true,
+    "rep": 3,
+    "_script": "bench_cache_dag.py",
+    "note": "content of in4.txt rewritten",
+    "wall_sec": 10.265,
+    "pipeline_run_sec": null,
+    "rc": 0,
+    "pipeline_ok": false,
+    "cached_jobs_log_lines": [
+      "09-30 16:31:00 I core    Read: Cached jobs: 0-3, 5-7",
+      "09-30 16:31:04 I core    Mid: Cached jobs: 0-3, 5-7",
+      "09-30 16:31:06 I core    Side: Cached jobs: 0-3, 5-7"
+    ],
+    "jobs_executed": 4,
+    "jobs_by_proc": {
+      "Read": 1,
+      "Mid": 1,
+      "Side": 1,
+      "Agg": 1
+    },
+    "peak_tree_rss_mb": 99.1,
+    "rss_samples": 202,
+    "loadavg_before": [
+      "6.66",
+      "5.26",
+      "4.39"
+    ],
+    "loadavg_after": [
+      "6.49",
+      "5.27",
+      "4.40"
+    ],
+    "marker_log": "/home/pwwang/bench/out/marker_s5_r3_input3_changed.log",
+    "log": "/home/pwwang/bench/out/logs/s5_r3_input3_changed.log",
+    "executed_detail": [
+      "Read in4.txt",
+      "Mid r-in4.txt",
+      "Side r-in4.txt",
+      "Agg agg"
+    ]
+  },
+  {
+    "step": "5_caching_scope",
+    "tag": "s5_r4_mid_script_changed",
+    "n": 8,
+    "forks": 32,
+    "cache": true,
+    "rep": 4,
+    "_script": "bench_cache_dag.py",
+    "note": "Mid process script variant A -> B",
+    "wall_sec": 5.347,
+    "pipeline_run_sec": null,
+    "rc": 0,
+    "pipeline_ok": false,
+    "cached_jobs_log_lines": [
+      "09-30 16:31:11 I core    Read: Cached jobs: 0-7",
+      "09-30 16:31:13 I core    Side: Cached jobs: 0-7"
+    ],
+    "jobs_executed": 9,
+    "jobs_by_proc": {
+      "Mid": 8,
+      "Agg": 1
+    },
+    "peak_tree_rss_mb": 138.1,
+    "rss_samples": 105,
+    "loadavg_before": [
+      "6.49",
+      "5.27",
+      "4.40"
+    ],
+    "loadavg_after": [
+      "6.29",
+      "5.24",
+      "4.40"
+    ],
+    "marker_log": "/home/pwwang/bench/out/marker_s5_r4_mid_script_changed.log",
+    "log": "/home/pwwang/bench/out/logs/s5_r4_mid_script_changed.log",
+    "executed_detail": [
+      "Mid r-in0.txt",
+      "Mid r-in1.txt",
+      "Mid r-in6.txt",
+      "Mid r-in2.txt",
+      "Mid r-in3.txt",
+      "Mid r-in7.txt",
+      "Mid r-in4.txt",
+      "Mid r-in5.txt",
+      "Agg agg"
+    ]
+  },
+  {
+    "step": "5_caching_scope",
+    "tag": "s5_r5_rerun",
+    "n": 8,
+    "forks": 32,
+    "cache": true,
+    "rep": 5,
+    "_script": "bench_cache_dag.py",
+    "note": "re-run immediately after r4, nothing else changed (variant stays B)",
+    "wall_sec": 1.225,
+    "pipeline_run_sec": null,
+    "rc": 0,
+    "pipeline_ok": false,
+    "cached_jobs_log_lines": [
+      "09-30 16:31:16 I core    Read: Cached jobs: 0-7",
+      "09-30 16:31:16 I core    Mid: Cached jobs: 0-7",
+      "09-30 16:31:16 I core    Side: Cached jobs: 0-7",
+      "09-30 16:31:16 I core    Agg: Cached jobs: 0"
+    ],
+    "jobs_executed": 0,
+    "jobs_by_proc": {},
+    "peak_tree_rss_mb": 94.4,
+    "rss_samples": 24,
+    "loadavg_before": [
+      "6.29",
+      "5.24",
+      "4.40"
+    ],
+    "loadavg_after": [
+      "6.29",
+      "5.24",
+      "4.40"
+    ],
+    "marker_log": "/home/pwwang/bench/out/marker_s5_r5_rerun.log",
+    "log": "/home/pwwang/bench/out/logs/s5_r5_rerun.log",
+    "executed_detail": []
+  },
+  {
+    "step": "5_caching_timing",
+    "tag": "s5_time_n100_cold_r1",
+    "n": 100,
+    "forks": 32,
+    "cache": true,
+    "rep": 1,
+    "_script": "bench_cache_dag.py",
+    "note": "cold",
+    "wall_sec": 40.287,
+    "pipeline_run_sec": null,
+    "rc": 0,
+    "pipeline_ok": false,
+    "cached_jobs_log_lines": [],
+    "jobs_executed": 301,
+    "jobs_by_proc": {
+      "Read": 100,
+      "Mid": 100,
+      "Side": 100,
+      "Agg": 1
+    },
+    "peak_tree_rss_mb": 285.4,
+    "rss_samples": 788,
+    "loadavg_before": [
+      "6.29",
+      "5.24",
+      "4.40"
+    ],
+    "loadavg_after": [
+      "5.41",
+      "5.15",
+      "4.40"
+    ],
+    "marker_log": "/home/pwwang/bench/out/marker_s5_time_n100_cold_r1.log",
+    "log": "/home/pwwang/bench/out/logs/s5_time_n100_cold_r1.log"
+  },
+  {
+    "step": "5_caching_timing",
+    "tag": "s5_time_n100_warm1_r1",
+    "n": 100,
+    "forks": 32,
+    "cache": true,
+    "rep": 1,
+    "_script": "bench_cache_dag.py",
+    "note": "warm1",
+    "wall_sec": 3.107,
+    "pipeline_run_sec": null,
+    "rc": 0,
+    "pipeline_ok": false,
+    "cached_jobs_log_lines": [
+      "09-30 16:32:04 I core    Read: Cached jobs: 0-99",
+      "09-30 16:32:05 I core    Mid: Cached jobs: 0-99",
+      "09-30 16:32:05 I core    Side: Cached jobs: 0-99",
+      "09-30 16:32:06 I core    Agg: Cached jobs: 0"
+    ],
+    "jobs_executed": 0,
+    "jobs_by_proc": {},
+    "peak_tree_rss_mb": 96.6,
+    "rss_samples": 61,
+    "loadavg_before": [
+      "5.41",
+      "5.15",
+      "4.40"
+    ],
+    "loadavg_after": [
+      "5.37",
+      "5.15",
+      "4.40"
+    ],
+    "marker_log": "/home/pwwang/bench/out/marker_s5_time_n100_warm1_r1.log",
+    "log": "/home/pwwang/bench/out/logs/s5_time_n100_warm1_r1.log"
+  },
+  {
+    "step": "5_caching_timing",
+    "tag": "s5_time_n100_warm2_r1",
+    "n": 100,
+    "forks": 32,
+    "cache": true,
+    "rep": 1,
+    "_script": "bench_cache_dag.py",
+    "note": "warm2",
+    "wall_sec": 3.158,
+    "pipeline_run_sec": null,
+    "rc": 0,
+    "pipeline_ok": false,
+    "cached_jobs_log_lines": [
+      "09-30 16:32:07 I core    Read: Cached jobs: 0-99",
+      "09-30 16:32:08 I core    Mid: Cached jobs: 0-99",
+      "09-30 16:32:09 I core    Side: Cached jobs: 0-99",
+      "09-30 16:32:09 I core    Agg: Cached jobs: 0"
+    ],
+    "jobs_executed": 0,
+    "jobs_by_proc": {},
+    "peak_tree_rss_mb": 95.9,
+    "rss_samples": 62,
+    "loadavg_before": [
+      "5.37",
+      "5.15",
+      "4.40"
+    ],
+    "loadavg_after": [
+      "5.37",
+      "5.15",
+      "4.40"
+    ],
+    "marker_log": "/home/pwwang/bench/out/marker_s5_time_n100_warm2_r1.log",
+    "log": "/home/pwwang/bench/out/logs/s5_time_n100_warm2_r1.log"
+  }
+]
