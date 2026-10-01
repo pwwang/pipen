@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.2.4
+
+- docs: correct the cache description and drop two options that were never implemented
+- chore: relicense from Apache-2.0 to MIT
+- chore: comment out prerelease option in pyproject.toml
+
 ## 1.2.3
 
 - fix: handle mtime for character devices in get_mtime function
