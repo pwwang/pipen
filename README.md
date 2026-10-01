@@ -31,7 +31,7 @@ ______________________________________________________________________
 
 **2. Reproducibility Built-In**
 - Automatic job caching based on input/output signatures
-- Full audit trail of pipeline runs and parameters
+- The workdir keeps the rendered job script, the job signature and a script diff, while environment provenance is provided by the separate [pipen-runinfo][29] plugin
 - Dependency tracking ensures processes run in correct order
 
 **3. Flexible Scheduling**
@@ -67,7 +67,7 @@ ______________________________________________________________________
 | **Nice Logging** | Rich, informative, color-coded, progress bars | Text-based | Text-based | Basic logging |
 | **Highly Extensible** | Simple plugin system, hook-based | Custom rules/scripts | Custom operators | Custom operators/providers |
 | **Data Flow Management** | Built-in channel operations (expand_dir, collapse_files) | Manual handling | Channel system | XCom system |
-| **Reproducibility** | Built-in caching, full audit trail | Manual | Versioned containers | DAG versioning |
+| **Reproducibility** | Built-in caching; the workdir keeps the rendered script, the signature and a script diff (env provenance via [pipen-runinfo][29]) | Manual | Versioned containers | DAG versioning |
 | **Flexible Scheduling** | Switch schedulers without code changes | Config-based | Config-based | Config-based |
 
 ## Installation

@@ -124,7 +124,6 @@ class Proc(ABC, metaclass=ProcMeta):
         error_strategy: How to deal with the errors
             - retry, ignore, halt
             - halt to halt the whole pipeline, no submitting new jobs
-            - terminate to just terminate the job itself
         num_retries: How many times to retry to jobs once error occurs
         template: Define the template engine to use.
             This could be either a template engine or a dict with key `engine`
@@ -262,7 +261,6 @@ class Proc(ABC, metaclass=ProcMeta):
             error_strategy: How to deal with the errors
                 - retry, ignore, halt
                 - halt to halt the whole pipeline, no submitting new jobs
-                - terminate to just terminate the job itself
             num_retries: How many times to retry to jobs once error occurs
             forks: New forks for the new process
             input_data: The input data for the process. Only when this process

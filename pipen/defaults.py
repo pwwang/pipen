@@ -24,7 +24,7 @@ CONFIG_FILES = (
 CONFIG = Diot(
     # pipeline level: The logging level
     loglevel="info",
-    # process level: The cache option, True/False/export
+    # process level: The cache option, True/False/force
     cache=True,
     # process level: Whether expand directory to check signature
     dirsig=1,
@@ -32,13 +32,12 @@ CONFIG = Diot(
     # How to deal with the errors
     # retry, ignore, halt
     # halt to halt the whole pipeline, no submitting new jobs
-    # terminate to just terminate the job itself
     error_strategy=JobErrorStrategy.IGNORE,
     # process level:
     # How many times to retry to jobs once error occurs
     num_retries=3,
     # process level:
-    # The directory to export the output files
+    # How many jobs to run simultaneously
     forks=1,
     # process level: Default shell/language
     lang="bash",

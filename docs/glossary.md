@@ -32,7 +32,7 @@ def process_data(input_file: str, output_dir: str) -> None:
 
 ### Cache
 
-A mechanism that stores the results of completed jobs to avoid recomputing them when the same inputs are used again. pipen automatically computes a cache key (signature) based on input data, script content, and configuration.
+A mechanism that stores the results of completed jobs to avoid recomputing them when the same inputs are used again. pipen writes a signature file (`job.signature.toml`) per job recording the input/output type maps, the input/output values and `ctime` — the maximum modification time over the rendered job script, the declared inputs and the declared outputs — and skips the job when nothing is newer. Validation is modification-time based; no content hashing is involved.
 
 **Related:** [Caching](caching.md)
 

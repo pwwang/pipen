@@ -403,10 +403,10 @@ pipeline = Pipen(template="mako")     # Install: pip install mako
    # View job signature
    cat ~/.pipen/MyPipeline/MyProc/0/job.signature.toml
 
-   # Should contain:
-   # [signature]
-   # input_hash = "..."
-   # script_hash = "..."
+   # Should contain the input/output type maps and data plus `ctime`,
+   # the max mtime over the rendered script, the declared inputs and
+   # the declared outputs, e.g.:
+   # ctime = 1790870080.028158
    ```
 
 2. **Enable directory signatures**

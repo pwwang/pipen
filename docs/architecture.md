@@ -298,9 +298,10 @@ async def on_proc_start(proc: Proc) -> None:
     """
 
 @plugin.spec
-async def on_proc_end(proc: Proc, succeeded: bool) -> None:
+async def on_proc_done(proc: Proc, succeeded: bool | str) -> None:
     """Called when a process finishes.
-    succeeded indicates whether process succeeded.
+    succeeded indicates whether process succeeded, or 'cached' if all
+    jobs were cached.
     """
 ```
 
@@ -318,7 +319,7 @@ async def on_job_submitted(job: Job) -> None:
     """
 
 @plugin.spec
-async def on_job_running(job: Job) -> None:
+async def on_job_started(job: Job) -> None:
     """Called when a job starts running.
     """
 
@@ -328,9 +329,8 @@ async def on_job_succeeded(job: Job) -> None:
     """
 
 @plugin.spec
-async def on_job_failed(job: Job, error: Exception) -> None:
+async def on_job_failed(job: Job) -> None:
     """Called when a job fails.
-    error contains the exception.
     """
 ```
 
@@ -343,7 +343,7 @@ from pipen.pluginmgr import plugin
 @plugin.impl
 def on_proc_create(proc):
     """Modify process attributes on creation."""
-    proc.config.forks = 4  # Set default to 4 parallel jobs
+    proc.forks = 4  # Set default to 4 parallel jobs
 
 # In pyproject.toml:
 # [tool.poetry.plugins."pipen"]
@@ -356,21 +356,37 @@ pipen implements intelligent job caching to avoid redundant computations.
 
 ### Cache Key Computation
 
-The cache key (signature) is computed from:
+Cache validation is modification-time based: pipen compares mtimes and
+does not hash file contents. `JobCaching.cache()` writes the signature
+file and `JobCaching._check_cached()` compares the recorded values with
+the current state of the job.
 
-1. **Input data**: File paths, directory paths, or in-memory values
-2. **Script content**: Hash of the rendered script
-3. **Process metadata**: Configuration values that affect output
+The signature records:
 
-```python
+1. **Input type map**: the declared input types (`var`, `file`, `dir`, `files`, `dirs`)
+2. **Input values**: file/directory paths, or the in-memory values of `var` inputs
+3. **Output type map** and **output values**: the declared output types and paths
+4. **`ctime`**: the maximum mtime over the rendered job script, the declared
+   file/directory inputs and the declared outputs (`inf` if no mtime could be read)
+
+```toml
 # Signature file location
 {workdir}/{proc.name}/{job.index}/job.signature.toml
 
-# Example signature:
-[signature]
-input_hash = "a1b2c3d4..."
-script_hash = "e5f6g7h8..."
-config_hash = "i9j0k1l2..."
+# Real example (one file input, one file output):
+ctime = 1790870080.028158
+
+[input.type]
+infile = "file"
+
+[input.data]
+infile = "/path/to/data/in.txt"
+
+[output.type]
+outfile = "file"
+
+[output.data]
+outfile = ".pipen/MyPipeline/P1/0/output/out.txt"
 ```
 
 ### Cache Check Process
@@ -392,10 +408,13 @@ graph TD
 
 A cache is invalid if:
 
-1. Input files are modified (based on modification time)
-2. Script content changes
-3. Process configuration changes
-4. Output files are missing or corrupted
+1. The input/output type maps or the input/output values differ from the
+   signature
+2. A declared input file or directory has an mtime newer than `ctime` — a
+   bare `touch` counts, the content is never compared
+3. The rendered job script has an mtime newer than `ctime` (any change to a
+   value interpolated into the script, even one that is not a modelled input)
+4. A declared output file or directory is missing
 
 ### Directory Signatures
 

@@ -11,14 +11,21 @@ We can also do a force-cache for a job by setting `cache` to `"force"`. This mak
 
 ## Job signature
 
-The signature of a job consists of input types and data, output types and data, and lastest time (`lastest_time`) any files/directories from the script, input or output files are generated/modified. So these siutations will make job-cache checking fail (job will start over):
+The signature of a job (`job.signature.toml`) consists of the input types and data, the output types and data, and `ctime` — the maximum modification time over the rendered job script, the declared file/directory inputs and the declared outputs. Validation is modification-time based: pipen compares mtimes and never hashes file contents. So these situations will make job-cache checking fail (job will start over):
 
 1. Any changes in `input` or `output` types
 2. Any changes in `input` or `output` data
 3. Any changes to `script`
-4. Any touches to input files (since they will make the last modified time > `lastest_time`)
+4. Any touches to input files — including a bare `touch` with no content change, which invalidates exactly the same jobs as editing the file's content (only the mtime is compared)
 5. Any touches to input directories
    - Use `dirsig` as the depth to check the files under the directories
    - Otherwise if it is `0`, only the directories themselves are checked. Note that modify a file inside a directory may not change the last modified time of the directory itself.
 6. Any deletions to the output files/directories
    Note that only the files/directories specified by `output` are checked. Files or subdirectories in the output directories will NOT be checked.
+
+- Because only mtimes are compared, `touch`ing a declared input invalidates the
+  same job scope as a real content edit — the file's bytes are never looked at.
+- `ctime` also covers the **rendered** job script, so a value interpolated into
+  the script that is not a modelled input (for example an absolute path taken
+  from `envs`) invalidates **every job of that process** when it changes, even
+  though no declared input or output changed.
